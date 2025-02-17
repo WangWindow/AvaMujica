@@ -1,43 +1,43 @@
 <!--
-  主窗口
+    主窗口
 -->
 <Window
-  x:Class="AvaMujica.Views.MainWindow"
-  xmlns="https://github.com/avaloniaui"
-  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  xmlns:views="clr-namespace:AvaMujica.Views"
-  xmlns:vm="using:AvaMujica.ViewModels"
-  Title="AvaMujica"
-  d:DesignHeight="450"
-  d:DesignWidth="800"
-  Background="Transparent"
-  ExtendClientAreaToDecorationsHint="True"
-  Icon="/Assets/avalonia-logo.ico"
-  TransparencyLevelHint="AcrylicBlur"
-  WindowStartupLocation="CenterScreen"
-  mc:Ignorable="d">
-  <Design.DataContext>
-    <vm:MainWindowViewModel />
-  </Design.DataContext>
+    x:Class="AvaMujica.Views.MainWindow"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:views="using:AvaMujica.Views"
+    xmlns:vm="using:AvaMujica.ViewModels"
+    Title="AvaMujica"
+    d:DesignHeight="450"
+    d:DesignWidth="800"
+    Background="Transparent"
+    ExtendClientAreaToDecorationsHint="True"
+    Icon="/Assets/avalonia-logo.ico"
+    TransparencyLevelHint="AcrylicBlur"
+    WindowStartupLocation="CenterScreen"
+    mc:Ignorable="d">
+    <Design.DataContext>
+        <vm:MainWindowViewModel />
+    </Design.DataContext>
 
-  <Panel>
-    <!--  桌面毛玻璃效果  -->
-    <ExperimentalAcrylicBorder IsHitTestVisible="False">
-      <ExperimentalAcrylicBorder.Material>
-        <ExperimentalAcrylicMaterial
-          BackgroundSource="Digger"
-          MaterialOpacity="0.6"
-          TintColor="Black"
-          TintOpacity="1" />
-      </ExperimentalAcrylicBorder.Material>
-    </ExperimentalAcrylicBorder>
+    <Panel>
+        <!--  桌面毛玻璃效果  -->
+        <ExperimentalAcrylicBorder IsHitTestVisible="False">
+            <ExperimentalAcrylicBorder.Material>
+                <ExperimentalAcrylicMaterial
+                    BackgroundSource="Digger"
+                    MaterialOpacity="0.6"
+                    TintColor="Black"
+                    TintOpacity="1" />
+            </ExperimentalAcrylicBorder.Material>
+        </ExperimentalAcrylicBorder>
 
-    <!--  内容区域  -->
-    <DockPanel>
-      <views:SiderView />
-      <views:MainView />
-    </DockPanel>
-  </Panel>
+        <!--  内容区域  -->
+        <DockPanel>
+            <views:SiderView />
+            <views:MainView />
+        </DockPanel>
+    </Panel>
 </Window>
