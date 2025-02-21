@@ -5,7 +5,7 @@ namespace AvaMujica.Models;
 
 public class HistoryManager { }
 
-public class HistoryInfo
+public abstract class HistoryInfo
 {
     public int Id { get; set; }
     public string User { get; set; } = "User Name";
@@ -18,7 +18,7 @@ public class JsonHistory
     public List<HistoryInfo> History { get; set; } = new List<HistoryInfo>();
 }
 
-public class SQLiteHistory
+public class SqLiteHistory
 {
     public List<HistoryInfo> History { get; set; } = new List<HistoryInfo>();
 }

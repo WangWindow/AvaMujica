@@ -1,19 +1,19 @@
 namespace AvaMujica.Models;
 
-public class MyAPI
+public class MyApi
 {
-    public string APIKey { get; set; } = "YourAPIKey";
-    public string APIUrl { get; set; } = "https://api.example.com";
+    public string ApiKey { get; set; } = "YourAPIKey";
+    public string ApiUrl { get; set; } = "https://api.example.com";
 
-    public void SetAPI(string apiKey, string apiUrl)
+    public void SetApi(string apiKey, string apiUrl)
     {
-        APIKey = apiKey;
-        APIUrl = apiUrl;
+        ApiKey = apiKey;
+        ApiUrl = apiUrl;
     }
 
-    public void ResetAPI()
+    public void ResetApi()
     {
-        APIKey = "YourAPIKey";
-        APIUrl = "https://api.example.com";
+        ApiKey = "YourAPIKey";
+        ApiUrl = "https://api.example.com";
     }
 }
