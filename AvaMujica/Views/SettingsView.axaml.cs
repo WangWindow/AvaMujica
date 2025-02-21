@@ -8,6 +8,7 @@
  * @Descripttion:
  */
 using Avalonia.Controls;
+using Avalonia.Input;
 
 namespace AvaMujica.Views;
 

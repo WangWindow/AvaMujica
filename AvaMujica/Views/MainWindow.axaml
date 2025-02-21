@@ -10,10 +10,10 @@
     xmlns:views="using:AvaMujica.Views"
     xmlns:vm="using:AvaMujica.ViewModels"
     Title="AvaMujica"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
+    d:DesignHeight="600"
+    d:DesignWidth="270"
     Background="Transparent"
-    ExtendClientAreaToDecorationsHint="True"
+    ExtendClientAreaToDecorationsHint="False"
     Icon="/Assets/avalonia-logo.ico"
     TransparencyLevelHint="AcrylicBlur"
     WindowStartupLocation="CenterScreen"
@@ -36,7 +36,6 @@
 
         <!--  内容区域  -->
         <DockPanel>
-            <views:SiderView />
             <views:MainView />
         </DockPanel>
     </Panel>

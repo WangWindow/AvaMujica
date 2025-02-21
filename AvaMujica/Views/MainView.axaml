@@ -8,16 +8,88 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:AvaMujica.ViewModels"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
+    d:DesignHeight="600"
+    d:DesignWidth="270"
     x:DataType="vm:MainViewModel"
     mc:Ignorable="d">
     <Design.DataContext>
         <vm:MainViewModel />
     </Design.DataContext>
 
-    <TextBlock
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center"
-        Text="{Binding Greeting}" />
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!--  顶部  -->
+        <Grid Grid.Row="0">
+            <DockPanel Background="Transparent">
+                <!--  顶部.左侧  -->
+                <Button
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    DockPanel.Dock="Left">
+                    😊
+                </Button>
+
+                <!--  顶部.右侧  -->
+                <Button
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    DockPanel.Dock="Right">
+                    😀
+                </Button>
+
+                <!--  顶部.中间  -->
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    Text="{Binding Title}" />
+            </DockPanel>
+        </Grid>
+
+        <!--  中间  -->
+        <Grid Grid.Row="1">
+            <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="Transparent"
+                Text="{Binding Greeting}" />
+        </Grid>
+
+        <!--  底部  -->
+        <Grid Grid.Row="2">
+            <DockPanel>
+
+                <Button
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="DodgerBlue"
+                    DockPanel.Dock="Right">
+                    ↑
+                </Button>
+
+                <Button
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    DockPanel.Dock="Right">
+                    +
+                </Button>
+
+                <TextBox
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    DockPanel.Dock="Left"
+                    Text="InputBox" />
+            </DockPanel>
+
+        </Grid>
+    </Grid>
 </UserControl>

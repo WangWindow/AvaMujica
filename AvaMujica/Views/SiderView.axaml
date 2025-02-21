@@ -5,17 +5,76 @@
     x:Class="AvaMujica.Views.SiderView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:AvaMujica.Controls"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:views="using:AvaMujica.Views"
     xmlns:vm="using:AvaMujica.ViewModels"
-    d:DesignHeight="450"
-    d:DesignWidth="800"
+    d:DesignHeight="600"
+    d:DesignWidth="270"
     x:DataType="vm:SiderViewModel"
     mc:Ignorable="d">
     <Design.DataContext>
         <vm:SiderViewModel />
     </Design.DataContext>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!--  顶部  -->
+        <Grid Grid.Row="0">
+            <DockPanel>
+                <!--  顶部.左侧  -->
+                <Button
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    DockPanel.Dock="Left">
+                    L
+                </Button>
+
+                <!--  顶部.右侧  -->
+                <Button
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    DockPanel.Dock="Right">
+                    R
+                </Button>
+
+                <!--  顶部.中间  -->
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    Text="Sider" />
+            </DockPanel>
+        </Grid>
+
+        <!--  中间  -->
+        <Grid Grid.Row="1">
+            <ScrollViewer>
+                <StackPanel>
+                    <Rectangle Height="50" Fill="Red" />
+                    <Rectangle Height="50" Fill="Blue" />
+                    <Rectangle Height="100" Fill="Green" />
+                    <Rectangle Height="50" Fill="Orange" />
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <!--  底部  -->
+        <Grid Grid.Row="2">
+            <Button
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Center"
+                Background="Transparent"
+                DockPanel.Dock="Left">
+                <Image />
+
+            </Button>
+        </Grid>
+    </Grid>
 
 </UserControl>
