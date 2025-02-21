@@ -53,16 +53,16 @@
         </Grid>
 
         <!--  中间  -->
-        <Grid Grid.Row="1">
-            <ScrollViewer>
-                <StackPanel>
-                    <Rectangle Height="50" Fill="Red" />
-                    <Rectangle Height="50" Fill="Blue" />
-                    <Rectangle Height="100" Fill="Green" />
-                    <Rectangle Height="50" Fill="Orange" />
-                </StackPanel>
-            </ScrollViewer>
-        </Grid>
+        <!-- <Grid Grid.Row="1"> -->
+        <!--     <ScrollViewer> -->
+        <!--         <StackPanel> -->
+        <!--             <Rectangle Height="50" Fill="Red" /> -->
+        <!--             <Rectangle Height="50" Fill="Blue" /> -->
+        <!--             <Rectangle Height="100" Fill="Green" /> -->
+        <!--             <Rectangle Height="50" Fill="Orange" /> -->
+        <!--         </StackPanel> -->
+        <!--     </ScrollViewer> -->
+        <!-- </Grid> -->
 
         <!--  底部  -->
         <Grid Grid.Row="2">
@@ -71,7 +71,7 @@
                 VerticalAlignment="Center"
                 Background="Transparent"
                 DockPanel.Dock="Left">
-                <Image />
+                <Image Source="" />
 
             </Button>
         </Grid>
