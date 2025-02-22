@@ -13,7 +13,7 @@
     d:DesignHeight="600"
     d:DesignWidth="270"
     Background="Transparent"
-    ExtendClientAreaToDecorationsHint="False"
+    ExtendClientAreaToDecorationsHint="True"
     Icon="/Assets/avalonia-logo.ico"
     TransparencyLevelHint="AcrylicBlur"
     WindowStartupLocation="CenterScreen"

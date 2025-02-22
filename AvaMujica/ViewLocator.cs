@@ -1,3 +1,12 @@
+/*
+ * @FilePath: ViewLocator.cs
+ * @Author: WangWindow 1598593280@qq.com
+ * @Date: 2025-02-21 16:27:39
+ * @LastEditors: WangWindow
+ * @LastEditTime: 2025-02-22 16:01:00
+ * 2025 by WangWindow, All Rights Reserved.
+ * @Description:
+ */
 using System;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;

@@ -1,3 +1,12 @@
+<!--
+    * @FilePath: Icons.axaml
+    * @Author: WangWindow 1598593280@qq.com
+    * @Date: 2025-02-22 10:03:53
+    * @LastEditors: WangWindow
+    * @LastEditTime: 2025-02-22 16:00:11
+    * 2025 by WangWindow, All Rights Reserved.
+    * @Description:
+-->
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Design.PreviewWith>
         <Border Padding="20">
