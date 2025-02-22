@@ -15,5 +15,6 @@
 
     <Application.Styles>
         <FluentTheme />
+        <StyleInclude Source="avares://AvaMujica/Styles.axaml" />
     </Application.Styles>
 </Application>
