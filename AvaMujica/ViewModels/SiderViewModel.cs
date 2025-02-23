@@ -9,4 +9,7 @@
  */
 namespace AvaMujica.ViewModels;
 
+/// <summary>
+/// 侧边栏视图模型
+/// </summary>
 public class SiderViewModel : ViewModelBase { }

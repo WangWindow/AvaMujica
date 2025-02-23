@@ -9,4 +9,7 @@
  */
 namespace AvaMujica.ViewModels;
 
+/// <summary>
+/// 设置视图模型
+/// </summary>
 public class SettingsViewModel : ViewModelBase { }

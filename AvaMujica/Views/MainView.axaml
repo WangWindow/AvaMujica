@@ -25,12 +25,13 @@
 
         <!--  顶部  -->
         <Grid Grid.Row="0">
-            <StackPanel Background="Transparent" Orientation="Horizontal">
+            <DockPanel Background="Transparent">
                 <!--  顶部.左侧 菜单按钮  -->
                 <Button
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Background="Transparent">
+                    Background="Transparent"
+                    DockPanel.Dock="Left">
                     <PathIcon Data="{StaticResource text_align_left_regular}" />
                 </Button>
 
@@ -38,17 +39,20 @@
                 <Button
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Background="Transparent">
+                    Background="Transparent"
+                    DockPanel.Dock="Right">
                     <PathIcon Data="{StaticResource add_square_regular}" />
                 </Button>
-            </StackPanel>
 
-            <!--  顶部.中间  -->
-            <TextBlock
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                Background="Transparent"
-                Text="{Binding Title}" />
+                <!--  顶部.中间 标题  -->
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    Text="{Binding Title}" />
+            </DockPanel>
+
+
         </Grid>
 
         <!--  中间  -->

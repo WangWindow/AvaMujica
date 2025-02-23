@@ -9,4 +9,7 @@
  */
 namespace AvaMujica.ViewModels;
 
+/// <summary>
+/// 主窗口视图模型
+/// </summary>
 public class MainWindowViewModel : ViewModelBase { }

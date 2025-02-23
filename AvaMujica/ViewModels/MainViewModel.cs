@@ -14,6 +14,9 @@ using AvaMujica.Models;
 
 namespace AvaMujica.ViewModels;
 
+/// <summary>
+/// 主视图模型
+/// </summary>
 public class MainViewModel : ViewModelBase
 {
     public string Greeting { get; } = "Welcome to AvaMujica!";
