@@ -27,6 +27,23 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private string inputText = string.Empty;
 
+    [ObservableProperty]
+    private bool isSiderOpen = false; // 侧边栏默认关闭
+
+    [ObservableProperty]
+    private SiderViewModel siderViewModel;
+
+    public MainViewModel()
+    {
+        SiderViewModel = new SiderViewModel();
+    }
+
+    [RelayCommand]
+    private void ToggleSider()
+    {
+        IsSiderOpen = !IsSiderOpen;
+    }
+
     partial void OnInputTextChanged(string value)
     {
         SendCommand.NotifyCanExecuteChanged();

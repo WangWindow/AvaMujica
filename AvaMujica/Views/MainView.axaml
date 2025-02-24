@@ -8,6 +8,7 @@
     xmlns:Converters="using:AvaMujica.Converters"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:views="using:AvaMujica.Views"
     xmlns:vm="using:AvaMujica.ViewModels"
     d:DesignHeight="600"
     d:DesignWidth="270"
@@ -23,127 +24,141 @@
         <Thickness x:Key="ButtonBorderThickness">1.5</Thickness>
     </UserControl.Resources>
 
-
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+        <SplitView
+            Name="Sider"
+            CompactPaneLength="0"
+            DisplayMode="Overlay"
+            IsPaneOpen="{Binding IsSiderOpen}"
+            OpenPaneLength="270"
+            PaneBackground="{DynamicResource SystemRegionBrush}">
+            <SplitView.Pane>
+                <views:SiderView DataContext="{Binding SiderViewModel}" />
+            </SplitView.Pane>
 
-        <!--  顶部  -->
-        <Grid Grid.Row="0">
-            <DockPanel Background="Transparent">
-                <!--  顶部.左侧 菜单按钮  -->
-                <Button
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Background="Transparent"
-                    DockPanel.Dock="Left">
-                    <PathIcon Data="{StaticResource text_align_left_regular}" />
-                </Button>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
 
-                <!--  顶部.右侧 新建对话按钮  -->
-                <Button
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Background="Transparent"
-                    DockPanel.Dock="Right">
-                    <PathIcon Data="{StaticResource add_square_regular}" />
-                </Button>
+                <!--  顶部  -->
+                <Grid Grid.Row="0">
+                    <DockPanel Background="Transparent">
+                        <!--  顶部.左侧 菜单按钮  -->
+                        <Button
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            Command="{Binding ToggleSiderCommand}"
+                            DockPanel.Dock="Left">
+                            <PathIcon Data="{StaticResource text_align_left_regular}" />
+                        </Button>
 
-                <!--  顶部.中间 标题  -->
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Background="Transparent"
-                    Text="{Binding Title}" />
-            </DockPanel>
+                        <!--  顶部.右侧 新建对话按钮  -->
+                        <Button
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            DockPanel.Dock="Right">
+                            <PathIcon Data="{StaticResource add_square_regular}" />
+                        </Button>
+
+                        <!--  顶部.中间 标题  -->
+                        <TextBlock
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            Text="{Binding Title}" />
+                    </DockPanel>
 
 
-        </Grid>
+                </Grid>
 
-        <!--  中间  -->
-        <Grid Grid.Row="1">
-            <ScrollViewer>
-                <ItemsControl ItemsSource="{Binding Messages}">
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border
-                                Margin="5"
-                                Padding="10"
-                                HorizontalAlignment="{Binding IsFromUser, Converter={x:Static Converters:BooleanToHorizontalAlignmentConverter.Instance}}"
-                                Background="{Binding IsFromUser, Converter={x:Static Converters:MessageColorConverter.Instance}}"
-                                CornerRadius="10">
-                                <StackPanel>
-                                    <TextBlock
-                                        Foreground="#1A1A1A"
-                                        Text="{Binding Content}"
-                                        TextWrapping="Wrap" />
-                                    <TextBlock
-                                        Margin="0,5,0,0"
-                                        FontSize="10"
-                                        Foreground="#666666"
-                                        Text="{Binding Time, StringFormat={}{0:HH:mm}}" />
-                                </StackPanel>
-                            </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </ScrollViewer>
-        </Grid>
+                <!--  中间  -->
+                <Grid Grid.Row="1">
+                    <ScrollViewer>
+                        <ItemsControl ItemsSource="{Binding Messages}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border
+                                        Margin="5"
+                                        Padding="10"
+                                        HorizontalAlignment="{Binding IsFromUser, Converter={x:Static Converters:BooleanToHorizontalAlignmentConverter.Instance}}"
+                                        Background="{Binding IsFromUser, Converter={x:Static Converters:MessageColorConverter.Instance}}"
+                                        CornerRadius="10">
+                                        <StackPanel>
+                                            <TextBlock
+                                                Foreground="#1A1A1A"
+                                                Text="{Binding Content}"
+                                                TextWrapping="Wrap" />
+                                            <TextBlock
+                                                Margin="0,5,0,0"
+                                                FontSize="10"
+                                                Foreground="#666666"
+                                                Text="{Binding Time, StringFormat={}{0:HH:mm}}" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
 
-        <!--  底部  -->
-        <Grid Grid.Row="2">
-            <DockPanel>
+                <!--  底部  -->
+                <Grid Grid.Row="2">
+                    <DockPanel>
 
-                <!--  发送按钮  -->
-                <Button
-                    Width="{StaticResource ButtonSize}"
-                    Height="{StaticResource ButtonSize}"
-                    Margin="5,5,5,5"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Background="DodgerBlue"
-                    BorderBrush="White"
-                    BorderThickness="{StaticResource ButtonBorderThickness}"
-                    Command="{Binding SendCommand}"
-                    CornerRadius="20"
-                    DockPanel.Dock="Right">
-                    <PathIcon
-                        Width="{StaticResource IconSize}"
-                        Height="{StaticResource IconSize}"
-                        Data="{StaticResource arrow_up_regular}" />
-                </Button>
+                        <!--  发送按钮  -->
+                        <Button
+                            Width="{StaticResource ButtonSize}"
+                            Height="{StaticResource ButtonSize}"
+                            Margin="5,5,5,5"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Background="DodgerBlue"
+                            BorderBrush="White"
+                            BorderThickness="{StaticResource ButtonBorderThickness}"
+                            Command="{Binding SendCommand}"
+                            CornerRadius="20"
+                            DockPanel.Dock="Right">
+                            <PathIcon
+                                Width="{StaticResource IconSize}"
+                                Height="{StaticResource IconSize}"
+                                Data="{StaticResource arrow_up_regular}" />
+                        </Button>
 
-                <!--  添加按钮  -->
-                <Button
-                    Width="{StaticResource ButtonSize}"
-                    Height="{StaticResource ButtonSize}"
-                    Margin="5,5,5,5"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Background="Transparent"
-                    BorderBrush="White"
-                    BorderThickness="{StaticResource ButtonBorderThickness}"
-                    CornerRadius="20"
-                    DockPanel.Dock="Right">
-                    <PathIcon
-                        Width="{StaticResource IconSize}"
-                        Height="{StaticResource IconSize}"
-                        Data="{StaticResource add_regular}" />
-                </Button>
+                        <!--  添加按钮  -->
+                        <Button
+                            Width="{StaticResource ButtonSize}"
+                            Height="{StaticResource ButtonSize}"
+                            Margin="5,5,5,5"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            BorderBrush="White"
+                            BorderThickness="{StaticResource ButtonBorderThickness}"
+                            CornerRadius="20"
+                            DockPanel.Dock="Right">
+                            <PathIcon
+                                Width="{StaticResource IconSize}"
+                                Height="{StaticResource IconSize}"
+                                Data="{StaticResource add_regular}" />
+                        </Button>
 
-                <!--  输入框  -->
-                <TextBox
-                    Margin="5,5,5,5"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Center"
-                    Background="Transparent"
-                    CornerRadius="10"
-                    DockPanel.Dock="Left"
-                    Text="{Binding InputText}" />
-            </DockPanel>
-        </Grid>
+                        <!--  输入框  -->
+                        <TextBox
+                            Margin="5,5,5,5"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            CornerRadius="10"
+                            DockPanel.Dock="Left"
+                            Text="{Binding InputText}" />
+                    </DockPanel>
+                </Grid>
+            </Grid>
+        </SplitView>
     </Grid>
 </UserControl>
