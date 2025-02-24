@@ -10,6 +10,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using AvaMujica.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -24,16 +25,22 @@ public partial class MainViewModel : ViewModelBase
     public string Title { get; set; } = "AvaMujica";
 
     [ObservableProperty]
-    private string inputText = "Hello";
+    private string inputText = string.Empty;
+
+    partial void OnInputTextChanged(string value)
+    {
+        SendCommand.NotifyCanExecuteChanged();
+    }
 
     public ObservableCollection<ChatMessage> Messages { get; } = new();
 
     [RelayCommand(CanExecute = nameof(CanSend))]
-    private void Send()
+    private async Task Send()
     {
         if (string.IsNullOrWhiteSpace(InputText))
             return;
 
+        // 添加用户消息
         Messages.Add(
             new ChatMessage
             {
@@ -43,7 +50,19 @@ public partial class MainViewModel : ViewModelBase
             }
         );
 
+        var userInput = InputText;
         InputText = string.Empty;
+
+        // 模拟机器人回复
+        await Task.Delay(1000); // 模拟网络延迟
+        Messages.Add(
+            new ChatMessage
+            {
+                Content = $"您发送的消息是: {userInput}",
+                Time = DateTime.Now,
+                IsFromUser = false,
+            }
+        );
     }
 
     private bool CanSend()
