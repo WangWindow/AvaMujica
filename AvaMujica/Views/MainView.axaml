@@ -19,6 +19,7 @@
     </Design.DataContext>
 
     <UserControl.Resources>
+        <Thickness x:Key="SiderBorderThickness">1.5</Thickness>
         <x:Double x:Key="ButtonSize">30</x:Double>
         <x:Double x:Key="IconSize">15</x:Double>
         <Thickness x:Key="ButtonBorderThickness">1.5</Thickness>
@@ -27,13 +28,25 @@
     <Grid>
         <SplitView
             Name="Sider"
+            BorderBrush="White"
+            BorderThickness="{StaticResource SiderBorderThickness}"
             CompactPaneLength="0"
             DisplayMode="Overlay"
             IsPaneOpen="{Binding IsSiderOpen}"
-            OpenPaneLength="270"
-            PaneBackground="{DynamicResource SystemRegionBrush}">
+            OpenPaneLength="270">
             <SplitView.Pane>
-                <views:SiderView DataContext="{Binding SiderViewModel}" />
+                <Panel>
+                    <ExperimentalAcrylicBorder IsHitTestVisible="False">
+                        <ExperimentalAcrylicBorder.Material>
+                            <ExperimentalAcrylicMaterial
+                                BackgroundSource="Digger"
+                                MaterialOpacity="0.6"
+                                TintColor="{DynamicResource SystemAltHighColor}"
+                                TintOpacity="0.8" />
+                        </ExperimentalAcrylicBorder.Material>
+                    </ExperimentalAcrylicBorder>
+                    <views:SiderView DataContext="{Binding SiderViewModel}" />
+                </Panel>
             </SplitView.Pane>
 
             <Grid>
