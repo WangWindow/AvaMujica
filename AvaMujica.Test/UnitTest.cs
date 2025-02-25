@@ -43,6 +43,7 @@ public class MainViewModelTests
         var viewModel = new MainViewModel();
 
         Assert.NotNull(viewModel.Messages);
+        Assert.Empty(viewModel.Messages);
         Assert.False(viewModel.IsSiderOpen);
     }
 }
