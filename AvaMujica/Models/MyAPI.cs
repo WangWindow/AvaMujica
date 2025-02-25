@@ -21,9 +21,24 @@ namespace AvaMujica.Models;
 /// </summary>
 public class ApiConfig
 {
+    /// <summary>
+    /// API 密钥
+    /// </summary>
     public string ApiKey { get; set; } = string.Empty;
+
+    /// <summary>
+    /// API 基础地址
+    /// </summary>
     public string ApiBase { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 模型名称
+    /// </summary>
     public string Model { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 系统提示
+    /// </summary>
     public string SystemPrompt { get; set; } = string.Empty;
 }
 
@@ -32,9 +47,21 @@ public class ApiConfig
 /// </summary>
 public class MyApi
 {
+    /// <summary>
+    /// API 配置
+    /// </summary>
     private readonly ApiConfig _config;
+
+    /// <summary>
+    /// HTTP 客户端实例
+    /// </summary>
     private readonly HttpClient _httpClient;
 
+    /// <summary>
+    /// 构造函数
+    /// </summary>
+    /// <param name="config"></param>
+    /// <exception cref="ArgumentNullException"></exception>
     public MyApi(ApiConfig config)
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
@@ -42,7 +69,13 @@ public class MyApi
         _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_config.ApiKey}");
     }
 
-    // 从 api.json 加载配置，若不合法则要求用户输入
+    /// <summary>
+    /// 从 api.json 异步加载配置，若不合法则要求用户输入
+    /// </summary>
+    /// <param name="configPath"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    /// <exception cref="FileNotFoundException"></exception>
     public static async Task<ApiConfig> LoadConfigAsync(string configPath = "api.json")
     {
         if (File.Exists(configPath))
@@ -65,7 +98,13 @@ public class MyApi
         throw new FileNotFoundException($"配置文件 {configPath} 不存在");
     }
 
-    // 调用 OpenAI API
+    /// <summary>
+    /// 异步调用 ChatGPT 接口
+    /// </summary>
+    /// <param name="userPrompt"></param>
+    /// <param name="onReceiveToken"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
     public async Task ChatAsync(string userPrompt, Action<string>? onReceiveToken = null)
     {
         string url = $"{_config.ApiBase}/chat/completions";
@@ -134,7 +173,11 @@ public class MyApi
         }
     }
 
-    // 检查配置项是否完整
+    /// <summary>
+    /// 检查配置是否合法
+    /// </summary>
+    /// <param name="config"></param>
+    /// <returns></returns>
     private static bool IsConfigValid(ApiConfig config)
     {
         return !string.IsNullOrWhiteSpace(config.ApiKey)

@@ -8,7 +8,6 @@
  * @Description:
  */
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using AvaMujica.Models;
@@ -22,16 +21,33 @@ namespace AvaMujica.ViewModels;
 /// </summary>
 public partial class MainViewModel : ViewModelBase
 {
+    /// <summary>
+    /// 窗口标题
+    /// </summary>
     public string Title { get; set; } = "AvaMujica";
+
+    /// <summary>
+    /// API 实例
+    /// </summary>
     private MyApi _api = null!;
-    private string _currentResponse = string.Empty;
+
+    /// <summary>
+    /// 输入文本
+    /// </summary>
 
     [ObservableProperty]
     private string inputText = string.Empty;
 
-    [ObservableProperty]
-    private bool isSiderOpen = false; // 侧边栏默认关闭
+    /// <summary>
+    /// 侧边栏是否打开(默认关闭)
+    /// </summary>
 
+    [ObservableProperty]
+    private bool isSiderOpen = false;
+
+    /// <summary>
+    /// 侧边栏视图模型
+    /// </summary>
     [ObservableProperty]
     private SiderViewModel siderViewModel;
 
@@ -42,6 +58,9 @@ public partial class MainViewModel : ViewModelBase
         InitializeApi();
     }
 
+    /// <summary>
+    /// 初始化 API
+    /// </summary>
     private async void InitializeApi()
     {
         try
@@ -64,19 +83,33 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// 切换侧边栏
+    /// </summary>
     [RelayCommand]
     private void ToggleSider()
     {
         IsSiderOpen = !IsSiderOpen;
     }
 
+    /// <summary>
+    /// 输入文本改变时的回调
+    /// </summary>
+    /// <param name="value"></param>
     partial void OnInputTextChanged(string value)
     {
         SendCommand.NotifyCanExecuteChanged();
     }
 
+    /// <summary>
+    /// 聊天消息列表，用于绑定到 UI
+    /// </summary>
     public ObservableCollection<ChatMessage> ChatMessages { get; } = [];
 
+    /// <summary>
+    /// 发送消息命令
+    /// </summary>
+    /// <returns></returns>
     [RelayCommand(CanExecute = nameof(CanSend))]
     private async Task SendAsync()
     {
@@ -132,6 +165,10 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
+    /// <summary>
+    /// 判断是否可以发送消息
+    /// </summary>
+    /// <returns></returns>
     private bool CanSend()
     {
         return !string.IsNullOrWhiteSpace(InputText);
