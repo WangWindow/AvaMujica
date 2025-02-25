@@ -42,8 +42,8 @@ public class MainViewModelTests
     {
         var viewModel = new MainViewModel();
 
-        Assert.NotNull(viewModel.Messages);
-        Assert.Empty(viewModel.Messages);
+        Assert.NotNull(viewModel.ChatMessages);
+        Assert.Empty(viewModel.ChatMessages);
         Assert.False(viewModel.IsSiderOpen);
     }
 }

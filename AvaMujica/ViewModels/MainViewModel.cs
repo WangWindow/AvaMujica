@@ -52,8 +52,8 @@ public partial class MainViewModel : ViewModelBase
         catch (Exception ex)
         {
             // 处理初始化失败
-            Messages.Clear();
-            Messages.Add(
+            ChatMessages.Clear();
+            ChatMessages.Add(
                 new ChatMessage
                 {
                     Content = $"API 初始化失败: {ex.Message}",
@@ -75,16 +75,16 @@ public partial class MainViewModel : ViewModelBase
         SendCommand.NotifyCanExecuteChanged();
     }
 
-    public ObservableCollection<ChatMessage> Messages { get; } = new();
+    public ObservableCollection<ChatMessage> ChatMessages { get; } = [];
 
     [RelayCommand(CanExecute = nameof(CanSend))]
-    private async Task Send()
+    private async Task SendAsync()
     {
         if (string.IsNullOrWhiteSpace(InputText))
             return;
 
         // 添加用户消息
-        Messages.Add(
+        ChatMessages.Add(
             new ChatMessage
             {
                 Content = InputText,
@@ -105,21 +105,23 @@ public partial class MainViewModel : ViewModelBase
                 Time = DateTime.Now,
                 IsFromUser = false,
             };
-            Messages.Add(responseMessage);
+            ChatMessages.Add(responseMessage);
 
             // 调用 API 并实时更新回复内容
+            Console.WriteLine($"用户输入: {userInput}");
             await _api.ChatAsync(
                 userInput,
                 token =>
                 {
                     responseMessage.Content += token;
-                    OnPropertyChanged(nameof(Messages)); // 通知 UI 更新
+                    Console.WriteLine(token);
                 }
             );
+            Console.WriteLine("Ok");
         }
         catch (Exception ex)
         {
-            Messages.Add(
+            ChatMessages.Add(
                 new ChatMessage
                 {
                     Content = $"API 调用失败: {ex.Message}",

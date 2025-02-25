@@ -1,10 +1,13 @@
 using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AvaMujica.Models;
 
-public class ChatMessage
+public partial class ChatMessage : ObservableObject
 {
-    public string Content { get; set; } = string.Empty;
-    public bool IsFromUser { get; set; }
+    [ObservableProperty]
+    private string _content = string.Empty;
+
     public DateTime Time { get; set; }
+    public bool IsFromUser { get; set; }
 }
