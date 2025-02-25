@@ -32,9 +32,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Background="Transparent"
-                    DockPanel.Dock="Left">
-                    L
-                </Button>
+                    DockPanel.Dock="Left" />
 
                 <!--  顶部.右侧  -->
                 <Button
@@ -73,8 +71,7 @@
                 VerticalAlignment="Center"
                 Background="Transparent"
                 DockPanel.Dock="Left">
-                <Image Source="" />
-
+                <PathIcon Data="{StaticResource people_regular}" />
             </Button>
         </Grid>
     </Grid>
