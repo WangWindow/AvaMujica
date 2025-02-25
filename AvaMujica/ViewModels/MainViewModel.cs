@@ -23,6 +23,8 @@ namespace AvaMujica.ViewModels;
 public partial class MainViewModel : ViewModelBase
 {
     public string Title { get; set; } = "AvaMujica";
+    private MyApi _api = null!;
+    private string _currentResponse = string.Empty;
 
     [ObservableProperty]
     private string inputText = string.Empty;
@@ -36,6 +38,30 @@ public partial class MainViewModel : ViewModelBase
     public MainViewModel()
     {
         SiderViewModel = new SiderViewModel();
+        // 初始化 API
+        InitializeApi();
+    }
+
+    private async void InitializeApi()
+    {
+        try
+        {
+            var config = await MyApi.LoadConfigAsync();
+            _api = new MyApi(config);
+        }
+        catch (Exception ex)
+        {
+            // 处理初始化失败
+            Messages.Clear();
+            Messages.Add(
+                new ChatMessage
+                {
+                    Content = $"API 初始化失败: {ex.Message}",
+                    Time = DateTime.Now,
+                    IsFromUser = false,
+                }
+            );
+        }
     }
 
     [RelayCommand]
@@ -70,16 +96,38 @@ public partial class MainViewModel : ViewModelBase
         var userInput = InputText;
         InputText = string.Empty;
 
-        // 模拟机器人回复
-        await Task.Delay(1000); // 模拟网络延迟
-        Messages.Add(
-            new ChatMessage
+        try
+        {
+            // 创建一个空的回复消息
+            var responseMessage = new ChatMessage
             {
-                Content = $"您发送的消息是: {userInput}",
+                Content = string.Empty,
                 Time = DateTime.Now,
                 IsFromUser = false,
-            }
-        );
+            };
+            Messages.Add(responseMessage);
+
+            // 调用 API 并实时更新回复内容
+            await _api.ChatAsync(
+                userInput,
+                token =>
+                {
+                    responseMessage.Content += token;
+                    OnPropertyChanged(nameof(Messages)); // 通知 UI 更新
+                }
+            );
+        }
+        catch (Exception ex)
+        {
+            Messages.Add(
+                new ChatMessage
+                {
+                    Content = $"API 调用失败: {ex.Message}",
+                    Time = DateTime.Now,
+                    IsFromUser = false,
+                }
+            );
+        }
     }
 
     private bool CanSend()

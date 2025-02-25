@@ -21,10 +21,10 @@ namespace AvaMujica.Models;
 /// </summary>
 public class ApiConfig
 {
-    public string apiKey { get; set; } = string.Empty;
-    public string apiBase { get; set; } = string.Empty;
-    public string model { get; set; } = string.Empty;
-    public string systemPrompt { get; set; } = string.Empty;
+    public string ApiKey { get; set; } = string.Empty;
+    public string ApiBase { get; set; } = string.Empty;
+    public string Model { get; set; } = string.Empty;
+    public string SystemPrompt { get; set; } = string.Empty;
 }
 
 /// <summary>
@@ -39,7 +39,7 @@ public class MyApi
     {
         _config = config ?? throw new ArgumentNullException(nameof(config));
         _httpClient = new HttpClient();
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_config.apiKey}");
+        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_config.ApiKey}");
     }
 
     // 从 api.json 加载配置，若不合法则要求用户输入
@@ -68,14 +68,14 @@ public class MyApi
     // 调用 OpenAI API
     public async Task ChatAsync(string userPrompt, Action<string>? onReceiveToken = null)
     {
-        string url = $"{_config.apiBase}/chat/completions";
+        string url = $"{_config.ApiBase}/chat/completions";
 
         var requestData = new
         {
-            model = _config.model,
+            model = _config.Model,
             messages = new object[]
             {
-                new { role = "system", content = _config.systemPrompt },
+                new { role = "system", content = _config.SystemPrompt },
                 new { role = "user", content = userPrompt },
             },
             stream = true,
@@ -137,9 +137,9 @@ public class MyApi
     // 检查配置项是否完整
     private static bool IsConfigValid(ApiConfig config)
     {
-        return !string.IsNullOrWhiteSpace(config.apiKey)
-            && !string.IsNullOrWhiteSpace(config.apiBase)
-            && !string.IsNullOrWhiteSpace(config.model)
-            && !string.IsNullOrWhiteSpace(config.systemPrompt);
+        return !string.IsNullOrWhiteSpace(config.ApiKey)
+            && !string.IsNullOrWhiteSpace(config.ApiBase)
+            && !string.IsNullOrWhiteSpace(config.Model)
+            && !string.IsNullOrWhiteSpace(config.SystemPrompt);
     }
 }

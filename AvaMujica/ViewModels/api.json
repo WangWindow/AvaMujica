@@ -1,0 +1,6 @@
+{
+    "ApiKey": "sk-014c8e8d1d244f4caa57b61fd1fe8830",
+    "ApiBase": "https://api.deepseek.com/v1",
+    "Model": "deepseek-chat",
+    "SystemPrompt": "You are a helpful assistant."
+}
