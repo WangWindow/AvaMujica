@@ -23,13 +23,14 @@
         </Grid.RowDefinitions>
 
         <!--  顶部  -->
-        <Grid Grid.Row="0">
+        <Grid Grid.Row="0" Margin="12,8">
             <StackPanel>
                 <!--  顶部.左侧  -->
                 <Button
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
-                    Background="Transparent">
+                    Background="Transparent"
+                    Command="{Binding GoBackCommand}">
                     ←
                 </Button>
             </StackPanel>
@@ -39,76 +40,206 @@
                 <TextBlock
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Background="Transparent"
-                    Text="Settings" />
+                    FontSize="18"
+                    FontWeight="SemiBold"
+                    Text="设置" />
             </Panel>
         </Grid>
 
         <!--  内容  -->
         <Grid Grid.Row="1">
             <ScrollViewer>
-                <StackPanel Orientation="Vertical">
+                <StackPanel Margin="12,0,12,12" Spacing="8">
+                    <!-- 通用设置 -->
+                    <TextBlock
+                        Margin="0,16,0,4"
+                        FontSize="14"
+                        Foreground="{DynamicResource SystemBaseMediumColor}"
+                        Text="通用" />
 
                     <Button
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
+                        Padding="12"
                         Background="Transparent"
-                        DockPanel.Dock="Right">
-                        1
-                    </Button>
-
-                    <Button
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Background="Transparent"
-                        DockPanel.Dock="Right">
-                        2
-                    </Button>
-
-                    <Button
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Background="Transparent"
-                        DockPanel.Dock="Right">
-                        3
-                    </Button>
-
-                    <Button
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Background="Transparent"
-                        DockPanel.Dock="Right">
-                        4
-                    </Button>
-                    <Button
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Background="Transparent"
-                        DockPanel.Dock="Right">
-                        5
+                        BorderBrush="{DynamicResource SystemBaseLowColor}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                        <Grid>
+                            <TextBlock
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Text="语言设置" />
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource SystemBaseMediumColor}"
+                                Text="中文" />
+                        </Grid>
                     </Button>
 
                     <Button
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
+                        Padding="12"
                         Background="Transparent"
-                        DockPanel.Dock="Right">
-                        6
+                        BorderBrush="{DynamicResource SystemBaseLowColor}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                        <Grid>
+                            <TextBlock
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Text="主题设置" />
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource SystemBaseMediumColor}"
+                                Text="跟随系统" />
+                        </Grid>
                     </Button>
+
+                    <!-- AI模型设置 -->
+                    <TextBlock
+                        Margin="0,16,0,4"
+                        FontSize="14"
+                        Foreground="{DynamicResource SystemBaseMediumColor}"
+                        Text="AI模型" />
+
                     <Button
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
+                        Padding="12"
                         Background="Transparent"
-                        DockPanel.Dock="Right">
-                        7
+                        BorderBrush="{DynamicResource SystemBaseLowColor}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                        <Grid>
+                            <TextBlock
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Text="模型选择" />
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource SystemBaseMediumColor}"
+                                Text="GPT-4o" />
+                        </Grid>
                     </Button>
 
                     <Button
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
+                        Padding="12"
                         Background="Transparent"
-                        DockPanel.Dock="Right">
-                        8
+                        BorderBrush="{DynamicResource SystemBaseLowColor}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                        <Grid>
+                            <TextBlock
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Text="API设置" />
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Text="→" />
+                        </Grid>
+                    </Button>
+
+                    <!-- 隐私与安全 -->
+                    <TextBlock
+                        Margin="0,16,0,4"
+                        FontSize="14"
+                        Foreground="{DynamicResource SystemBaseMediumColor}"
+                        Text="隐私与安全" />
+
+                    <Button
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        Padding="12"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource SystemBaseLowColor}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                        <Grid>
+                            <TextBlock
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Text="数据隐私" />
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Text="→" />
+                        </Grid>
+                    </Button>
+
+                    <Button
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        Padding="12"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource SystemBaseLowColor}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                        <Grid>
+                            <TextBlock
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Text="内容过滤" />
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Text="已启用" />
+                        </Grid>
+                    </Button>
+
+                    <!-- 关于 -->
+                    <TextBlock
+                        Margin="0,16,0,4"
+                        FontSize="14"
+                        Foreground="{DynamicResource SystemBaseMediumColor}"
+                        Text="关于" />
+
+                    <Button
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        Padding="12"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource SystemBaseLowColor}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                        <Grid>
+                            <TextBlock
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Text="版本信息" />
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Foreground="{DynamicResource SystemBaseMediumColor}"
+                                Text="v1.0.0" />
+                        </Grid>
+                    </Button>
+
+                    <Button
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        Padding="12"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource SystemBaseLowColor}"
+                        BorderThickness="1"
+                        CornerRadius="4">
+                        <Grid>
+                            <TextBlock
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Text="用户协议" />
+                            <TextBlock
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Text="→" />
+                        </Grid>
                     </Button>
                 </StackPanel>
             </ScrollViewer>

@@ -18,14 +18,42 @@ namespace AvaMujica.Models;
 public class HistoryManager { }
 
 /// <summary>
-/// 历史记录信息(抽象类)
+/// 历史记录信息
 /// </summary>
-public abstract class HistoryInfo
+public class HistoryInfo
 {
+    /// <summary>
+    /// 历史记录 ID
+    /// </summary>
     public int Id { get; set; }
-    public string User { get; set; } = "User Name";
-    public string Action { get; set; } = "No Action";
-    public DateTime Date { get; set; }
+
+    /// <summary>
+    /// 历史记录标题
+    /// </summary>
+    public string Title { get; set; } = string.Empty;
+
+    /// <summary>
+    /// 历史记录时间
+    /// </summary>
+    public DateTime Time { get; set; }
+
+    /// <summary>
+    /// 格式化后的时间显示
+    /// </summary>
+    public string FormattedTime
+    {
+        get
+        {
+            if (Time.Date == DateTime.Today)
+            {
+                return Time.ToString("HH:mm");
+            }
+            else
+            {
+                return Time.ToString("MM-dd");
+            }
+        }
+    }
 }
 
 /// <summary>

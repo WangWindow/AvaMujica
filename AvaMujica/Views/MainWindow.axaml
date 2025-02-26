@@ -12,6 +12,7 @@
     Title="AvaMujica"
     d:DesignHeight="600"
     d:DesignWidth="270"
+    x:DataType="vm:MainWindowViewModel"
     Background="Transparent"
     ExtendClientAreaToDecorationsHint="False"
     Icon="/Assets/avalonia-logo.ico"
@@ -29,14 +30,12 @@
                 <ExperimentalAcrylicMaterial
                     BackgroundSource="Digger"
                     MaterialOpacity="0.6"
-                    TintColor="Black"
+                    TintColor="{DynamicResource SystemAltHighColor}"
                     TintOpacity="1" />
             </ExperimentalAcrylicBorder.Material>
         </ExperimentalAcrylicBorder>
 
         <!--  内容区域  -->
-        <DockPanel>
-            <views:MainView />
-        </DockPanel>
+        <views:MainView />
     </Panel>
 </Window>
