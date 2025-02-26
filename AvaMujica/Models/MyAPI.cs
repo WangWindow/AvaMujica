@@ -3,16 +3,17 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2025-02-21 16:27:39
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-02-26 00:06:25
+ * @LastEditTime: 2025-02-26 23:03:07
  * 2025 by WangWindow, All Rights Reserved.
  * @Description:
  */
 using System;
 using System.IO;
-using System.Net.Http;
-using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
+using Microsoft.SemanticKernel.Connectors.OpenAI;
 
 namespace AvaMujica.Models;
 
@@ -43,7 +44,7 @@ public class ApiConfig
 }
 
 /// <summary>
-/// 自定义调用 OpenAI API
+/// 使用 Semantic Kernel 调用 OpenAI API
 /// </summary>
 public class MyApi
 {
@@ -53,9 +54,14 @@ public class MyApi
     private readonly ApiConfig _config;
 
     /// <summary>
-    /// HTTP 客户端实例
+    /// Semantic Kernel 实例
     /// </summary>
-    private readonly HttpClient _httpClient;
+    private readonly Kernel _kernel;
+
+    /// <summary>
+    /// OpenAI 聊天完成服务
+    /// </summary>
+    private readonly IChatCompletionService _chatCompletionService;
 
     /// <summary>
     /// 构造函数
@@ -64,13 +70,73 @@ public class MyApi
     /// <exception cref="ArgumentNullException"></exception>
     public MyApi(ApiConfig config)
     {
+        // 获取配置
         _config = config ?? throw new ArgumentNullException(nameof(config));
-        _httpClient = new HttpClient();
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {_config.ApiKey}");
+
+        // 创建 Semantic Kernel 实例
+#pragma warning disable SKEXP0010 // 类型仅用于评估，在将来的更新中可能会被更改或删除。取消此诊断以继续。
+        _kernel = Kernel
+            .CreateBuilder()
+            .AddOpenAIChatCompletion(_config.Model, new Uri(_config.ApiBase), _config.ApiKey)
+            .Build();
+#pragma warning restore SKEXP0010 // 类型仅用于评估，在将来的更新中可能会被更改或删除。取消此诊断以继续。
+
+        // 获取 OpenAI 聊天完成服务
+        _chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
     }
 
     /// <summary>
-    /// 从 api.json 加载配置，若不合法则要求用户输入
+    /// 异步调用 ChatGPT 接口
+    /// </summary>
+    /// <param name="userPrompt"></param>
+    /// <param name="onReceiveToken"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    public async Task ChatAsync(string userPrompt, Action<string>? onReceiveToken = null)
+    {
+        try
+        {
+            // 创建聊天历史
+            var chatHistory = new ChatHistory();
+
+            // 添加系统消息
+            if (!string.IsNullOrEmpty(_config.SystemPrompt))
+            {
+                chatHistory.AddSystemMessage(_config.SystemPrompt);
+            }
+
+            // 添加用户消息
+            chatHistory.AddUserMessage(userPrompt);
+
+            // 设置流式处理选项
+            var executionSettings = new OpenAIPromptExecutionSettings
+            {
+                Temperature = 0.7f,
+                MaxTokens = 2000,
+            };
+
+            // 流式处理聊天完成
+            var result = _chatCompletionService.GetStreamingChatMessageContentsAsync(
+                chatHistory,
+                executionSettings
+            );
+
+            await foreach (var content in result)
+            {
+                if (content.Content != null)
+                {
+                    onReceiveToken?.Invoke(content.Content);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            throw new Exception($"调用 API 失败: {ex.Message}", ex);
+        }
+    }
+
+    /// <summary>
+    /// 从 api.json 加载配置
     /// </summary>
     /// <param name="configPath"></param>
     /// <returns></returns>
@@ -99,81 +165,6 @@ public class MyApi
     }
 
     /// <summary>
-    /// 异步调用 ChatGPT 接口
-    /// </summary>
-    /// <param name="userPrompt"></param>
-    /// <param name="onReceiveToken"></param>
-    /// <returns></returns>
-    /// <exception cref="Exception"></exception>
-    public async Task ChatAsync(string userPrompt, Action<string>? onReceiveToken = null)
-    {
-        string url = $"{_config.ApiBase}/chat/completions";
-
-        var requestData = new
-        {
-            model = _config.Model,
-            messages = new object[]
-            {
-                new { role = "system", content = _config.SystemPrompt },
-                new { role = "user", content = userPrompt },
-            },
-            stream = true,
-        };
-
-        string requestJson = JsonSerializer.Serialize(requestData);
-        var content = new StringContent(requestJson, Encoding.UTF8, "application/json");
-
-        try
-        {
-            using var response = await _httpClient.PostAsync(url, content);
-            response.EnsureSuccessStatusCode();
-
-            using var stream = await response.Content.ReadAsStreamAsync();
-            using var reader = new StreamReader(stream);
-
-            while (!reader.EndOfStream)
-            {
-                string? line = await reader.ReadLineAsync();
-                if (string.IsNullOrWhiteSpace(line))
-                    continue;
-
-                if (line.StartsWith("data:"))
-                {
-                    string data = line["data:".Length..].Trim();
-                    if (data == "[DONE]")
-                        break;
-
-                    try
-                    {
-                        using var jsonDoc = JsonDocument.Parse(data);
-                        var root = jsonDoc.RootElement;
-                        if (
-                            root.TryGetProperty("choices", out var choices)
-                            && choices.GetArrayLength() > 0
-                        )
-                        {
-                            var delta = choices[0].GetProperty("delta");
-                            if (delta.TryGetProperty("content", out var contentElement))
-                            {
-                                string? token = contentElement.GetString();
-                                onReceiveToken?.Invoke(token ?? string.Empty);
-                            }
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        throw new Exception($"解析返回数据错误: {ex.Message}");
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            throw new Exception($"调用 API 失败: {ex.Message}");
-        }
-    }
-
-    /// <summary>
     /// 检查配置是否合法
     /// </summary>
     /// <param name="config"></param>
@@ -182,7 +173,6 @@ public class MyApi
     {
         return !string.IsNullOrWhiteSpace(config.ApiKey)
             && !string.IsNullOrWhiteSpace(config.ApiBase)
-            && !string.IsNullOrWhiteSpace(config.Model)
-            && !string.IsNullOrWhiteSpace(config.SystemPrompt);
+            && !string.IsNullOrWhiteSpace(config.Model);
     }
 }
