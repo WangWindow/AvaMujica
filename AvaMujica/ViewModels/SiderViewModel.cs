@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2025-02-21 16:27:39
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-02-26 17:47:04
+ * @LastEditTime: 2025-02-26 20:59:10
  * 2025 by WangWindow, All Rights Reserved.
  * @Description:
  */
@@ -25,6 +25,8 @@ public partial class SiderViewModel : ViewModelBase
     [ObservableProperty]
     private bool isOpen = false;
 
+    private readonly MainViewModel _mainViewModel;
+
     public ObservableCollection<HistoryInfo> HistoryInfoList { get; } = [];
 
     /// <summary>
@@ -32,48 +34,16 @@ public partial class SiderViewModel : ViewModelBase
     /// </summary>
     public ObservableCollection<HistoryGroup> GroupedHistoryItems { get; } = [];
 
-    public SiderViewModel()
+    public SiderViewModel(MainViewModel mainViewModel)
     {
-        // 添加测试数据
-        HistoryInfoList.Add(
-            new HistoryInfo
-            {
-                Id = 1,
-                Title = "测试 1",
-                Time = DateTime.Now.AddHours(-1),
-            }
-        );
-
-        HistoryInfoList.Add(
-            new HistoryInfo
-            {
-                Id = 2,
-                Title = "测试 2",
-                Time = DateTime.Now.AddDays(-1),
-            }
-        );
-
-        HistoryInfoList.Add(
-            new HistoryInfo
-            {
-                Id = 3,
-                Title = "测试 3",
-                Time = DateTime.Now.AddDays(-2),
-            }
-        );
-
-        HistoryInfoList.Add(
-            new HistoryInfo
-            {
-                Id = 4,
-                Title = "测试 4",
-                Time = DateTime.Now.AddDays(-7),
-            }
-        );
-
+        _mainViewModel = mainViewModel;
         // 分组历史记录
         GroupHistoryItems();
     }
+
+    // 无参构造函数，用于XAML设计时
+    public SiderViewModel()
+        : this(null!) { }
 
     /// <summary>
     /// 按时间段对历史记录进行分组
@@ -109,12 +79,39 @@ public partial class SiderViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// 添加历史记录项
+    /// </summary>
+    public void AddHistoryItem(HistoryInfo item)
+    {
+        // 添加到历史记录列表
+        HistoryInfoList.Add(item);
+
+        // 重新分组历史记录
+        GroupHistoryItems();
+    }
+
+    /// <summary>
     /// 选择历史记录项的命令
     /// </summary>
     [RelayCommand]
     private void SelectHistory(HistoryInfo item)
     {
-        // TODO: 实现选择历史记录项的逻辑
+        if (item?.ChatViewModel != null)
+        {
+            // 切换到选中的对话
+            _mainViewModel.SwitchChat(item.ChatViewModel);
+            // 关闭侧边栏
+            _mainViewModel.IsSiderOpen = false;
+        }
+    }
+
+    /// <summary>
+    /// 跳转到设置页面
+    /// </summary>
+    [RelayCommand]
+    private void OpenSettings()
+    {
+        _mainViewModel?.ShowSettings();
     }
 }
 

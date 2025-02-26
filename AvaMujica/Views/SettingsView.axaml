@@ -31,7 +31,7 @@
                     VerticalAlignment="Center"
                     Background="Transparent"
                     Command="{Binding GoBackCommand}">
-                    ←
+                    <PathIcon Data="{StaticResource arrow_left_regular}" />
                 </Button>
             </StackPanel>
 
@@ -50,7 +50,7 @@
         <Grid Grid.Row="1">
             <ScrollViewer>
                 <StackPanel Margin="12,0,12,12" Spacing="8">
-                    <!-- 通用设置 -->
+                    <!--  通用设置  -->
                     <TextBlock
                         Margin="0,16,0,4"
                         FontSize="14"
@@ -58,9 +58,9 @@
                         Text="通用" />
 
                     <Button
+                        Padding="12"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
-                        Padding="12"
                         Background="Transparent"
                         BorderBrush="{DynamicResource SystemBaseLowColor}"
                         BorderThickness="1"
@@ -79,9 +79,9 @@
                     </Button>
 
                     <Button
+                        Padding="12"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
-                        Padding="12"
                         Background="Transparent"
                         BorderBrush="{DynamicResource SystemBaseLowColor}"
                         BorderThickness="1"
@@ -99,7 +99,7 @@
                         </Grid>
                     </Button>
 
-                    <!-- AI模型设置 -->
+                    <!--  AI模型设置  -->
                     <TextBlock
                         Margin="0,16,0,4"
                         FontSize="14"
@@ -107,9 +107,9 @@
                         Text="AI模型" />
 
                     <Button
+                        Padding="12"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
-                        Padding="12"
                         Background="Transparent"
                         BorderBrush="{DynamicResource SystemBaseLowColor}"
                         BorderThickness="1"
@@ -128,9 +128,9 @@
                     </Button>
 
                     <Button
+                        Padding="12"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
-                        Padding="12"
                         Background="Transparent"
                         BorderBrush="{DynamicResource SystemBaseLowColor}"
                         BorderThickness="1"
@@ -147,7 +147,7 @@
                         </Grid>
                     </Button>
 
-                    <!-- 隐私与安全 -->
+                    <!--  隐私与安全  -->
                     <TextBlock
                         Margin="0,16,0,4"
                         FontSize="14"
@@ -155,9 +155,9 @@
                         Text="隐私与安全" />
 
                     <Button
+                        Padding="12"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
-                        Padding="12"
                         Background="Transparent"
                         BorderBrush="{DynamicResource SystemBaseLowColor}"
                         BorderThickness="1"
@@ -175,9 +175,9 @@
                     </Button>
 
                     <Button
+                        Padding="12"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
-                        Padding="12"
                         Background="Transparent"
                         BorderBrush="{DynamicResource SystemBaseLowColor}"
                         BorderThickness="1"
@@ -194,7 +194,7 @@
                         </Grid>
                     </Button>
 
-                    <!-- 关于 -->
+                    <!--  关于  -->
                     <TextBlock
                         Margin="0,16,0,4"
                         FontSize="14"
@@ -202,9 +202,9 @@
                         Text="关于" />
 
                     <Button
+                        Padding="12"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
-                        Padding="12"
                         Background="Transparent"
                         BorderBrush="{DynamicResource SystemBaseLowColor}"
                         BorderThickness="1"
@@ -223,9 +223,9 @@
                     </Button>
 
                     <Button
+                        Padding="12"
                         HorizontalAlignment="Stretch"
                         VerticalAlignment="Center"
-                        Padding="12"
                         Background="Transparent"
                         BorderBrush="{DynamicResource SystemBaseLowColor}"
                         BorderThickness="1"

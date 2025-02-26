@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2025-02-21 16:27:39
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-02-23 11:14:15
+ * @LastEditTime: 2025-02-26 19:21:53
  * 2025 by WangWindow, All Rights Reserved.
  * @Description:
  */
@@ -32,16 +32,8 @@ public partial class MainViewModel : ViewModelBase
     private MyApi _api = null!;
 
     /// <summary>
-    /// 输入文本
-    /// </summary>
-
-    [ObservableProperty]
-    private string inputText = string.Empty;
-
-    /// <summary>
     /// 侧边栏是否打开(默认关闭)
     /// </summary>
-
     [ObservableProperty]
     private bool isSiderOpen = false;
 
@@ -51,35 +43,72 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private SiderViewModel siderViewModel;
 
+    /// <summary>
+    /// 当前活动对话
+    /// </summary>
+    [ObservableProperty]
+    private ChatViewModel currentChat = null!;
+
+    /// <summary>
+    /// 设置视图模型
+    /// </summary>
+    [ObservableProperty]
+    private SettingsViewModel settingsViewModel;
+
+    /// <summary>
+    /// 是否显示设置视图
+    /// </summary>
+    [ObservableProperty]
+    private bool isSettingsViewVisible = false;
+
+    /// <summary>
+    /// 所有对话列表
+    /// </summary>
+    public ObservableCollection<ChatViewModel> Chats { get; } = [];
+
     public MainViewModel()
     {
-        SiderViewModel = new SiderViewModel();
+        SiderViewModel = new SiderViewModel(this);
+        SettingsViewModel = new SettingsViewModel(this);
+
         // 初始化 API
         InitializeApi();
+
+        // 创建一个初始对话
+        CreateNewChat();
     }
 
     /// <summary>
     /// 初始化 API
     /// </summary>
-    private async void InitializeApi()
+    private void InitializeApi()
     {
         try
         {
-            var config = await MyApi.LoadConfigAsync();
+            var config = MyApi.LoadConfig();
             _api = new MyApi(config);
+
+            // 为当前对话设置API
+            if (CurrentChat != null)
+            {
+                CurrentChat.SetApi(_api);
+            }
         }
         catch (Exception ex)
         {
             // 处理初始化失败
-            ChatMessages.Clear();
-            ChatMessages.Add(
-                new ChatMessage
-                {
-                    Content = $"API 初始化失败: {ex.Message}",
-                    Time = DateTime.Now,
-                    IsFromUser = false,
-                }
-            );
+            if (CurrentChat != null)
+            {
+                CurrentChat.ChatMessages.Clear();
+                CurrentChat.ChatMessages.Add(
+                    new ChatMessage
+                    {
+                        Content = $"API 初始化失败: {ex.Message}",
+                        Time = DateTime.Now,
+                        IsFromUser = false,
+                    }
+                );
+            }
         }
     }
 
@@ -93,84 +122,65 @@ public partial class MainViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// 输入文本改变时的回调
+    /// 创建新对话
     /// </summary>
-    /// <param name="value"></param>
-    partial void OnInputTextChanged(string value)
+    [RelayCommand]
+    private void CreateNewChat()
     {
-        SendCommand.NotifyCanExecuteChanged();
+        var newChat = new ChatViewModel(_api)
+        {
+            ChatTitle = $"新对话 {Chats.Count + 1}",
+            StartTime = DateTime.Now,
+        };
+
+        Chats.Add(newChat);
+        CurrentChat = newChat;
+
+        // 将新对话添加到侧边栏历史记录
+        var historyInfo = new HistoryInfo
+        {
+            Id = Guid.NewGuid().ToString(),
+            Title = newChat.ChatTitle,
+            Time = DateTime.Now,
+            ChatViewModel = newChat,
+        };
+
+        SiderViewModel.AddHistoryItem(historyInfo);
+
+        // 关闭侧边栏，让用户可以立即开始新对话
+        IsSiderOpen = false;
     }
 
     /// <summary>
-    /// 聊天消息列表，用于绑定到 UI
+    /// 切换到指定对话
     /// </summary>
-    public ObservableCollection<ChatMessage> ChatMessages { get; } = [];
-
-    /// <summary>
-    /// 发送消息命令
-    /// </summary>
-    /// <returns></returns>
-    [RelayCommand(CanExecute = nameof(CanSend))]
-    private async Task SendAsync()
+    /// <param name="chatViewModel"></param>
+    [RelayCommand]
+    public void SwitchChat(ChatViewModel chatViewModel)
     {
-        if (string.IsNullOrWhiteSpace(InputText))
-            return;
-
-        // 添加用户消息
-        ChatMessages.Add(
-            new ChatMessage
-            {
-                Content = InputText,
-                Time = DateTime.Now,
-                IsFromUser = true,
-            }
-        );
-
-        var userInput = InputText;
-        InputText = string.Empty;
-
-        try
+        if (chatViewModel != null && Chats.Contains(chatViewModel))
         {
-            // 创建一个空的回复消息
-            var responseMessage = new ChatMessage
-            {
-                Content = string.Empty,
-                Time = DateTime.Now,
-                IsFromUser = false,
-            };
-            ChatMessages.Add(responseMessage);
-
-            // 调用 API 并实时更新回复内容
-            Console.WriteLine($"用户输入: {userInput}");
-            await _api.ChatAsync(
-                userInput,
-                token =>
-                {
-                    responseMessage.Content += token;
-                    Console.WriteLine(token);
-                }
-            );
-            Console.WriteLine("Ok");
-        }
-        catch (Exception ex)
-        {
-            ChatMessages.Add(
-                new ChatMessage
-                {
-                    Content = $"API 调用失败: {ex.Message}",
-                    Time = DateTime.Now,
-                    IsFromUser = false,
-                }
-            );
+            CurrentChat = chatViewModel;
         }
     }
 
     /// <summary>
-    /// 判断是否可以发送消息
+    /// 显示设置视图
     /// </summary>
-    /// <returns></returns>
-    private bool CanSend()
+    [RelayCommand]
+    public void ShowSettings()
     {
-        return !string.IsNullOrWhiteSpace(InputText);
+        IsSettingsViewVisible = true;
+        // 显示设置视图时关闭侧边栏
+        IsSiderOpen = false;
+    }
+
+    /// <summary>
+    /// 返回聊天视图
+    /// </summary>
+    [RelayCommand]
+    public void ReturnToChat()
+    {
+        IsSettingsViewVisible = false;
     }
 }

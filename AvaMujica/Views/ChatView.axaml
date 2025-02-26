@@ -1,0 +1,130 @@
+<UserControl
+    x:Class="AvaMujica.Views.ChatView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vm="using:AvaMujica.ViewModels"
+    d:DesignHeight="450"
+    d:DesignWidth="270"
+    x:DataType="vm:ChatViewModel"
+    mc:Ignorable="d">
+
+    <Design.DataContext>
+        <vm:ChatViewModel />
+    </Design.DataContext>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!--  聊天消息区域  -->
+        <Grid Grid.Row="0">
+            <ScrollViewer Name="MessageScroller">
+                <ItemsControl Name="MessageList" ItemsSource="{Binding ChatMessages}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="10,5">
+                                <!--  用户消息  -->
+                                <Border
+                                    Margin="50,0,5,0"
+                                    Padding="10"
+                                    HorizontalAlignment="Right"
+                                    Background="#DCF8C6"
+                                    CornerRadius="10"
+                                    IsVisible="{Binding IsFromUser}">
+                                    <StackPanel>
+                                        <TextBlock
+                                            Foreground="#1A1A1A"
+                                            Text="{Binding Content}"
+                                            TextWrapping="Wrap" />
+                                        <TextBlock
+                                            Margin="0,5,0,0"
+                                            FontSize="10"
+                                            Foreground="#666666"
+                                            Text="{Binding Time, StringFormat={}{0:HH:mm}}" />
+                                    </StackPanel>
+                                </Border>
+
+                                <!--  机器人消息  -->
+                                <Border
+                                    Margin="5,0,50,0"
+                                    Padding="10"
+                                    HorizontalAlignment="Left"
+                                    Background="White"
+                                    CornerRadius="10"
+                                    IsVisible="{Binding !IsFromUser}">
+                                    <StackPanel>
+                                        <TextBlock
+                                            Foreground="#1A1A1A"
+                                            Text="{Binding Content}"
+                                            TextWrapping="Wrap" />
+                                        <TextBlock
+                                            Margin="0,5,0,0"
+                                            FontSize="10"
+                                            Foreground="#666666"
+                                            Text="{Binding Time, StringFormat={}{0:HH:mm}}" />
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Grid>
+
+        <!--  输入区域  -->
+        <Grid Grid.Row="1">
+            <DockPanel>
+                <!--  发送按钮  -->
+                <Button
+                    Width="30"
+                    Height="30"
+                    Margin="5,5,5,5"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="DodgerBlue"
+                    BorderBrush="White"
+                    BorderThickness="1.5"
+                    Command="{Binding SendCommand}"
+                    CornerRadius="20"
+                    DockPanel.Dock="Right">
+                    <PathIcon
+                        Width="15"
+                        Height="15"
+                        Data="{StaticResource arrow_up_regular}" />
+                </Button>
+
+                <!--  添加按钮  -->
+                <Button
+                    Width="30"
+                    Height="30"
+                    Margin="5,5,5,5"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    BorderBrush="White"
+                    BorderThickness="1.5"
+                    CornerRadius="20"
+                    DockPanel.Dock="Right">
+                    <PathIcon
+                        Width="15"
+                        Height="15"
+                        Data="{StaticResource add_regular}" />
+                </Button>
+
+                <!--  输入框  -->
+                <TextBox
+                    Margin="5,5,5,5"
+                    HorizontalAlignment="Stretch"
+                    VerticalAlignment="Center"
+                    Background="Transparent"
+                    CornerRadius="10"
+                    DockPanel.Dock="Left"
+                    Text="{Binding InputText}" />
+            </DockPanel>
+        </Grid>
+    </Grid>
+</UserControl>

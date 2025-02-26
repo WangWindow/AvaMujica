@@ -75,6 +75,7 @@
                                     <ItemsControl ItemsSource="{Binding Items}">
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
+                                                <!--  修改历史记录项的Button  -->
                                                 <Button
                                                     Margin="0,2"
                                                     Padding="8,6"
@@ -114,6 +115,7 @@
                 VerticalAlignment="Center"
                 Background="Transparent"
                 BorderThickness="0"
+                Command="{Binding OpenSettingsCommand}"
                 CornerRadius="4">
                 <DockPanel HorizontalAlignment="Stretch" LastChildFill="False">
                     <StackPanel

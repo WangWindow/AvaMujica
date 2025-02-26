@@ -70,19 +70,19 @@ public class MyApi
     }
 
     /// <summary>
-    /// 从 api.json 异步加载配置，若不合法则要求用户输入
+    /// 从 api.json 加载配置，若不合法则要求用户输入
     /// </summary>
     /// <param name="configPath"></param>
     /// <returns></returns>
     /// <exception cref="Exception"></exception>
     /// <exception cref="FileNotFoundException"></exception>
-    public static async Task<ApiConfig> LoadConfigAsync(string configPath = "api.json")
+    public static ApiConfig LoadConfig(string configPath = "api.json")
     {
         if (File.Exists(configPath))
         {
             try
             {
-                string json = await File.ReadAllTextAsync(configPath);
+                string json = File.ReadAllText(configPath);
                 ApiConfig config = JsonSerializer.Deserialize<ApiConfig>(json) ?? new ApiConfig();
                 if (IsConfigValid(config))
                 {

@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2025-02-21 16:27:39
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-02-22 15:59:00
+ * @LastEditTime: 2025-02-26 20:27:53
  * 2025 by WangWindow, All Rights Reserved.
  * @Description:
  */
@@ -21,10 +21,20 @@ namespace AvaMujica.ViewModels;
 /// </summary>
 public partial class SettingsViewModel : ViewModelBase
 {
+    private readonly MainViewModel _mainViewModel;
+
+    public SettingsViewModel(MainViewModel mainViewModel)
+    {
+        _mainViewModel = mainViewModel;
+    }
+
+    // 无参构造函数，用于XAML设计时
+    public SettingsViewModel()
+        : this(null!) { }
+
     [RelayCommand]
     private void GoBack()
     {
-        // TODO: 返回上一级
-        // App.Current.MainWindow!.DataContext = new MainViewModel();
+        _mainViewModel?.ReturnToChat();
     }
 }
