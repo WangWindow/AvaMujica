@@ -5,6 +5,7 @@
 
 .idea/
 .vscode/
+api.json
 
 # User-specific files
 *.rsuser
