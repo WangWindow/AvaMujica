@@ -64,6 +64,19 @@
                                     CornerRadius="10"
                                     IsVisible="{Binding !IsFromUser}">
                                     <StackPanel>
+                                        <!--  推理过程（可折叠）  -->
+                                        <Expander IsVisible="{Binding Reasoning_content, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                            <Expander.Header>
+                                                <TextBlock Foreground="#666666" Text="查看推理过程" />
+                                            </Expander.Header>
+                                            <TextBlock
+                                                Margin="0,5,0,0"
+                                                Foreground="#666666"
+                                                Text="{Binding Reasoning_content}"
+                                                TextWrapping="Wrap" />
+                                        </Expander>
+
+                                        <!--  最终答案  -->
                                         <TextBlock
                                             Foreground="#1A1A1A"
                                             Text="{Binding Content}"

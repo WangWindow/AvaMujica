@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2025-02-21 16:27:39
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-02-26 19:21:53
+ * @LastEditTime: 2025-02-28 00:17:54
  * 2025 by WangWindow, All Rights Reserved.
  * @Description:
  */
@@ -83,32 +83,13 @@ public partial class MainViewModel : ViewModelBase
     /// </summary>
     private void InitializeApi()
     {
-        try
-        {
-            var config = MyApi.LoadConfig();
-            _api = new MyApi(config);
+        var config = MyApi.LoadConfig();
+        _api = new MyApi(config);
 
-            // 为当前对话设置API
-            if (CurrentChat != null)
-            {
-                CurrentChat.SetApi(_api);
-            }
-        }
-        catch (Exception ex)
+        // 为当前对话设置API
+        if (CurrentChat != null)
         {
-            // 处理初始化失败
-            if (CurrentChat != null)
-            {
-                CurrentChat.ChatMessages.Clear();
-                CurrentChat.ChatMessages.Add(
-                    new ChatMessage
-                    {
-                        Content = $"API 初始化失败: {ex.Message}",
-                        Time = DateTime.Now,
-                        IsFromUser = false,
-                    }
-                );
-            }
+            CurrentChat.SetApi(_api);
         }
     }
 

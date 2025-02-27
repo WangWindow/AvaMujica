@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2025-02-26 18:56:04
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-02-26 20:21:30
+ * @LastEditTime: 2025-02-28 00:00:28
  * 2025 by WangWindow, All Rights Reserved.
  * @Description:
  */
@@ -95,7 +95,7 @@ public partial class ChatViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanSend))]
     private async Task SendAsync()
     {
-        if (string.IsNullOrWhiteSpace(InputText))
+        if (string.IsNullOrEmpty(InputText))
             return;
 
         // 添加用户消息
@@ -107,57 +107,41 @@ public partial class ChatViewModel : ViewModelBase
                 IsFromUser = true,
             }
         );
-
         var userInput = InputText;
         InputText = string.Empty;
 
-        // 如果是首次对话，更新标题
+        // 如果是首次对话，更新标题(使用用户的前几个字作为标题)
         if (ChatMessages.Count == 1)
         {
-            // 使用用户的前几个字作为标题
             ChatTitle = userInput.Length > 10 ? userInput[..10] + "..." : userInput;
         }
 
-        try
+        // 创建一个空的回复消息
+        var responseMessage = new ChatMessage
         {
-            // 创建一个空的回复消息
-            var responseMessage = new ChatMessage
-            {
-                Content = string.Empty,
-                Time = DateTime.Now,
-                IsFromUser = false,
-            };
-            ChatMessages.Add(responseMessage);
+            Content = string.Empty,
+            Time = DateTime.Now,
+            IsFromUser = false,
+        };
+        ChatMessages.Add(responseMessage);
 
-            if (_api == null)
+        if (_api == null)
+        {
+            responseMessage.Content = "API 尚未初始化，请稍候再试...";
+            return;
+        }
+
+        // 调用 API 并实时更新回复内容
+        Console.WriteLine($"用户输入: {userInput}");
+        await _api.ChatAsync(
+            userInput,
+            token =>
             {
-                responseMessage.Content = "API 尚未初始化，请稍候再试...";
-                return;
+                responseMessage.Content += token;
+                Console.WriteLine(token);
             }
-
-            // 调用 API 并实时更新回复内容
-            Console.WriteLine($"用户输入: {userInput}");
-            await _api.ChatAsync(
-                userInput,
-                token =>
-                {
-                    responseMessage.Content += token;
-                    Console.WriteLine(token);
-                }
-            );
-            Console.WriteLine("Ok");
-        }
-        catch (Exception ex)
-        {
-            ChatMessages.Add(
-                new ChatMessage
-                {
-                    Content = $"API 调用失败: {ex.Message}",
-                    Time = DateTime.Now,
-                    IsFromUser = false,
-                }
-            );
-        }
+        );
+        Console.WriteLine("Ok");
     }
 
     /// <summary>
@@ -166,6 +150,6 @@ public partial class ChatViewModel : ViewModelBase
     /// <returns></returns>
     private bool CanSend()
     {
-        return !string.IsNullOrWhiteSpace(InputText);
+        return !string.IsNullOrEmpty(InputText);
     }
 }

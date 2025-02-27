@@ -13,7 +13,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 namespace AvaMujica.Models;
 
 /// <summary>
-/// 聊天消息类，一个可观察的对象
+/// 聊天消息类
 /// </summary>
 public partial class ChatMessage : ObservableObject
 {
@@ -22,6 +22,12 @@ public partial class ChatMessage : ObservableObject
     /// </summary>
     [ObservableProperty]
     private string _content = string.Empty;
+
+    /// <summary>
+    /// 推理过程
+    /// </summary>
+    [ObservableProperty]
+    private string _reasoning_content = string.Empty;
 
     /// <summary>
     /// 消息发送时间
