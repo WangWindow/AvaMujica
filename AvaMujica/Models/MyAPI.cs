@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2025-02-21 16:27:39
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-02-26 23:03:07
+ * @LastEditTime: 2025-02-27 10:25:58
  * 2025 by WangWindow, All Rights Reserved.
  * @Description:
  */
@@ -144,24 +144,32 @@ public class MyApi
     /// <exception cref="FileNotFoundException"></exception>
     public static ApiConfig LoadConfig(string configPath = "api.json")
     {
-        if (File.Exists(configPath))
+        // if (File.Exists(configPath))
+        // {
+        //     try
+        //     {
+        //         string json = File.ReadAllText(configPath);
+        //         ApiConfig config = JsonSerializer.Deserialize<ApiConfig>(json) ?? new ApiConfig();
+        //         if (IsConfigValid(config))
+        //         {
+        //             return config;
+        //         }
+        //         throw new Exception("配置项不完整");
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         throw new Exception($"加载 {configPath} 失败: {ex.Message}");
+        //     }
+        // }
+        // throw new FileNotFoundException($"配置文件 {configPath} 不存在");
+
+        return new ApiConfig
         {
-            try
-            {
-                string json = File.ReadAllText(configPath);
-                ApiConfig config = JsonSerializer.Deserialize<ApiConfig>(json) ?? new ApiConfig();
-                if (IsConfigValid(config))
-                {
-                    return config;
-                }
-                throw new Exception("配置项不完整");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"加载 {configPath} 失败: {ex.Message}");
-            }
-        }
-        throw new FileNotFoundException($"配置文件 {configPath} 不存在");
+            ApiKey = "sk-014c8e8d1d244f4caa57b61fd1fe8830",
+            ApiBase = "https://api.deepseek.com/v1",
+            Model = "deepseek-reasoner",
+            SystemPrompt = "You are a helpful assistant.",
+        };
     }
 
     /// <summary>

@@ -1,3 +1,6 @@
+<!--
+    聊天视图
+-->
 <UserControl
     x:Class="AvaMujica.Views.ChatView"
     xmlns="https://github.com/avaloniaui"
@@ -11,7 +14,11 @@
     mc:Ignorable="d">
 
     <Design.DataContext>
-        <vm:ChatViewModel />
+        <vm:ChatViewModel>
+            <x:Arguments>
+                <x:Null />
+            </x:Arguments>
+        </vm:ChatViewModel>
     </Design.DataContext>
 
     <Grid>
