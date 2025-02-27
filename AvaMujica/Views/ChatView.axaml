@@ -64,8 +64,25 @@
                                     CornerRadius="10"
                                     IsVisible="{Binding !IsFromUser}">
                                     <StackPanel>
-                                        <!--  推理过程（可折叠）  -->
-                                        <Expander IsVisible="{Binding ReasoningContent, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                        <!--  加载中状态显示  -->
+                                        <StackPanel
+                                            Margin="0,5,0,10"
+                                            HorizontalAlignment="Center"
+                                            IsVisible="{Binding IsLoading}">
+                                            <ProgressBar
+                                                Width="100"
+                                                Height="4"
+                                                IsIndeterminate="True" />
+                                            <TextBlock
+                                                Margin="0,5,0,0"
+                                                HorizontalAlignment="Center"
+                                                FontSize="12"
+                                                Foreground="#666666"
+                                                Text="思考中..." />
+                                        </StackPanel>
+
+                                        <!--  推理过程（可折叠，默认展开）  -->
+                                        <Expander IsExpanded="True" IsVisible="{Binding ReasoningContent, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                                             <Expander.Header>
                                                 <TextBlock Foreground="#666666" Text="查看推理过程" />
                                             </Expander.Header>

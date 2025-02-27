@@ -3,12 +3,13 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2025-02-26 18:56:04
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-02-28 00:00:28
+ * @LastEditTime: 2025-02-28 01:32:19
  * 2025 by WangWindow, All Rights Reserved.
  * @Description:
  */
 using System;
 using System.Collections.ObjectModel;
+using System.Text;
 using System.Threading.Tasks;
 using AvaMujica.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -122,30 +123,59 @@ public partial class ChatViewModel : ViewModelBase
             Content = string.Empty,
             Time = DateTime.Now,
             IsFromUser = false,
+            IsLoading = true, // 设置为加载状态
         };
         ChatMessages.Add(responseMessage);
 
         if (_api == null)
         {
             responseMessage.Content = "API 尚未初始化，请稍候再试...";
+            responseMessage.IsLoading = false;
             return;
         }
 
         // 调用 API 并实时更新回复内容
         Console.WriteLine($"用户输入: {userInput}");
+
+        // 创建打字机缓存
+        StringBuilder contentBuffer = new();
+        StringBuilder reasoningBuffer = new();
+
         await _api.ChatAsync(
             userInput,
-            token =>
+            async token =>
             {
-                responseMessage.Content += token;
+                // 将收到的 token 先添加到缓存
+                contentBuffer.Append(token);
+
+                // 增加延迟时间，使打字机效果更加明显
+                // 添加一些随机性，使输出更自然
+                Random random = new();
+                int delay = random.Next(200, 300);
+                await Task.Delay(delay);
+
+                // 更新UI
+                responseMessage.Content = contentBuffer.ToString();
                 Console.WriteLine(token);
             },
-            token =>
+            async token =>
             {
-                responseMessage.ReasoningContent += token;
+                // 将推理内容添加到缓存
+                reasoningBuffer.Append(token);
+
+                // 推理过程使用较短的延迟，因为这不是主要内容
+                Random random = new();
+                int delay = random.Next(200, 300);
+                await Task.Delay(delay);
+
+                // 更新UI
+                responseMessage.ReasoningContent = reasoningBuffer.ToString();
                 Console.WriteLine(token);
             }
         );
+
+        // 响应完成后，关闭加载状态
+        responseMessage.IsLoading = false;
         Console.WriteLine("Ok");
     }
 

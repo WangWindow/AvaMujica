@@ -21,21 +21,29 @@ public partial class ChatMessage : ObservableObject
     /// 消息内容
     /// </summary>
     [ObservableProperty]
-    private string _content = string.Empty;
+    private string content = string.Empty;
 
     /// <summary>
-    /// 推理过程
+    /// 推理内容
     /// </summary>
     [ObservableProperty]
-    private string _reasoningContent = string.Empty;
+    private string reasoningContent = string.Empty;
 
     /// <summary>
-    /// 消息发送时间
+    /// 消息时间
     /// </summary>
-    public DateTime Time { get; set; }
+    [ObservableProperty]
+    private DateTime time;
 
     /// <summary>
-    /// 消息是否来自用户
+    /// 是否是用户发送的消息
     /// </summary>
-    public bool IsFromUser { get; set; }
+    [ObservableProperty]
+    private bool isFromUser;
+
+    /// <summary>
+    /// 是否正在加载中
+    /// </summary>
+    [ObservableProperty]
+    private bool isLoading;
 }

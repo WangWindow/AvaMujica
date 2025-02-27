@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2025-02-21 16:27:39
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-02-28 01:09:53
+ * @LastEditTime: 2025-02-28 01:22:55
  * 2025 by WangWindow, All Rights Reserved.
  * @Description:
  */
@@ -129,7 +129,7 @@ public class MyApi
     }
 
     /// <summary>
-    /// 异步调用 ChatGPT 接口
+    /// 调用 Chat 接口
     /// </summary>
     /// <param name="userPrompt"></param>
     /// <param name="onReceiveToken"></param>
@@ -157,33 +157,68 @@ public class MyApi
             Messages = _messages,
             Temperature = 1.3f,
             MaxTokens = 2000,
-            Stream = false,
+            Stream = true, // 启用流式处理
         };
 
+        // 构建请求内容
+        var requestJson = JsonSerializer.Serialize(request);
+        var content = new StringContent(requestJson, Encoding.UTF8, "application/json");
+
         // 发送请求
-        var response = await _httpClient.PostAsJsonAsync("/chat/completions", request);
+        var response = await _httpClient.PostAsync("/chat/completions", content);
 
         // 确保请求成功
         response.EnsureSuccessStatusCode();
 
-        // 解析响应
-        var result = await response.Content.ReadFromJsonAsync<DeepSeekResponse>();
+        // 获取流式响应
+        using var stream = await response.Content.ReadAsStreamAsync();
+        using var reader = new StreamReader(stream);
 
-        if (result != null && result.Choices.Count > 0)
+        // 用于存储完整响应内容和推理内容
+        var fullContent = new StringBuilder();
+        var reasoningContent = new StringBuilder();
+
+        // 逐行读取流式数据
+        while (!reader.EndOfStream)
         {
-            var choice = result.Choices[0];
+            var line = await reader.ReadLineAsync();
 
-            // 推理内容
-            onReceiveReasoning?.Invoke(choice.Message.ReasoningContent);
+            // 跳过空行和data前缀
+            if (string.IsNullOrEmpty(line) || !line.StartsWith("data: "))
+                continue;
 
-            // 回答内容
-            onReceiveToken?.Invoke(choice.Message.Content);
+            // 去掉前缀"data: "
+            var data = line.Substring(6);
 
-            // 将助手回复添加到历史记录
-            _messages.Add(
-                new DeepSeekMessage { Role = "assistant", Content = choice.Message.Content }
-            );
+            // 如果是 [DONE] 则结束处理
+            if (data == "[DONE]")
+                break;
+
+            // 解析JSON响应
+            var streamResponse = JsonSerializer.Deserialize<DeepSeekStreamResponse>(data);
+
+            if (streamResponse != null && streamResponse.Choices.Count > 0)
+            {
+                var choice = streamResponse.Choices[0];
+
+                // 处理token部分
+                if (choice.Delta.Content != null)
+                {
+                    fullContent.Append(choice.Delta.Content);
+                    onReceiveToken?.Invoke(choice.Delta.Content);
+                }
+
+                // 处理推理部分
+                if (choice.Delta.ReasoningContent != null)
+                {
+                    reasoningContent.Append(choice.Delta.ReasoningContent);
+                    onReceiveReasoning?.Invoke(choice.Delta.ReasoningContent);
+                }
+            }
         }
+
+        // 将助手回复添加到历史记录
+        _messages.Add(new DeepSeekMessage { Role = "assistant", Content = fullContent.ToString() });
     }
 
     /// <summary>
