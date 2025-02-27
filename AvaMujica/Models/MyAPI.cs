@@ -9,6 +9,7 @@
  */
 using System;
 using System.IO;
+using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
@@ -73,14 +74,26 @@ public class MyApi
         // 获取配置
         _config = config ?? throw new ArgumentNullException(nameof(config));
 
+        // 创建忽略证书验证的 HttpClientHandler
+        var handler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true,
+        };
+
+        var httpClient = new HttpClient(handler);
+
         // 创建 Semantic Kernel 实例
 #pragma warning disable SKEXP0010 // 类型仅用于评估，在将来的更新中可能会被更改或删除。取消此诊断以继续。
         _kernel = Kernel
             .CreateBuilder()
-            .AddOpenAIChatCompletion(_config.Model, new Uri(_config.ApiBase), _config.ApiKey)
+            .AddOpenAIChatCompletion(
+                modelId: _config.Model,
+                apiKey: _config.ApiKey,
+                httpClient: httpClient,
+                endpoint: new Uri(_config.ApiBase)
+            )
             .Build();
 #pragma warning restore SKEXP0010 // 类型仅用于评估，在将来的更新中可能会被更改或删除。取消此诊断以继续。
-
         // 获取 OpenAI 聊天完成服务
         _chatCompletionService = _kernel.GetRequiredService<IChatCompletionService>();
     }
