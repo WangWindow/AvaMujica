@@ -71,11 +71,8 @@ public partial class MainViewModel : ViewModelBase
         SiderViewModel = new SiderViewModel(this);
         SettingsViewModel = new SettingsViewModel(this);
 
-        // 初始化 API
-        InitializeApi();
-
-        // 创建一个初始对话
-        CreateNewChat();
+        InitializeApi(); // 初始化 API
+        CreateNewChat(); // 创建一个初始对话
     }
 
     /// <summary>

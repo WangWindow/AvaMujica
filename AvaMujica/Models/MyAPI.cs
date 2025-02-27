@@ -3,14 +3,12 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2025-02-21 16:27:39
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-02-28 00:20:24
+ * @LastEditTime: 2025-02-28 00:33:16
  * 2025 by WangWindow, All Rights Reserved.
  * @Description:
  */
 using System;
-using System.IO;
 using System.Net.Http;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -103,31 +101,30 @@ public class MyApi
     /// <param name="onReceiveToken"></param>
     public async Task ChatAsync(string userPrompt, Action<string>? onReceiveToken = null)
     {
-        // 创建聊天历史
+        // 创建用于 api 调用的聊天记录
         var chatHistory = new ChatHistory();
 
-        // 添加系统消息
+        // 添加 System Prompt
         if (!string.IsNullOrEmpty(_config.SystemPrompt))
         {
             chatHistory.AddSystemMessage(_config.SystemPrompt);
         }
 
-        // 添加用户消息
+        // 添加 User Prompt
         chatHistory.AddUserMessage(userPrompt);
 
-        // 设置流式处理选项
+        // 设置处理选项
         var executionSettings = new OpenAIPromptExecutionSettings
         {
             Temperature = 1.3f,
             MaxTokens = 2000,
         };
 
-        // 流式处理聊天完成
+        // 获取流式聊天消息内容
         var result = _chatCompletionService.GetStreamingChatMessageContentsAsync(
             chatHistory,
             executionSettings
         );
-
         await foreach (var content in result)
         {
             if (content.Content != null)
@@ -138,30 +135,10 @@ public class MyApi
     }
 
     /// <summary>
-    /// 从 api.json 加载配置
+    /// 加载配置
     /// </summary>
-    /// <param name="configPath"></param>
-    public static ApiConfig LoadConfig(string configPath = "api.json")
+    public static ApiConfig LoadConfig()
     {
-        // if (File.Exists(configPath))
-        // {
-        //     try
-        //     {
-        //         string json = File.ReadAllText(configPath);
-        //         ApiConfig config = JsonSerializer.Deserialize<ApiConfig>(json) ?? new ApiConfig();
-        //         if (IsConfigValid(config))
-        //         {
-        //             return config;
-        //         }
-        //         throw new Exception("配置项不完整");
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         throw new Exception($"加载 {configPath} 失败: {ex.Message}");
-        //     }
-        // }
-        // throw new FileNotFoundException($"配置文件 {configPath} 不存在");
-
         return new ApiConfig
         {
             ApiKey = "sk-014c8e8d1d244f4caa57b61fd1fe8830",
@@ -169,16 +146,5 @@ public class MyApi
             Model = "deepseek-reasoner",
             SystemPrompt = "You are a helpful assistant.",
         };
-    }
-
-    /// <summary>
-    /// 检查配置是否合法
-    /// </summary>
-    /// <param name="config"></param>
-    private static bool IsConfigValid(ApiConfig config)
-    {
-        return !string.IsNullOrWhiteSpace(config.ApiKey)
-            && !string.IsNullOrWhiteSpace(config.ApiBase)
-            && !string.IsNullOrWhiteSpace(config.Model);
     }
 }

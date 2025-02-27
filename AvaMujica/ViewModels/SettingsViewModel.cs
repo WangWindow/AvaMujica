@@ -21,8 +21,15 @@ namespace AvaMujica.ViewModels;
 /// </summary>
 public partial class SettingsViewModel : ViewModelBase
 {
+    /// <summary>
+    /// 主视图模型
+    /// </summary>
     private readonly MainViewModel _mainViewModel;
 
+    /// <summary>
+    /// 构造函数
+    /// </summary>
+    /// <param name="mainViewModel"></param>
     public SettingsViewModel(MainViewModel mainViewModel)
     {
         _mainViewModel = mainViewModel;
@@ -32,6 +39,9 @@ public partial class SettingsViewModel : ViewModelBase
     public SettingsViewModel()
         : this(null!) { }
 
+    /// <summary>
+    /// 返回聊天界面
+    /// </summary>
     [RelayCommand]
     private void GoBack()
     {

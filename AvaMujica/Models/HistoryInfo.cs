@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using AvaMujica.ViewModels;
 
 namespace AvaMujica.Models;
@@ -32,4 +33,20 @@ public class HistoryInfo
     /// 格式化后的时间显示
     /// </summary>
     public string FormattedTime => Time.ToString("HH:mm");
+}
+
+/// <summary>
+/// 历史记录分组类
+/// </summary>
+public class HistoryGroup(string key, List<HistoryInfo> items)
+{
+    /// <summary>
+    /// 分组的键
+    /// </summary>
+    public string Key { get; } = key;
+
+    /// <summary>
+    /// 分组的历史记录信息
+    /// </summary>
+    public List<HistoryInfo> Items { get; } = items;
 }

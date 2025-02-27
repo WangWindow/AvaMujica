@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2025-02-21 16:27:39
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-02-26 20:59:10
+ * @LastEditTime: 2025-02-28 00:35:56
  * 2025 by WangWindow, All Rights Reserved.
  * @Description:
  */
@@ -22,11 +22,20 @@ namespace AvaMujica.ViewModels;
 /// </summary>
 public partial class SiderViewModel : ViewModelBase
 {
+    /// <summary>
+    /// 侧边栏是否打开(默认关闭)
+    /// </summary>
     [ObservableProperty]
     private bool isOpen = false;
 
+    /// <summary>
+    /// 主视图模型
+    /// </summary>
     private readonly MainViewModel _mainViewModel;
 
+    /// <summary>
+    /// 历史记录信息列表
+    /// </summary>
     public ObservableCollection<HistoryInfo> HistoryInfoList { get; } = [];
 
     /// <summary>
@@ -37,6 +46,7 @@ public partial class SiderViewModel : ViewModelBase
     public SiderViewModel(MainViewModel mainViewModel)
     {
         _mainViewModel = mainViewModel;
+
         // 分组历史记录
         GroupHistoryItems();
     }
@@ -69,7 +79,7 @@ public partial class SiderViewModel : ViewModelBase
                 else
                     return "更早";
             })
-            .Select(g => new HistoryGroup(g.Key, g.ToList()));
+            .Select(g => new HistoryGroup(g.Key, [.. g]));
 
         GroupedHistoryItems.Clear();
         foreach (var group in groupedItems)
@@ -100,6 +110,7 @@ public partial class SiderViewModel : ViewModelBase
         {
             // 切换到选中的对话
             _mainViewModel.SwitchChat(item.ChatViewModel);
+
             // 关闭侧边栏
             _mainViewModel.IsSiderOpen = false;
         }
@@ -112,20 +123,5 @@ public partial class SiderViewModel : ViewModelBase
     private void OpenSettings()
     {
         _mainViewModel?.ShowSettings();
-    }
-}
-
-/// <summary>
-/// 历史记录分组类
-/// </summary>
-public class HistoryGroup
-{
-    public string Key { get; }
-    public List<HistoryInfo> Items { get; }
-
-    public HistoryGroup(string key, List<HistoryInfo> items)
-    {
-        Key = key;
-        Items = items;
     }
 }

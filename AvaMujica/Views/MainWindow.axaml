@@ -12,17 +12,12 @@
     Title="AvaMujica"
     d:DesignHeight="600"
     d:DesignWidth="270"
-    x:DataType="vm:MainWindowViewModel"
     Background="Transparent"
     ExtendClientAreaToDecorationsHint="False"
     Icon="/Assets/avalonia-logo.ico"
     TransparencyLevelHint="AcrylicBlur"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
-    <Design.DataContext>
-        <vm:MainWindowViewModel />
-    </Design.DataContext>
-
     <Panel>
         <!--  桌面毛玻璃效果  -->
         <ExperimentalAcrylicBorder IsHitTestVisible="False">
