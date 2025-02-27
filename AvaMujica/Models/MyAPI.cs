@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2025-02-21 16:27:39
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-02-27 10:25:58
+ * @LastEditTime: 2025-02-27 10:32:20
  * 2025 by WangWindow, All Rights Reserved.
  * @Description:
  */
@@ -167,11 +167,7 @@ public class MyApi
         {
             ApiKey = "sk-014c8e8d1d244f4caa57b61fd1fe8830",
             ApiBase = "https://api.deepseek.com/v1",
-<<<<<<< HEAD
             Model = "deepseek-reasoner",
-=======
-            Model = "deepseek-resoner",
->>>>>>> 9d504761d4d16908f95d348a82e07aba4c6ba33a
             SystemPrompt = "You are a helpful assistant.",
         };
     }
