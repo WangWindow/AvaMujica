@@ -27,7 +27,7 @@ public partial class ChatMessage : ObservableObject
     /// 推理过程
     /// </summary>
     [ObservableProperty]
-    private string _reasoning_content = string.Empty;
+    private string _reasoningContent = string.Empty;
 
     /// <summary>
     /// 消息发送时间

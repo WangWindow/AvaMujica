@@ -65,14 +65,14 @@
                                     IsVisible="{Binding !IsFromUser}">
                                     <StackPanel>
                                         <!--  推理过程（可折叠）  -->
-                                        <Expander IsVisible="{Binding Reasoning_content, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                        <Expander IsVisible="{Binding ReasoningContent, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                                             <Expander.Header>
                                                 <TextBlock Foreground="#666666" Text="查看推理过程" />
                                             </Expander.Header>
                                             <TextBlock
                                                 Margin="0,5,0,0"
                                                 Foreground="#666666"
-                                                Text="{Binding Reasoning_content}"
+                                                Text="{Binding ReasoningContent}"
                                                 TextWrapping="Wrap" />
                                         </Expander>
 

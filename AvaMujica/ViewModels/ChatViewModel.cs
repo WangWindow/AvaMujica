@@ -139,6 +139,11 @@ public partial class ChatViewModel : ViewModelBase
             {
                 responseMessage.Content += token;
                 Console.WriteLine(token);
+            },
+            token =>
+            {
+                responseMessage.ReasoningContent += token;
+                Console.WriteLine(token);
             }
         );
         Console.WriteLine("Ok");

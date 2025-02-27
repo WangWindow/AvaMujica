@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2025-02-21 16:27:39
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-02-28 00:17:54
+ * @LastEditTime: 2025-02-28 00:53:07
  * 2025 by WangWindow, All Rights Reserved.
  * @Description:
  */
@@ -84,10 +84,7 @@ public partial class MainViewModel : ViewModelBase
         _api = new MyApi(config);
 
         // 为当前对话设置API
-        if (CurrentChat != null)
-        {
-            CurrentChat.SetApi(_api);
-        }
+        CurrentChat?.SetApi(_api);
     }
 
     /// <summary>
