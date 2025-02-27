@@ -167,7 +167,11 @@ public class MyApi
         {
             ApiKey = "sk-014c8e8d1d244f4caa57b61fd1fe8830",
             ApiBase = "https://api.deepseek.com/v1",
+<<<<<<< HEAD
             Model = "deepseek-reasoner",
+=======
+            Model = "deepseek-resoner",
+>>>>>>> 9d504761d4d16908f95d348a82e07aba4c6ba33a
             SystemPrompt = "You are a helpful assistant.",
         };
     }
