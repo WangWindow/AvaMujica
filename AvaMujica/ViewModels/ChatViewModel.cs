@@ -108,6 +108,10 @@ public partial class ChatViewModel : ViewModelBase
                 IsFromUser = true,
             }
         );
+
+        // 通知视图滚动到底部
+        NotifyScrollToBottom();
+
         var userInput = InputText;
         InputText = string.Empty;
 
@@ -135,9 +139,6 @@ public partial class ChatViewModel : ViewModelBase
         }
 
         // 调用 API 并实时更新回复内容
-        Console.WriteLine($"用户输入: {userInput}");
-
-        // 创建打字机缓存
         StringBuilder contentBuffer = new();
         StringBuilder reasoningBuffer = new();
 
@@ -145,38 +146,34 @@ public partial class ChatViewModel : ViewModelBase
             userInput,
             async token =>
             {
-                // 将收到的 token 先添加到缓存
+                // 将收到的 token 添加到缓存
                 contentBuffer.Append(token);
 
-                // 增加延迟时间，使打字机效果更加明显
-                // 添加一些随机性，使输出更自然
+                // 添加随机延迟，使打字机效果更自然
                 Random random = new();
                 int delay = random.Next(200, 300);
                 await Task.Delay(delay);
 
                 // 更新UI
                 responseMessage.Content = contentBuffer.ToString();
-                Console.WriteLine(token);
             },
             async token =>
             {
                 // 将推理内容添加到缓存
                 reasoningBuffer.Append(token);
 
-                // 推理过程使用较短的延迟，因为这不是主要内容
+                // 推理过程使用较短的延迟
                 Random random = new();
                 int delay = random.Next(200, 300);
                 await Task.Delay(delay);
 
                 // 更新UI
                 responseMessage.ReasoningContent = reasoningBuffer.ToString();
-                Console.WriteLine(token);
             }
         );
 
         // 响应完成后，关闭加载状态
         responseMessage.IsLoading = false;
-        Console.WriteLine("Ok");
     }
 
     /// <summary>
@@ -186,5 +183,18 @@ public partial class ChatViewModel : ViewModelBase
     private bool CanSend()
     {
         return !string.IsNullOrEmpty(InputText);
+    }
+
+    /// <summary>
+    /// 滚动到底部的事件
+    /// </summary>
+    public event Action? ScrollToBottomRequested;
+
+    /// <summary>
+    /// 通知视图滚动到底部
+    /// </summary>
+    private void NotifyScrollToBottom()
+    {
+        ScrollToBottomRequested?.Invoke();
     }
 }
