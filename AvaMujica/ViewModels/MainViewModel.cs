@@ -62,6 +62,24 @@ public partial class MainViewModel : ViewModelBase
     private bool isSettingsViewVisible = false;
 
     /// <summary>
+    /// 是否选择了心理咨询模块（默认选中）
+    /// </summary>
+    [ObservableProperty]
+    private bool isConsultationModuleSelected = true;
+
+    /// <summary>
+    /// 是否选择了心理评估模块
+    /// </summary>
+    [ObservableProperty]
+    private bool isAssessmentModuleSelected = false;
+
+    /// <summary>
+    /// 是否选择了干预方案模块
+    /// </summary>
+    [ObservableProperty]
+    private bool isInterventionModuleSelected = false;
+
+    /// <summary>
     /// 所有对话列表
     /// </summary>
     public ObservableCollection<ChatViewModel> Chats { get; } = [];
@@ -85,6 +103,72 @@ public partial class MainViewModel : ViewModelBase
 
         // 为当前对话设置API
         CurrentChat?.SetApi(_api);
+    }
+
+    /// <summary>
+    /// 当心理咨询模块选择状态改变时触发
+    /// </summary>
+    partial void OnIsConsultationModuleSelectedChanged(bool value)
+    {
+        if (value)
+        {
+            IsAssessmentModuleSelected = false;
+            IsInterventionModuleSelected = false;
+        }
+    }
+
+    /// <summary>
+    /// 当心理评估模块选择状态改变时触发
+    /// </summary>
+    partial void OnIsAssessmentModuleSelectedChanged(bool value)
+    {
+        if (value)
+        {
+            IsConsultationModuleSelected = false;
+            IsInterventionModuleSelected = false;
+        }
+    }
+
+    /// <summary>
+    /// 当干预方案模块选择状态改变时触发
+    /// </summary>
+    partial void OnIsInterventionModuleSelectedChanged(bool value)
+    {
+        if (value)
+        {
+            IsConsultationModuleSelected = false;
+            IsAssessmentModuleSelected = false;
+        }
+    }
+
+    /// <summary>
+    /// 切换到心理咨询模块
+    /// </summary>
+    [RelayCommand]
+    public void SwitchToConsultationModule()
+    {
+        IsConsultationModuleSelected = true;
+        IsSettingsViewVisible = false;
+    }
+
+    /// <summary>
+    /// 切换到心理评估模块
+    /// </summary>
+    [RelayCommand]
+    public void SwitchToAssessmentModule()
+    {
+        IsAssessmentModuleSelected = true;
+        IsSettingsViewVisible = false;
+    }
+
+    /// <summary>
+    /// 切换到干预方案模块
+    /// </summary>
+    [RelayCommand]
+    public void SwitchToInterventionModule()
+    {
+        IsInterventionModuleSelected = true;
+        IsSettingsViewVisible = false;
     }
 
     /// <summary>

@@ -51,52 +51,116 @@
             </SplitView.Pane>
 
             <Grid>
-                <!--  聊天视图  -->
-                <Grid IsVisible="{Binding !IsSettingsViewVisible}">
+                <!--  顶部导航栏 - 功能模块切换  -->
+                <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
                         <RowDefinition Height="*" />
                     </Grid.RowDefinitions>
 
-                    <!--  顶部  -->
-                    <Grid Grid.Row="0">
-                        <DockPanel Background="Transparent">
-                            <!--  顶部.左侧 菜单按钮  -->
-                            <Button
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Background="Transparent"
-                                Command="{Binding ToggleSiderCommand}"
-                                DockPanel.Dock="Left">
-                                <PathIcon Data="{StaticResource text_align_left_regular}" />
-                            </Button>
+                    <!--  顶部导航栏  -->
+                    <Border
+                        Grid.Row="0"
+                        Padding="0,5"
+                        BorderBrush="{DynamicResource SystemBaseLowColor}"
+                        BorderThickness="0,0,0,1">
+                        <StackPanel Orientation="Horizontal">
+                            <RadioButton
+                                Width="90"
+                                Padding="10,5"
+                                Content="心理咨询"
+                                FontSize="12"
+                                GroupName="ModuleNav"
+                                IsChecked="{Binding IsConsultationModuleSelected}" />
+                            <RadioButton
+                                Width="90"
+                                Padding="10,5"
+                                Content="心理评估"
+                                FontSize="12"
+                                GroupName="ModuleNav"
+                                IsChecked="{Binding IsAssessmentModuleSelected}" />
+                            <RadioButton
+                                Width="90"
+                                Padding="10,5"
+                                Content="干预方案"
+                                FontSize="12"
+                                GroupName="ModuleNav"
+                                IsChecked="{Binding IsInterventionModuleSelected}" />
+                        </StackPanel>
+                    </Border>
 
-                            <!--  顶部.右侧 新建对话按钮  -->
-                            <Button
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Background="Transparent"
-                                Command="{Binding CreateNewChatCommand}"
-                                DockPanel.Dock="Right">
-                                <PathIcon Data="{StaticResource add_square_regular}" />
-                            </Button>
+                    <!--  功能模块内容区域  -->
+                    <Grid Grid.Row="1">
+                        <!--  心理咨询模块  -->
+                        <Grid IsVisible="{Binding IsConsultationModuleSelected}">
+                            <ContentControl IsVisible="{Binding !IsSettingsViewVisible}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
 
-                            <!--  顶部.中间 标题  -->
+                                    <!--  顶部  -->
+                                    <Grid Grid.Row="0">
+                                        <DockPanel Background="Transparent">
+                                            <!--  顶部.左侧 菜单按钮  -->
+                                            <Button
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Background="Transparent"
+                                                Command="{Binding ToggleSiderCommand}"
+                                                DockPanel.Dock="Left">
+                                                <PathIcon Data="{StaticResource text_align_left_regular}" />
+                                            </Button>
+
+                                            <!--  顶部.右侧 新建对话按钮  -->
+                                            <Button
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Background="Transparent"
+                                                Command="{Binding CreateNewChatCommand}"
+                                                DockPanel.Dock="Right">
+                                                <PathIcon Data="{StaticResource add_square_regular}" />
+                                            </Button>
+
+                                            <!--  顶部.中间 标题  -->
+                                            <TextBlock
+                                                HorizontalAlignment="Center"
+                                                VerticalAlignment="Center"
+                                                Background="Transparent"
+                                                Text="{Binding CurrentChat.ChatTitle}" />
+                                        </DockPanel>
+                                    </Grid>
+
+                                    <!--  聊天视图  -->
+                                    <views:ChatView Grid.Row="1" DataContext="{Binding CurrentChat}" />
+                                </Grid>
+                            </ContentControl>
+
+                            <!--  设置视图  -->
+                            <Grid IsVisible="{Binding IsSettingsViewVisible}">
+                                <views:SettingsView DataContext="{Binding SettingsViewModel}" />
+                            </Grid>
+                        </Grid>
+
+                        <!--  心理评估模块（占位）  -->
+                        <Grid IsVisible="{Binding IsAssessmentModuleSelected}">
                             <TextBlock
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
-                                Background="Transparent"
-                                Text="{Binding CurrentChat.ChatTitle}" />
-                        </DockPanel>
+                                FontSize="16"
+                                Text="心理评估模块 (开发中...)" />
+                        </Grid>
+
+                        <!--  干预方案模块（占位）  -->
+                        <Grid IsVisible="{Binding IsInterventionModuleSelected}">
+                            <TextBlock
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                FontSize="16"
+                                Text="干预方案模块 (开发中...)" />
+                        </Grid>
                     </Grid>
-
-                    <!--  聊天视图  -->
-                    <views:ChatView Grid.Row="1" DataContext="{Binding CurrentChat}" />
-                </Grid>
-
-                <!--  设置视图  -->
-                <Grid IsVisible="{Binding IsSettingsViewVisible}">
-                    <views:SettingsView DataContext="{Binding SettingsViewModel}" />
                 </Grid>
             </Grid>
         </SplitView>

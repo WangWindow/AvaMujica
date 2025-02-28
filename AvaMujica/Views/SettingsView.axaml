@@ -123,7 +123,7 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Foreground="{DynamicResource SystemBaseMediumColor}"
-                                Text="Model-Name" />
+                                Text="Model" />
                         </Grid>
                     </Button>
 

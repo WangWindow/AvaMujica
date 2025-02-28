@@ -3,7 +3,7 @@
  * @Author: WangWindow 1598593280@qq.com
  * @Date: 2025-02-21 16:27:39
  * @LastEditors: WangWindow
- * @LastEditTime: 2025-02-28 01:22:55
+ * @LastEditTime: 2025-02-28 17:38:30
  * 2025 by WangWindow, All Rights Reserved.
  * @Description:
  */
@@ -269,7 +269,8 @@ public class MyApi
             ApiKey = "sk-014c8e8d1d244f4caa57b61fd1fe8830",
             ApiBase = "https://api.deepseek.com/v1",
             Model = "deepseek-reasoner",
-            SystemPrompt = "You are a helpful assistant.",
+            SystemPrompt =
+                "你是一名优秀的心理咨询师，具有丰富的咨询经验。你的工作是为用户提供情感支持，解决用户的疑问。",
             ShowReasoning = true,
         };
     }
