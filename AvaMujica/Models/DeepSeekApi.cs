@@ -1,5 +1,18 @@
+/*
+==============================================================================
+ * @FilePath: DeepSeekApi.cs
+ * @Author: WangWindow 1598593280@qq.com
+ * @Date: 2025-02-28 10:26:34
+ * @LastEditors: WangWindow 1598593280@qq.com
+ * @LastEditTime: 2025-03-18 22:13:21
+ * @Copyright © 2025 WangWindow
+ * @Descripttion:
+==============================================================================
+*/
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+
+namespace AvaMujica.Models;
 
 /// <summary>
 /// 用于支持DeepSeek Reasoner特有的推理内容
