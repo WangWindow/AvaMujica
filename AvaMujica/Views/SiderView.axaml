@@ -60,8 +60,8 @@
                         SelectedIndex="0">
                         <ComboBoxItem Content="所有会话" />
                         <ComboBoxItem Content="心理咨询会话" />
-                        <ComboBoxItem Content="评估会话" />
-                        <ComboBoxItem Content="干预会话" />
+                        <ComboBoxItem Content="心理评估会话" />
+                        <ComboBoxItem Content="干预方案会话" />
                     </ComboBox>
 
                     <!--  分组历史记录  -->
