@@ -75,41 +75,45 @@
     </UserControl.Styles>
 
     <Grid>
-        <SplitView
-            Name="Sider"
-            BorderBrush="White"
-            BorderThickness="{StaticResource SiderBorderThickness}"
-            CompactPaneLength="0"
-            DisplayMode="Overlay"
-            IsPaneOpen="{Binding IsSiderOpen}"
-            OpenPaneLength="270">
-            <!--  侧边栏  -->
-            <SplitView.Pane>
-                <Panel>
-                    <ExperimentalAcrylicBorder IsHitTestVisible="False">
-                        <ExperimentalAcrylicBorder.Material>
-                            <ExperimentalAcrylicMaterial
-                                BackgroundSource="Digger"
-                                MaterialOpacity="0.6"
-                                TintColor="{DynamicResource SystemAltHighColor}"
-                                TintOpacity="0.8" />
-                        </ExperimentalAcrylicBorder.Material>
-                    </ExperimentalAcrylicBorder>
-                    <views:SiderView DataContext="{Binding SiderViewModel}" />
-                </Panel>
-            </SplitView.Pane>
+        <!--  TODO: 设置视图  -->
+        <Grid IsVisible="{Binding IsSettingsViewVisible}">
+            <views:SettingsView DataContext="{Binding SettingsViewModel}" />
+        </Grid>
 
-            <Grid>
-                <!--  ...existing code...  -->
+        <!--  TODO: 主视图  -->
+        <Grid IsVisible="{Binding !IsSettingsViewVisible}">
+            <SplitView
+                Name="Sider"
+                BorderBrush="White"
+                BorderThickness="{StaticResource SiderBorderThickness}"
+                CompactPaneLength="0"
+                DisplayMode="Overlay"
+                IsPaneOpen="{Binding IsSiderOpen}"
+                OpenPaneLength="270">
+                <!--  TODO: 侧边栏  -->
+                <SplitView.Pane>
+                    <Panel>
+                        <ExperimentalAcrylicBorder IsHitTestVisible="False">
+                            <ExperimentalAcrylicBorder.Material>
+                                <ExperimentalAcrylicMaterial
+                                    BackgroundSource="Digger"
+                                    MaterialOpacity="0.6"
+                                    TintColor="{DynamicResource SystemAltHighColor}"
+                                    TintOpacity="0.8" />
+                            </ExperimentalAcrylicBorder.Material>
+                        </ExperimentalAcrylicBorder>
+                        <views:SiderView DataContext="{Binding SiderViewModel}" />
+                    </Panel>
+                </SplitView.Pane>
+
+                <!--  TODO: 主交互  -->
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto" />
-                        <!--  顶部区域  -->
                         <RowDefinition Height="*" />
-                        <!--  主内容区域  -->
                     </Grid.RowDefinitions>
 
-                    <!--  顶部区域 - 包含菜单按钮、模块导航和新建对话按钮  -->
+                    <!--  TODO: 顶部区域 - 包含菜单按钮、模块导航和新建对话按钮  -->
                     <Grid Grid.Row="0">
                         <Border
                             Padding="5"
@@ -198,7 +202,7 @@
                         </Border>
                     </Grid>
 
-                    <!--  主内容区域 - 包含功能模块  -->
+                    <!--  TODO: 主内容区域 - 包含功能模块  -->
                     <Grid Grid.Row="1">
                         <!--  心理咨询模块  -->
                         <Grid IsVisible="{Binding IsConsultationModuleSelected}">
@@ -228,15 +232,10 @@
 
                             <!--  聊天内容区域  -->
                             <Grid Grid.Row="1">
+                                <!--  聊天视图  -->
                                 <ContentControl IsVisible="{Binding !IsSettingsViewVisible}">
-                                    <!--  聊天视图  -->
                                     <views:ChatView DataContext="{Binding CurrentChat}" />
                                 </ContentControl>
-
-                                <!--  设置视图  -->
-                                <Grid IsVisible="{Binding IsSettingsViewVisible}">
-                                    <views:SettingsView DataContext="{Binding SettingsViewModel}" />
-                                </Grid>
                             </Grid>
                         </Grid>
 
@@ -259,7 +258,7 @@
                         </Grid>
                     </Grid>
                 </Grid>
-            </Grid>
-        </SplitView>
+            </SplitView>
+        </Grid>
     </Grid>
 </UserControl>

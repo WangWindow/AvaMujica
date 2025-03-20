@@ -266,7 +266,7 @@ public class MyApi
     {
         return new ApiConfig
         {
-            ApiKey = Environment.GetEnvironmentVariable("DEEPSEEK_KEY") ?? string.Empty,
+            ApiKey = Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY") ?? string.Empty,
             ApiBase = "https://api.deepseek.com/v1",
             Model = "deepseek-reasoner",
             SystemPrompt =
