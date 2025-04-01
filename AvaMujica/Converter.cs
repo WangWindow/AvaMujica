@@ -6,22 +6,6 @@ using AvaMujica.Models;
 namespace AvaMujica;
 
 /// <summary>
-/// 全局转换器注册
-/// </summary>
-public static class ConverterRegistration
-{
-    /// <summary>
-    /// 角色到用户消息转换器
-    /// </summary>
-    public static readonly RoleToIsUserConverter RoleToIsUserConverter = new();
-
-    /// <summary>
-    /// 消息加载状态转换器
-    /// </summary>
-    public static readonly MessageLoadingConverter MessageLoadingConverter = new();
-}
-
-/// <summary>
 /// 提供XAML中使用的值转换器
 /// </summary>
 public class RoleToIsUserConverter : IValueConverter
