@@ -6,6 +6,7 @@
   <ItemGroup>
     <!-- Avalonia packages -->
     <!-- Important: keep version in sync! -->
+    <PackageVersion Include="Ater.DeepSeek.Core" Version="1.1.4" />
     <PackageVersion Include="Avalonia" Version="11.2.1" />
     <PackageVersion Include="Avalonia.Themes.Fluent" Version="11.2.1" />
     <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.2.1" />
@@ -15,7 +16,6 @@
     <PackageVersion Include="Avalonia.Browser" Version="11.2.1" />
     <PackageVersion Include="Avalonia.Android" Version="11.2.1" />
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.3.2" />
-    <PackageVersion Include="Microsoft.SemanticKernel" Version="1.39.0" />
     <PackageVersion Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.1" />
   </ItemGroup>
 </Project>

@@ -6,12 +6,19 @@
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:AvaMujica"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:AvaMujica.Models"
     xmlns:vm="using:AvaMujica.ViewModels"
     d:DesignHeight="450"
     d:DesignWidth="270"
     x:DataType="vm:ChatViewModel"
     mc:Ignorable="d">
+
+    <UserControl.Resources>
+        <local:RoleToIsUserConverter x:Key="RoleToIsUserConverter" />
+        <local:MessageLoadingConverter x:Key="MessageLoadingConverter" />
+    </UserControl.Resources>
 
     <Design.DataContext>
         <vm:ChatViewModel>
@@ -31,7 +38,7 @@
         <Grid Grid.Row="0">
             <ScrollViewer Name="MessageScroller">
                 <StackPanel>
-                    <ItemsControl Name="MessageList" ItemsSource="{Binding ChatMessages}">
+                    <ItemsControl Name="ChatMessageList" ItemsSource="{Binding ChatMessageList}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid Margin="10,5">
@@ -42,7 +49,7 @@
                                         HorizontalAlignment="Right"
                                         Background="#DCF8C6"
                                         CornerRadius="10"
-                                        IsVisible="{Binding IsFromUser}">
+                                        IsVisible="{Binding Role, Converter={StaticResource RoleToIsUserConverter}}">
                                         <StackPanel>
                                             <TextBlock
                                                 Foreground="#1A1A1A"
@@ -63,13 +70,13 @@
                                         HorizontalAlignment="Left"
                                         Background="White"
                                         CornerRadius="10"
-                                        IsVisible="{Binding !IsFromUser}">
+                                        IsVisible="{Binding Role, Converter={StaticResource RoleToIsUserConverter}, ConverterParameter=false}">
                                         <StackPanel>
                                             <!--  加载中状态显示  -->
                                             <StackPanel
                                                 Margin="0,5,0,10"
                                                 HorizontalAlignment="Center"
-                                                IsVisible="{Binding IsLoading}">
+                                                IsVisible="{Binding Converter={StaticResource MessageLoadingConverter}}">
                                                 <ProgressBar
                                                     Width="100"
                                                     Height="4"

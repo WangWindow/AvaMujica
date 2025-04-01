@@ -15,6 +15,6 @@
 
     <Application.Styles>
         <FluentTheme />
-        <StyleInclude Source="avares://AvaMujica/Icons.axaml" />
+        <StyleInclude Source="avares://AvaMujica/Assets/Icons.axaml" />
     </Application.Styles>
 </Application>

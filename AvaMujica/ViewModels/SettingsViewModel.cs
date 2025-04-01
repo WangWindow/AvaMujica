@@ -1,12 +1,3 @@
-/*
- * @FilePath: SettingsViewModel.cs
- * @Author: WangWindow 1598593280@qq.com
- * @Date: 2025-02-21 16:27:39
- * @LastEditors: WangWindow
- * @LastEditTime: 2025-02-26 20:27:53
- * 2025 by WangWindow, All Rights Reserved.
- * @Description:
- */
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
