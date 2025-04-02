@@ -59,7 +59,8 @@
                     <ComboBox
                         Margin="5,10"
                         HorizontalAlignment="Stretch"
-                        SelectedIndex="0">
+                        SelectedIndex="0"
+                        SelectedItem="{Binding SelectedSessionType}">
                         <ComboBoxItem Content="所有会话" />
                         <ComboBoxItem Content="心理咨询会话" />
                         <ComboBoxItem Content="心理评估会话" />

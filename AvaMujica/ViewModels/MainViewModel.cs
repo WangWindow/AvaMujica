@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
 using AvaMujica.Models;
+using AvaMujica.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -19,19 +20,9 @@ public partial class MainViewModel : ViewModelBase
     public string Title { get; set; } = "AvaMujica";
 
     /// <summary>
-    /// API 实例
+    /// 服务集合
     /// </summary>
-    private readonly MyApi _api = new();
-
-    /// <summary>
-    /// 聊天管理器
-    /// </summary>
-    private ChatManager _chatManager = new();
-
-    /// <summary>
-    /// 历史记录管理器
-    /// </summary>
-    public HistoryManager _historyManager = new();
+    private readonly ServiceCollection _services;
 
     /// <summary>
     /// 侧边栏是否打开(默认关闭)
@@ -43,7 +34,7 @@ public partial class MainViewModel : ViewModelBase
     /// 侧边栏视图模型
     /// </summary>
     [ObservableProperty]
-    private SiderViewModel siderViewModel;
+    private SiderViewModel? siderViewModel;
 
     /// <summary>
     /// 当前活动对话
@@ -55,7 +46,7 @@ public partial class MainViewModel : ViewModelBase
     /// 设置视图模型
     /// </summary>
     [ObservableProperty]
-    private SettingsViewModel settingsViewModel;
+    private SettingsViewModel? settingsViewModel;
 
     /// <summary>
     /// 是否显示设置视图
@@ -93,55 +84,111 @@ public partial class MainViewModel : ViewModelBase
 
     public MainViewModel()
     {
-        SiderViewModel = new SiderViewModel(this);
-        SettingsViewModel = new SettingsViewModel(this);
-
-        InitializeChatManager(); // 初始化聊天管理器
-        InitializeHistoryManager(); // 初始化历史记录管理器
-    }
-
-    /// <summary>
-    /// 初始化聊天管理器
-    /// </summary>
-    private void InitializeChatManager()
-    {
-        // 加载已有会话并转换为ChatViewModel
-        foreach (var session in _chatManager.Sessions)
+        try
         {
-            var chatViewModel = new ChatViewModel(session);
-            Chats.Add(chatViewModel);
+            // 获取服务实例
+            _services = ServiceCollection.Instance;
+
+            // 初始化视图模型
+            SiderViewModel = new SiderViewModel(this);
+            SettingsViewModel = new SettingsViewModel(this);
+
+            // 异步初始化数据
+            _ = InitializeAsync();
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"MainViewModel初始化失败: {ex.Message}");
+            // 提供一个基础的错误处理，避免应用崩溃
+            _services = ServiceCollection.Instance; // 尝试重新获取服务
 
-        // 如果有会话，选择第一个作为当前会话
-        if (Chats.Count > 0)
-        {
-            CurrentChat = Chats[0];
-        }
-        else
-        {
-            // 没有会话则创建新会话
-            CreateNewChat();
+            // 确保在出现异常时仍然初始化所需属性
+            SiderViewModel ??= new SiderViewModel(this);
+            SettingsViewModel ??= new SettingsViewModel(this);
         }
     }
 
     /// <summary>
-    /// 初始化历史记录管理器
+    /// 初始化ViewModel
     /// </summary>
-    private void InitializeHistoryManager()
+    private async Task InitializeAsync()
     {
-        // 根据已有的会话创建历史记录
-        foreach (var chat in Chats)
+        try
         {
-            var historyInfo = new HistoryInfo
+            await LoadChatsAsync();
+            await LoadHistoryGroupsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"初始化数据失败: {ex.Message}");
+            // 可以在这里添加重试逻辑或显示错误信息给用户
+        }
+    }
+
+    /// <summary>
+    /// 加载聊天会话
+    /// </summary>
+    private async Task LoadChatsAsync()
+    {
+        try
+        {
+            var sessions = await _services.ChatService.GetAllSessionsAsync();
+
+            Chats.Clear();
+            foreach (var session in sessions)
             {
-                Id = chat.ChatId,
-                Title = chat.ChatTitle,
-                Time = chat.StartTime,
-                ChatViewModel = chat,
-            };
+                var chatViewModel = new ChatViewModel(_services.ChatService)
+                {
+                    ChatId = session.Id,
+                    ChatTitle = session.Title,
+                    StartTime = session.CreatedAt,
+                };
+                await chatViewModel.LoadMessagesAsync(session.Id);
+                Chats.Add(chatViewModel);
+            }
 
-            // 添加到历史记录
-            _historyManager.AddHistory(historyInfo);
+            // 如果有会话，选择第一个作为当前会话
+            if (Chats.Count > 0)
+            {
+                CurrentChat = Chats[0];
+            }
+            else
+            {
+                // 没有会话则创建新会话
+                await CreateNewChatAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            // 处理异常，可以记录日志或显示给用户
+            Console.WriteLine($"加载聊天会话失败: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 加载历史记录分组
+    /// </summary>
+    private async Task LoadHistoryGroupsAsync()
+    {
+        try
+        {
+            var historyGroups = await _services.ChatService.GetHistoryGroupsAsync();
+
+            HistoryGroups.Clear();
+            foreach (var group in historyGroups)
+            {
+                // 关联ChatViewModel到历史记录
+                foreach (var item in group.Items)
+                {
+                    item.ChatViewModel = Chats.FirstOrDefault(c => c.ChatId == item.Id);
+                }
+
+                HistoryGroups.Add(group);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"加载历史记录失败: {ex.Message}");
         }
     }
 
@@ -224,34 +271,44 @@ public partial class MainViewModel : ViewModelBase
     /// 创建新对话
     /// </summary>
     [RelayCommand]
-    public void CreateNewChat()
+    public async Task CreateNewChatAsync()
     {
-        // 使用聊天管理器创建新会话
-        var session = _chatManager.CreateNewSession($"新对话 {Chats.Count + 1}");
-
-        // 创建新的聊天视图模型
-        var newChat = new ChatViewModel(session)
+        try
         {
-            ChatTitle = session.Title,
-            StartTime = session.CreatedAt,
-        };
+            // 确定会话类型
+            string sessionType = "咨询";
+            if (IsAssessmentModuleSelected)
+                sessionType = "评估";
+            else if (IsInterventionModuleSelected)
+                sessionType = "干预";
 
-        Chats.Add(newChat);
-        CurrentChat = newChat;
+            // 创建会话
+            var session = await _services.ChatService.CreateSessionAsync(
+                $"新会话 {Chats.Count + 1}",
+                sessionType
+            );
 
-        // 创建并添加历史记录
-        var historyInfo = new HistoryInfo
+            // 创建视图模型
+            var newChat = new ChatViewModel(_services.ChatService)
+            {
+                ChatId = session.Id,
+                ChatTitle = session.Title,
+                StartTime = session.CreatedAt,
+            };
+
+            Chats.Add(newChat);
+            CurrentChat = newChat;
+
+            // 刷新历史记录
+            await LoadHistoryGroupsAsync();
+
+            // 关闭侧边栏
+            IsSiderOpen = false;
+        }
+        catch (Exception ex)
         {
-            Id = newChat.ChatId,
-            Title = newChat.ChatTitle,
-            Time = newChat.StartTime,
-            ChatViewModel = newChat,
-        };
-
-        _historyManager.AddHistory(historyInfo);
-
-        // 关闭侧边栏，让用户可以立即开始新对话
-        IsSiderOpen = false;
+            Console.WriteLine($"创建新会话失败: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -273,4 +330,63 @@ public partial class MainViewModel : ViewModelBase
     {
         IsSettingsViewVisible = false;
     }
+
+    /// <summary>
+    /// 根据ID切换当前会话
+    /// </summary>
+    /// <param name="sessionId">会话ID</param>
+    public void SwitchToChat(string sessionId)
+    {
+        var chat = Chats.FirstOrDefault(c => c.ChatId == sessionId);
+        if (chat != null)
+        {
+            CurrentChat = chat;
+            IsSiderOpen = false;
+        }
+    }
+
+    /// <summary>
+    /// 删除会话
+    /// </summary>
+    public async Task DeleteChatAsync(string sessionId)
+    {
+        try
+        {
+            await _services.ChatService.DeleteSessionAsync(sessionId);
+
+            // 从列表中移除
+            var chat = Chats.FirstOrDefault(c => c.ChatId == sessionId);
+            if (chat != null)
+            {
+                Chats.Remove(chat);
+
+                // 如果删除的是当前会话，切换到其他会话
+                if (CurrentChat == chat)
+                {
+                    if (Chats.Count > 0)
+                    {
+                        CurrentChat = Chats[0];
+                    }
+                    else
+                    {
+                        // 没有会话了，创建一个新会话
+                        await CreateNewChatAsync();
+                    }
+                }
+            }
+
+            // 刷新历史记录
+            await LoadHistoryGroupsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"删除会话失败: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// 获取服务集合
+    /// </summary>
+    /// <returns>服务集合</returns>
+    public ServiceCollection GetServices() => _services;
 }

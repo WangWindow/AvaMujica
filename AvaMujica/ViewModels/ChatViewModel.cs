@@ -1,19 +1,23 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Text;
+using System.Linq;
 using System.Threading.Tasks;
 using AvaMujica.Models;
+using AvaMujica.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace AvaMujica.ViewModels;
 
-public partial class ChatViewModel : ViewModelBase
+/// <summary>
+/// 聊天视图模型
+/// </summary>
+public partial class ChatViewModel(ChatService chatService) : ViewModelBase
 {
     /// <summary>
-    /// API 实例
+    /// 聊天服务
     /// </summary>
-    private readonly MyApi _api = new();
+    private readonly ChatService _chatService = chatService;
 
     /// <summary>
     /// 输入文本
@@ -36,7 +40,7 @@ public partial class ChatViewModel : ViewModelBase
     /// <summary>
     /// 聊天ID
     /// </summary>
-    public string ChatId { get; private set; }
+    public string ChatId { get; set; } = Guid.NewGuid().ToString();
 
     /// <summary>
     /// 聊天消息列表，用于绑定到 UI
@@ -44,22 +48,28 @@ public partial class ChatViewModel : ViewModelBase
     public ObservableCollection<ChatMessage> ChatMessageList { get; } = [];
 
     /// <summary>
-    /// 关联的聊天会话
+    /// 加载会话消息
     /// </summary>
-    public ChatSession? Session { get; private set; }
-
-    public ChatViewModel()
+    public async Task LoadMessagesAsync(string sessionId)
     {
-        ChatId = Guid.NewGuid().ToString();
-
-        // 如果没有API实例，尝试添加一条提示信息
-        if (_api == null)
+        try
         {
+            var messages = await _chatService.GetSessionMessagesAsync(sessionId);
+            ChatMessageList.Clear();
+
+            foreach (var message in messages)
+            {
+                ChatMessageList.Add(message);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"加载消息失败: {ex.Message}");
             ChatMessageList.Add(
                 new ChatMessage
                 {
-                    Role = "assistant",
-                    Content = "API 尚未初始化，请稍候再试...",
+                    Role = "system",
+                    Content = $"加载消息失败: {ex.Message}",
                     Time = DateTime.Now,
                 }
             );
@@ -67,27 +77,8 @@ public partial class ChatViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// 从现有的聊天会话创建视图模型
-    /// </summary>
-    /// <param name="session">聊天会话</param>
-    public ChatViewModel(ChatSession session)
-    {
-        Session = session;
-        ChatId = session.Id;
-        ChatTitle = session.Title;
-        StartTime = session.CreatedAt;
-
-        // 加载会话中的消息
-        foreach (var message in session.Messages)
-        {
-            ChatMessageList.Add(message);
-        }
-    }
-
-    /// <summary>
     /// 输入文本改变时的回调
     /// </summary>
-    /// <param name="value"></param>
     partial void OnInputTextChanged(string value)
     {
         SendCommand.NotifyCanExecuteChanged();
@@ -96,74 +87,125 @@ public partial class ChatViewModel : ViewModelBase
     /// <summary>
     /// 发送消息命令
     /// </summary>
-    /// <returns></returns>
     [RelayCommand(CanExecute = nameof(CanSend))]
     private async Task SendAsync()
     {
         if (string.IsNullOrEmpty(InputText))
             return;
 
-        // 添加用户消息
-        var userMessage = new ChatMessage
-        {
-            Role = "user",
-            Content = InputText,
-            Time = DateTime.Now,
-        };
-        ChatMessageList.Add(userMessage);
-
-        // 通知视图滚动到底部
-        NotifyScrollToBottom();
-
-        var userInput = InputText;
+        string userInput = InputText;
         InputText = string.Empty;
 
-        // 如果是首次对话，更新标题(使用用户的前几个字作为标题)
-        if (ChatMessageList.Count == 1)
+        try
         {
-            ChatTitle = userInput.Length > 10 ? userInput[..10] + "..." : userInput;
-        }
-
-        // 创建一个空的回复消息
-        var responseMessage = new ChatMessage
-        {
-            Role = "assistant",
-            Content = string.Empty,
-            Time = DateTime.Now,
-        };
-        ChatMessageList.Add(responseMessage);
-
-        if (_api == null)
-        {
-            responseMessage.Content = "API 尚未初始化，请稍候再试...";
-            return;
-        }
-
-        await _api.ChatAsync(
-            userInput,
-            token =>
+            // 如果是首次对话，更新标题
+            if (ChatMessageList.Count == 0)
             {
-                // 更新回复消息的内容
-                responseMessage.Content += token;
-                NotifyScrollToBottom();
-            },
-            reasoning =>
-            {
-                // 处理推理内容（如果需要）
-                responseMessage.Content += reasoning;
-                NotifyScrollToBottom();
+                ChatTitle = userInput.Length > 10 ? userInput[..10] + "..." : userInput;
+
+                // 更新会话标题
+                var session = await _chatService.GetSessionAsync(ChatId);
+                session.Title = ChatTitle;
+                await _chatService.UpdateSessionAsync(session);
             }
-        );
+
+            // 立即加载用户消息，以便显示在界面上
+            await LoadMessagesAsync(ChatId);
+
+            // 添加用户消息并获取响应
+            await _chatService.SendMessageAsync(
+                ChatId,
+                userInput,
+                token =>
+                {
+                    // 使用Task.Run避免界面阻塞
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            // 获取最新消息
+                            var assistantMessage =
+                                await _chatService.GetLatestAssistantMessageAsync(ChatId);
+                            if (assistantMessage != null)
+                            {
+                                UpdateLatestAssistantMessage(assistantMessage);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"更新消息失败: {ex.Message}");
+                        }
+                    });
+
+                    // 通知滚动到底部
+                    NotifyScrollToBottom();
+                },
+                reasoning =>
+                {
+                    Task.Run(async () =>
+                    {
+                        try
+                        {
+                            // 获取最新消息
+                            var assistantMessage =
+                                await _chatService.GetLatestAssistantMessageAsync(ChatId);
+                            if (assistantMessage != null)
+                            {
+                                UpdateLatestAssistantMessage(assistantMessage);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"更新推理内容失败: {ex.Message}");
+                        }
+                    });
+
+                    // 通知滚动到底部
+                    NotifyScrollToBottom();
+                }
+            );
+
+            // 最后完全重新加载消息列表，确保界面显示完整
+            await LoadMessagesAsync(ChatId);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"发送消息失败: {ex.Message}");
+            ChatMessageList.Add(
+                new ChatMessage
+                {
+                    Role = "system",
+                    Content = $"发送消息失败: {ex.Message}",
+                    Time = DateTime.Now,
+                }
+            );
+        }
+    }
+
+    /// <summary>
+    /// 更新最新的助手消息
+    /// </summary>
+    private void UpdateLatestAssistantMessage(ChatMessage message)
+    {
+        // 查找ChatMessageList中是否已有该消息
+        var existingMessage = ChatMessageList.FirstOrDefault(m => m.Id == message.Id);
+        if (existingMessage != null)
+        {
+            // 如果存在，更新内容
+            existingMessage.Content = message.Content;
+            existingMessage.ReasoningContent = message.ReasoningContent;
+        }
+        else
+        {
+            // 如果不存在，添加到列表
+            ChatMessageList.Add(message);
+        }
     }
 
     /// <summary>
     /// 判断是否可以发送消息
     /// </summary>
-    /// <returns></returns>
-    private bool CanSend()
-    {
-        return !string.IsNullOrEmpty(InputText);
-    }
+    private bool CanSend() => !string.IsNullOrEmpty(InputText);
 
     /// <summary>
     /// 滚动到底部的事件
