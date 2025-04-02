@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using Microsoft.Data.Sqlite;
 
 namespace AvaMujica.Models;
@@ -21,6 +22,16 @@ public class SqliteDatabase : IDisposable
     private readonly string _dbPath;
 
     /// <summary>
+    /// 数据库连接字符串
+    /// </summary>
+    private readonly string _connectionString;
+
+    /// <summary>
+    /// 互斥锁，确保并发操作安全访问数据库
+    /// </summary>
+    private readonly Lock _dbLock = new();
+
+    /// <summary>
     /// 构造函数
     /// </summary>
     public SqliteDatabase()
@@ -34,7 +45,8 @@ public class SqliteDatabase : IDisposable
         }
 
         _dbPath = Path.Combine(dbFolder, "data.db");
-        _connection = new SqliteConnection($"Data Source={_dbPath}");
+        _connectionString = $"Data Source={_dbPath}";
+        _connection = new SqliteConnection(_connectionString);
 
         // 确保数据库和表已创建
         EnsureDatabaseCreated();
@@ -109,25 +121,23 @@ public class SqliteDatabase : IDisposable
     /// <returns>影响的行数</returns>
     public int ExecuteNonQuery(string sql, Dictionary<string, object>? parameters = null)
     {
-        _connection.Open();
-        try
+        lock (_dbLock)
         {
-            using var command = _connection.CreateCommand();
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            using var command = connection.CreateCommand();
             command.CommandText = sql;
 
             if (parameters != null)
             {
-                foreach (var param in parameters)
+                foreach (var parameter in parameters)
                 {
-                    command.Parameters.AddWithValue(param.Key, param.Value);
+                    command.Parameters.AddWithValue(parameter.Key, parameter.Value);
                 }
             }
 
             return command.ExecuteNonQuery();
-        }
-        finally
-        {
-            _connection.Close();
         }
     }
 
@@ -173,26 +183,24 @@ public class SqliteDatabase : IDisposable
         Dictionary<string, object>? parameters = null
     )
     {
-        _connection.Open();
-        try
+        lock (_dbLock)
         {
-            using var command = _connection.CreateCommand();
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            using var command = connection.CreateCommand();
             command.CommandText = sql;
 
             if (parameters != null)
             {
-                foreach (var param in parameters)
+                foreach (var parameter in parameters)
                 {
-                    command.Parameters.AddWithValue(param.Key, param.Value);
+                    command.Parameters.AddWithValue(parameter.Key, parameter.Value);
                 }
             }
 
             using var reader = command.ExecuteReader();
             handleReader(reader);
-        }
-        finally
-        {
-            _connection.Close();
         }
     }
 
@@ -212,17 +220,28 @@ public class SqliteDatabase : IDisposable
     {
         var result = new List<T>();
 
-        ExecuteReader(
-            sql,
-            reader =>
+        lock (_dbLock)
+        {
+            using var connection = new SqliteConnection(_connectionString);
+            connection.Open();
+
+            using var command = connection.CreateCommand();
+            command.CommandText = sql;
+
+            if (parameters != null)
             {
-                while (reader.Read())
+                foreach (var parameter in parameters)
                 {
-                    result.Add(mapper(reader));
+                    command.Parameters.AddWithValue(parameter.Key, parameter.Value);
                 }
-            },
-            parameters
-        );
+            }
+
+            using var reader = command.ExecuteReader();
+            while (reader.Read())
+            {
+                result.Add(mapper(reader));
+            }
+        }
 
         return result;
     }

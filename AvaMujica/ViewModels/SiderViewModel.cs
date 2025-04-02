@@ -109,14 +109,24 @@ public partial class SiderViewModel : ViewModelBase
             IsLoading = true;
             HasError = false;
 
-            var historyGroups = sessionType switch
+            List<HistoryGroup> historyGroups;
+
+            try
             {
-                "所有会话" => await _chatService.GetHistoryGroupsAsync(),
-                "心理咨询会话" => await _chatService.GetHistoryGroupsByTypeAsync("咨询"),
-                "心理评估会话" => await _chatService.GetHistoryGroupsByTypeAsync("评估"),
-                "干预方案会话" => await _chatService.GetHistoryGroupsByTypeAsync("干预"),
-                _ => await _chatService.GetHistoryGroupsAsync(),
-            };
+                historyGroups = sessionType switch
+                {
+                    "所有会话" => await _chatService.GetHistoryGroupsAsync(),
+                    "心理咨询会话" => await _chatService.GetHistoryGroupsByTypeAsync("咨询"),
+                    "心理评估会话" => await _chatService.GetHistoryGroupsByTypeAsync("评估"),
+                    "干预方案会话" => await _chatService.GetHistoryGroupsByTypeAsync("干预"),
+                    _ => await _chatService.GetHistoryGroupsAsync(),
+                };
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"获取历史记录失败: {ex.Message}");
+                historyGroups = new List<HistoryGroup>();
+            }
 
             _mainViewModel.HistoryGroups.Clear();
             foreach (var group in historyGroups)

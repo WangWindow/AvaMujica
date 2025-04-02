@@ -20,22 +20,76 @@ public class ConfigService(SqliteDatabase database)
     private readonly SqliteDatabase _database = database;
 
     /// <summary>
+    /// 内存缓存
+    /// </summary>
+    private readonly Dictionary<string, string> _configCache = new Dictionary<string, string>();
+    private bool _cacheInitialized = false;
+
+    /// <summary>
+    /// 初始化配置缓存
+    /// </summary>
+    private void InitializeCache()
+    {
+        if (_cacheInitialized)
+            return;
+
+        try
+        {
+            // 提前加载所有配置到内存
+            var configs = _database.Query<KeyValuePair<string, string>>(
+                "SELECT Key, Value FROM Configs",
+                reader => new KeyValuePair<string, string>(
+                    reader.GetString(0),
+                    reader.IsDBNull(1) ? string.Empty : reader.GetString(1)
+                )
+            );
+
+            _configCache.Clear();
+            foreach (var config in configs)
+            {
+                _configCache[config.Key] = config.Value;
+            }
+
+            _cacheInitialized = true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"初始化配置缓存失败: {ex.Message}");
+            _cacheInitialized = false;
+        }
+    }
+
+    /// <summary>
     /// 获取指定键的配置
     /// </summary>
     /// <param name="key">配置键</param>
     /// <returns>配置对象，如果未找到则返回null</returns>
     public Config? GetConfig(string key)
     {
+        InitializeCache();
+
+        if (_cacheInitialized && _configCache.TryGetValue(key, out var cachedValue))
+        {
+            return new Config { Key = key, Value = cachedValue };
+        }
+
         string sql = "SELECT Key, Value FROM Configs WHERE Key = @Key";
         var parameters = new Dictionary<string, object> { { "@Key", key } };
 
-        return _database
+        var config = _database
             .Query(
                 sql,
                 reader => new Config { Key = reader.GetString(0), Value = reader.GetString(1) },
                 parameters
             )
             .FirstOrDefault();
+
+        if (config != null)
+        {
+            _configCache[key] = config.Value;
+        }
+
+        return config;
     }
 
     /// <summary>
@@ -79,6 +133,16 @@ public class ConfigService(SqliteDatabase database)
         var parameters = new Dictionary<string, object> { { "@Key", key }, { "@Value", value } };
 
         _database.ExecuteNonQuery(sql, parameters);
+
+        // 更新缓存
+        if (value != null)
+        {
+            _configCache[key] = value;
+        }
+        else if (_configCache.ContainsKey(key))
+        {
+            _configCache.Remove(key);
+        }
     }
 
     /// <summary>
@@ -92,6 +156,12 @@ public class ConfigService(SqliteDatabase database)
         var parameters = new Dictionary<string, object> { { "@Key", key } };
 
         int affectedRows = _database.ExecuteNonQuery(sql, parameters);
+
+        if (_configCache.ContainsKey(key))
+        {
+            _configCache.Remove(key);
+        }
+
         return affectedRows > 0;
     }
 

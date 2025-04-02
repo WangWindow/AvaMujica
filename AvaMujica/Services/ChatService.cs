@@ -137,6 +137,9 @@ public class ChatService(
             throw new ArgumentException("消息内容不能为空", nameof(userContent));
         }
 
+        // 提前获取配置，避免在回调中查询
+        bool showReasoning = _configService.GetShowReasoning();
+
         // 添加用户消息
         var userMessage = new ChatMessage
         {
@@ -177,10 +180,7 @@ public class ChatService(
                         // 每收到一块内容就更新数据库
                         await UpdateMessageAsync(assistantMessage);
                     }
-                    else if (
-                        type == StreamResponseType.Reasoning
-                        && _configService.GetShowReasoning()
-                    )
+                    else if (type == StreamResponseType.Reasoning && showReasoning) // 使用预先获取的配置
                     {
                         // 更新推理内容
                         assistantMessage.ReasoningContent += message;

@@ -39,19 +39,3 @@ public class HistoryInfo
     /// </summary>
     public string FormattedTime => Time.ToString("HH:mm");
 }
-
-/// <summary>
-/// 历史记录分组类
-/// </summary>
-public class HistoryGroup(string key, List<HistoryInfo> items)
-{
-    /// <summary>
-    /// 分组的键
-    /// </summary>
-    public string Key { get; } = key;
-
-    /// <summary>
-    /// 分组的历史记录信息
-    /// </summary>
-    public List<HistoryInfo> Items { get; } = items;
-}

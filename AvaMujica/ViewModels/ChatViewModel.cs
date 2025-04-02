@@ -2,6 +2,7 @@ using System;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using AvaMujica.Models;
 using AvaMujica.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -55,24 +56,32 @@ public partial class ChatViewModel(ChatService chatService) : ViewModelBase
         try
         {
             var messages = await _chatService.GetSessionMessagesAsync(sessionId);
-            ChatMessageList.Clear();
 
-            foreach (var message in messages)
+            await Dispatcher.UIThread.InvokeAsync(() =>
             {
-                ChatMessageList.Add(message);
-            }
+                ChatMessageList.Clear();
+
+                foreach (var message in messages)
+                {
+                    ChatMessageList.Add(message);
+                }
+            });
         }
         catch (Exception ex)
         {
             Console.WriteLine($"加载消息失败: {ex.Message}");
-            ChatMessageList.Add(
-                new ChatMessage
-                {
-                    Role = "system",
-                    Content = $"加载消息失败: {ex.Message}",
-                    Time = DateTime.Now,
-                }
-            );
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                ChatMessageList.Add(
+                    new ChatMessage
+                    {
+                        Role = "system",
+                        Content = $"加载消息失败: {ex.Message}",
+                        Time = DateTime.Now,
+                    }
+                );
+            });
         }
     }
 
@@ -98,28 +107,56 @@ public partial class ChatViewModel(ChatService chatService) : ViewModelBase
 
         try
         {
+            // 先在UI上显示用户消息
+            var userMessage = new ChatMessage
+            {
+                Role = "user",
+                Content = userInput,
+                Time = DateTime.Now,
+            };
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                ChatMessageList.Add(userMessage);
+                NotifyScrollToBottom();
+            });
+
             // 如果是首次对话，更新标题
-            if (ChatMessageList.Count == 0)
+            if (ChatMessageList.Count <= 1)
             {
                 ChatTitle = userInput.Length > 10 ? userInput[..10] + "..." : userInput;
 
                 // 更新会话标题
                 var session = await _chatService.GetSessionAsync(ChatId);
-                session.Title = ChatTitle;
-                await _chatService.UpdateSessionAsync(session);
+                if (session != null)
+                {
+                    session.Title = ChatTitle;
+                    await _chatService.UpdateSessionAsync(session);
+                }
             }
 
-            // 立即加载用户消息，以便显示在界面上
-            await LoadMessagesAsync(ChatId);
+            // 预先添加一个空的助手消息，表示正在思考
+            var pendingMessage = new ChatMessage
+            {
+                Role = "assistant",
+                Content = "",
+                Time = DateTime.Now,
+            };
 
-            // 添加用户消息并获取响应
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                ChatMessageList.Add(pendingMessage);
+                NotifyScrollToBottom();
+            });
+
+            // 发送消息并获取响应
             await _chatService.SendMessageAsync(
                 ChatId,
                 userInput,
                 token =>
                 {
-                    // 使用Task.Run避免界面阻塞
-                    Task.Run(async () =>
+                    // 在UI线程上更新消息
+                    Dispatcher.UIThread.Post(async () =>
                     {
                         try
                         {
@@ -129,6 +166,7 @@ public partial class ChatViewModel(ChatService chatService) : ViewModelBase
                             if (assistantMessage != null)
                             {
                                 UpdateLatestAssistantMessage(assistantMessage);
+                                NotifyScrollToBottom();
                             }
                         }
                         catch (Exception ex)
@@ -136,13 +174,11 @@ public partial class ChatViewModel(ChatService chatService) : ViewModelBase
                             Console.WriteLine($"更新消息失败: {ex.Message}");
                         }
                     });
-
-                    // 通知滚动到底部
-                    NotifyScrollToBottom();
                 },
                 reasoning =>
                 {
-                    Task.Run(async () =>
+                    // 在UI线程上更新推理内容
+                    Dispatcher.UIThread.Post(async () =>
                     {
                         try
                         {
@@ -152,6 +188,7 @@ public partial class ChatViewModel(ChatService chatService) : ViewModelBase
                             if (assistantMessage != null)
                             {
                                 UpdateLatestAssistantMessage(assistantMessage);
+                                NotifyScrollToBottom();
                             }
                         }
                         catch (Exception ex)
@@ -159,26 +196,25 @@ public partial class ChatViewModel(ChatService chatService) : ViewModelBase
                             Console.WriteLine($"更新推理内容失败: {ex.Message}");
                         }
                     });
-
-                    // 通知滚动到底部
-                    NotifyScrollToBottom();
                 }
             );
-
-            // 最后完全重新加载消息列表，确保界面显示完整
-            await LoadMessagesAsync(ChatId);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"发送消息失败: {ex.Message}");
-            ChatMessageList.Add(
-                new ChatMessage
-                {
-                    Role = "system",
-                    Content = $"发送消息失败: {ex.Message}",
-                    Time = DateTime.Now,
-                }
-            );
+
+            await Dispatcher.UIThread.InvokeAsync(() =>
+            {
+                ChatMessageList.Add(
+                    new ChatMessage
+                    {
+                        Role = "system",
+                        Content = $"发送消息失败: {ex.Message}",
+                        Time = DateTime.Now,
+                    }
+                );
+                NotifyScrollToBottom();
+            });
         }
     }
 
@@ -187,19 +223,23 @@ public partial class ChatViewModel(ChatService chatService) : ViewModelBase
     /// </summary>
     private void UpdateLatestAssistantMessage(ChatMessage message)
     {
-        // 查找ChatMessageList中是否已有该消息
-        var existingMessage = ChatMessageList.FirstOrDefault(m => m.Id == message.Id);
-        if (existingMessage != null)
+        // 确保在UI线程执行
+        Dispatcher.UIThread.Post(() =>
         {
-            // 如果存在，更新内容
-            existingMessage.Content = message.Content;
-            existingMessage.ReasoningContent = message.ReasoningContent;
-        }
-        else
-        {
-            // 如果不存在，添加到列表
-            ChatMessageList.Add(message);
-        }
+            // 查找ChatMessageList中是否已有该消息
+            var existingMessage = ChatMessageList.FirstOrDefault(m => m.Id == message.Id);
+            if (existingMessage != null)
+            {
+                // 如果存在，更新内容
+                existingMessage.Content = message.Content;
+                existingMessage.ReasoningContent = message.ReasoningContent;
+            }
+            else
+            {
+                // 如果不存在，添加到列表
+                ChatMessageList.Add(message);
+            }
+        });
     }
 
     /// <summary>
