@@ -4,50 +4,65 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 
-namespace AvaMujica.Views
+namespace AvaMujica.Views;
+
+public partial class ChatView : UserControl
 {
-    public partial class ChatView : UserControl
+    /// <summary>
+    /// 消息滚动视图
+    /// </summary>
+    private ScrollViewer? _messageScroller;
+
+    /// <summary>
+    /// 聊天视图模型
+    /// </summary>
+    private ViewModels.ChatViewModel? _viewModel;
+
+    /// <summary>
+    /// 聊天视图
+    /// </summary>
+    public ChatView()
     {
-        private ScrollViewer? _messageScroller;
-        private ViewModels.ChatViewModel? _viewModel;
+        InitializeComponent();
+        Loaded += OnChatViewLoaded;
+        DataContextChanged += OnDataContextChanged;
+    }
 
-        public ChatView()
+    /// <summary>
+    /// 处理数据上下文变化事件
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void OnDataContextChanged(object? sender, EventArgs e)
+    {
+        _viewModel = DataContext as ViewModels.ChatViewModel;
+    }
+
+    /// <summary>
+    /// 处理聊天视图加载事件
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    private void OnChatViewLoaded(object? sender, RoutedEventArgs e)
+    {
+        _messageScroller = this.FindControl<ScrollViewer>("MessageScroller");
+        _viewModel = DataContext as ViewModels.ChatViewModel;
+
+        // 滚动到底部
+        ScrollToBottom();
+
+        // 订阅 ViewModel 的滚动事件
+        if (_viewModel != null)
         {
-            InitializeComponent();
-            Loaded += OnChatViewLoaded;
-            DataContextChanged += OnDataContextChanged;
+            _viewModel.ScrollToBottomRequested += ScrollToBottom;
         }
+    }
 
-        private void OnDataContextChanged(object? sender, EventArgs e)
-        {
-            _viewModel = DataContext as ViewModels.ChatViewModel;
-        }
-
-        private void OnChatViewLoaded(object? sender, RoutedEventArgs e)
-        {
-            _messageScroller = this.FindControl<ScrollViewer>("MessageScroller");
-            _viewModel = DataContext as ViewModels.ChatViewModel;
-
-            // 滚动到底部
-            ScrollToBottom();
-
-            // 订阅 ViewModel 的滚动事件
-            if (_viewModel != null)
-            {
-                _viewModel.ScrollToBottomRequested += ScrollToBottom;
-            }
-        }
-
-        private void ScrollToBottom()
-        {
-            // 确保消息列表滚动到底部
-            if (_messageScroller != null)
-            {
-                Dispatcher.UIThread.Post(() =>
-                {
-                    _messageScroller.ScrollToEnd();
-                });
-            }
-        }
+    /// <summary>
+    /// 处理发送按钮点击事件
+    /// </summary>
+    private void ScrollToBottom()
+    {
+        _messageScroller?.ScrollToEnd();
     }
 }
