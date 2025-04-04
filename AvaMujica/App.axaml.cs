@@ -4,6 +4,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using AvaMujica.Services;
 using AvaMujica.ViewModels;
 using AvaMujica.Views;
 

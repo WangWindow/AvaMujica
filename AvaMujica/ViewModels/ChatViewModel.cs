@@ -1,8 +1,6 @@
 using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
-using Avalonia.Threading;
 using AvaMujica.Models;
 using AvaMujica.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -13,12 +11,9 @@ namespace AvaMujica.ViewModels;
 /// <summary>
 /// 聊天视图模型
 /// </summary>
-public partial class ChatViewModel(ChatService chatService) : ViewModelBase
+public partial class ChatViewModel() : ViewModelBase
 {
-    /// <summary>
-    /// 聊天服务
-    /// </summary>
-    private readonly ChatService _chatService = chatService;
+    private readonly ChatService _chatService = ChatService.Instance;
 
     /// <summary>
     /// 输入文本
@@ -36,7 +31,7 @@ public partial class ChatViewModel(ChatService chatService) : ViewModelBase
     /// 聊天开始时间
     /// </summary>
     [ObservableProperty]
-    private DateTime startTime = DateTime.Now;
+    private string startTime = DateTime.Now.ToString("HH:mm");
 
     /// <summary>
     /// 聊天ID
@@ -73,7 +68,7 @@ public partial class ChatViewModel(ChatService chatService) : ViewModelBase
                 {
                     Role = "system",
                     Content = $"加载消息失败: {ex.Message}",
-                    Time = DateTime.Now,
+                    SendTime = DateTime.Now,
                 }
             );
         }
@@ -106,7 +101,7 @@ public partial class ChatViewModel(ChatService chatService) : ViewModelBase
             {
                 Role = "user",
                 Content = userInput,
-                Time = DateTime.Now,
+                SendTime = DateTime.Now,
             };
 
             ChatMessageList.Add(userMessage);
@@ -131,7 +126,7 @@ public partial class ChatViewModel(ChatService chatService) : ViewModelBase
             {
                 Role = "assistant",
                 Content = string.Empty,
-                Time = DateTime.Now,
+                SendTime = DateTime.Now,
             };
 
             ChatMessageList.Add(responseMessage);
@@ -172,7 +167,7 @@ public partial class ChatViewModel(ChatService chatService) : ViewModelBase
                 {
                     Role = "system",
                     Content = $"发送消息失败: {ex.Message}",
-                    Time = DateTime.Now,
+                    SendTime = DateTime.Now,
                 }
             );
             NotifyScrollToBottom();

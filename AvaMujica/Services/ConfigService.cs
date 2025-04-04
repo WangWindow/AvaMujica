@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Threading;
 using AvaMujica.Models;
 
 namespace AvaMujica.Services;
+
+#pragma warning disable CS8604 // 引用类型参数可能为 null
 
 /// <summary>
 /// 配置服务
@@ -11,51 +15,27 @@ namespace AvaMujica.Services;
 /// <remarks>
 /// 构造函数
 /// </remarks>
-/// <param name="database">数据库实例</param>
-public class ConfigService(SqliteDatabase database)
+public class ConfigService
 {
-    /// <summary>
-    /// 数据库实例
-    /// </summary>
-    private readonly SqliteDatabase _database = database;
+    private readonly DatabaseService _databaseService = DatabaseService.Instance;
 
     /// <summary>
-    /// 内存缓存
+    /// 单例实例
     /// </summary>
-    private readonly Dictionary<string, string> _configCache = new Dictionary<string, string>();
-    private bool _cacheInitialized = false;
-
-    /// <summary>
-    /// 初始化配置缓存
-    /// </summary>
-    private void InitializeCache()
+    private static ConfigService? _instance;
+    private static readonly Lock _lock = new();
+    public static ConfigService Instance
     {
-        if (_cacheInitialized)
-            return;
-
-        try
+        get
         {
-            // 提前加载所有配置到内存
-            var configs = _database.Query<KeyValuePair<string, string>>(
-                "SELECT Key, Value FROM Configs",
-                reader => new KeyValuePair<string, string>(
-                    reader.GetString(0),
-                    reader.IsDBNull(1) ? string.Empty : reader.GetString(1)
-                )
-            );
-
-            _configCache.Clear();
-            foreach (var config in configs)
+            if (_instance == null)
             {
-                _configCache[config.Key] = config.Value;
+                lock (_lock)
+                {
+                    _instance ??= new ConfigService();
+                }
             }
-
-            _cacheInitialized = true;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"初始化配置缓存失败: {ex.Message}");
-            _cacheInitialized = false;
+            return _instance;
         }
     }
 
@@ -64,32 +44,18 @@ public class ConfigService(SqliteDatabase database)
     /// </summary>
     /// <param name="key">配置键</param>
     /// <returns>配置对象，如果未找到则返回null</returns>
-    public Config? GetConfig(string key)
+    public ConfigAdapter? GetConfig(string key)
     {
-        InitializeCache();
-
-        if (_cacheInitialized && _configCache.TryGetValue(key, out var cachedValue))
-        {
-            return new Config { Key = key, Value = cachedValue };
-        }
-
         string sql = "SELECT Key, Value FROM Configs WHERE Key = @Key";
         var parameters = new Dictionary<string, object> { { "@Key", key } };
 
-        var config = _database
-            .Query(
-                sql,
-                reader => new Config { Key = reader.GetString(0), Value = reader.GetString(1) },
-                parameters
-            )
-            .FirstOrDefault();
+        var configs = _databaseService.Query(
+            sql,
+            reader => new ConfigAdapter { Key = reader.GetString(0), Value = reader.GetString(1) },
+            parameters
+        );
 
-        if (config != null)
-        {
-            _configCache[key] = config.Value;
-        }
-
-        return config;
+        return configs.Count > 0 ? configs[0] : null;
     }
 
     /// <summary>
@@ -108,12 +74,12 @@ public class ConfigService(SqliteDatabase database)
     /// 获取所有配置
     /// </summary>
     /// <returns>配置列表</returns>
-    public List<Config> GetAllConfigs()
+    public List<ConfigAdapter> GetAllConfigs()
     {
         string sql = "SELECT Key, Value FROM Configs";
-        return _database.Query<Config>(
+        return _databaseService.Query<ConfigAdapter>(
             sql,
-            reader => new Config { Key = reader.GetString(0), Value = reader.GetString(1) }
+            reader => new ConfigAdapter { Key = reader.GetString(0), Value = reader.GetString(1) }
         );
     }
 
@@ -126,23 +92,12 @@ public class ConfigService(SqliteDatabase database)
     {
         string sql =
             @"
-                INSERT INTO Configs (Key, Value)
-                VALUES (@Key, @Value)
-                ON CONFLICT(Key) DO UPDATE SET Value = @Value";
+            INSERT INTO Configs (Key, Value)
+            VALUES (@Key, @Value)
+            ON CONFLICT(Key) DO UPDATE SET Value = @Value";
 
         var parameters = new Dictionary<string, object> { { "@Key", key }, { "@Value", value } };
-
-        _database.ExecuteNonQuery(sql, parameters);
-
-        // 更新缓存
-        if (value != null)
-        {
-            _configCache[key] = value;
-        }
-        else if (_configCache.ContainsKey(key))
-        {
-            _configCache.Remove(key);
-        }
+        _databaseService.ExecuteNonQuery(sql, parameters);
     }
 
     /// <summary>
@@ -155,13 +110,7 @@ public class ConfigService(SqliteDatabase database)
         string sql = "DELETE FROM Configs WHERE Key = @Key";
         var parameters = new Dictionary<string, object> { { "@Key", key } };
 
-        int affectedRows = _database.ExecuteNonQuery(sql, parameters);
-
-        if (_configCache.ContainsKey(key))
-        {
-            _configCache.Remove(key);
-        }
-
+        int affectedRows = _databaseService.ExecuteNonQuery(sql, parameters);
         return affectedRows > 0;
     }
 
@@ -175,8 +124,57 @@ public class ConfigService(SqliteDatabase database)
         string sql = "SELECT COUNT(*) FROM Configs WHERE Key = @Key";
         var parameters = new Dictionary<string, object> { { "@Key", key } };
 
-        long count = Convert.ToInt64(_database.ExecuteScalar(sql, parameters) ?? 0);
+        long count = Convert.ToInt64(_databaseService.ExecuteScalar(sql, parameters) ?? 0);
         return count > 0;
+    }
+
+    /// <summary>
+    /// 尝试将配置值转换为指定类型
+    /// </summary>
+    /// <typeparam name="T">目标类型</typeparam>
+    /// <param name="dbConfig">配置对象</param>
+    /// <param name="property">属性信息</param>
+    /// <param name="config">配置对象实例</param>
+    private bool TryConvertAndSetValue<T>(
+        ConfigAdapter dbConfig,
+        PropertyInfo property,
+        Config config
+    )
+    {
+        if (typeof(T) == typeof(string))
+        {
+            property.SetValue(config, dbConfig.Value);
+            return true;
+        }
+        else
+        {
+            try
+            {
+                if (typeof(T) == typeof(bool) && bool.TryParse(dbConfig.Value, out bool boolValue))
+                {
+                    property.SetValue(config, boolValue);
+                    return true;
+                }
+                else if (
+                    typeof(T) == typeof(float)
+                    && float.TryParse(dbConfig.Value, out float floatValue)
+                )
+                {
+                    property.SetValue(config, floatValue);
+                    return true;
+                }
+                else if (typeof(T) == typeof(int) && int.TryParse(dbConfig.Value, out int intValue))
+                {
+                    property.SetValue(config, intValue);
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"转换失败: {property.Name} - {ex.Message}");
+            }
+        }
+        return false;
     }
 
     /// <summary>
@@ -185,37 +183,53 @@ public class ConfigService(SqliteDatabase database)
     /// <returns>包含所有配置项的Config对象</returns>
     public Config LoadFullConfig()
     {
+        // 创建一个默认配置对象
         var config = new Config();
-        var allConfigs = GetAllConfigs();
 
-        foreach (var item in allConfigs)
+        // 从数据库获取所有配置项
+        var allConfigs = GetAllConfigs();
+        var properties = typeof(Config).GetProperties();
+        var configDict = allConfigs.ToDictionary(c => c.Key);
+
+        foreach (var property in properties)
         {
-            switch (item.Key)
+            // 检查属性是否存在于数据库配置中
+            if (configDict.TryGetValue(property.Name, out var dbConfig))
             {
-                case "ApiKey":
-                    config.ApiKey = item.Value;
-                    break;
-                case "ApiBase":
-                    config.ApiBase = item.Value;
-                    break;
-                case "Model":
-                    config.Model = item.Value;
-                    break;
-                case "SystemPrompt":
-                    config.SystemPrompt = item.Value;
-                    break;
-                case "ShowReasoning":
-                    if (bool.TryParse(item.Value, out bool showReasoning))
-                        config.ShowReasoning = showReasoning;
-                    break;
-                case "Temperature":
-                    if (float.TryParse(item.Value, out float temperature))
-                        config.Temperature = temperature;
-                    break;
-                case "MaxTokens":
-                    if (int.TryParse(item.Value, out int maxTokens))
-                        config.MaxTokens = maxTokens;
-                    break;
+                // 根据属性类型转换并设置值
+                if (property.PropertyType == typeof(string))
+                {
+                    TryConvertAndSetValue<string>(dbConfig, property, config);
+                }
+                else if (property.PropertyType == typeof(bool))
+                {
+                    TryConvertAndSetValue<bool>(dbConfig, property, config);
+                }
+                else if (property.PropertyType == typeof(float))
+                {
+                    TryConvertAndSetValue<float>(dbConfig, property, config);
+                }
+                else if (property.PropertyType == typeof(int))
+                {
+                    TryConvertAndSetValue<int>(dbConfig, property, config);
+                }
+            }
+            else
+            {
+                // 如果数据库中不存在该配置，则使用默认值
+                var defaultValue = property.GetValue(config);
+                if (defaultValue != null)
+                {
+                    // 获取当前配置值
+                    var currentConfig = GetConfig(property.Name);
+
+                    // 仅当默认值与当前值不同时才写入数据库
+                    if (currentConfig == null || currentConfig.Value != defaultValue.ToString())
+                    {
+                        SetConfig(property.Name, defaultValue.ToString());
+                        Console.WriteLine($"写入默认配置: {property.Name}={defaultValue}");
+                    }
+                }
             }
         }
 
@@ -228,182 +242,48 @@ public class ConfigService(SqliteDatabase database)
     /// <param name="config">要保存的配置对象</param>
     public void SaveFullConfig(Config config)
     {
-        SetConfig("ApiKey", config.ApiKey);
-        SetConfig("ApiBase", config.ApiBase);
-        SetConfig("Model", config.Model);
-        SetConfig("SystemPrompt", config.SystemPrompt);
-        SetConfig("ShowReasoning", config.ShowReasoning.ToString());
-        SetConfig("Temperature", config.Temperature.ToString());
-        SetConfig("MaxTokens", config.MaxTokens.ToString());
+        var properties = typeof(Config).GetProperties();
+
+        foreach (var property in properties)
+        {
+            var value = property.GetValue(config);
+            if (value != null)
+            {
+                SetConfig(property.Name, value.ToString());
+            }
+        }
     }
 
     /// <summary>
-    /// 获取API密钥
-    /// </summary>
-    /// <returns>API密钥</returns>
-    public string GetApiKey()
-    {
-        var value = GetValue("ApiKey", string.Empty);
-        return string.IsNullOrEmpty(value)
-            ? Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY") ?? string.Empty
-            : value;
-    }
-
-    /// <summary>
-    /// 设置API密钥
-    /// </summary>
-    /// <param name="apiKey">API密钥</param>
-    public void SetApiKey(string apiKey)
-    {
-        SetConfig("ApiKey", apiKey);
-    }
-
-    /// <summary>
-    /// 获取API基础地址
-    /// </summary>
-    /// <returns>API基础地址</returns>
-    public string GetApiBase()
-    {
-        return GetValue("ApiBase", "https://api.deepseek.com");
-    }
-
-    /// <summary>
-    /// 设置API基础地址
-    /// </summary>
-    /// <param name="apiBase">API基础地址</param>
-    public void SetApiBase(string apiBase)
-    {
-        SetConfig("ApiBase", apiBase);
-    }
-
-    /// <summary>
-    /// 获取模型名称
-    /// </summary>
-    /// <returns>模型名称</returns>
-    public string GetModel()
-    {
-        return GetValue("Model", "deepseek-reasoner");
-    }
-
-    /// <summary>
-    /// 设置模型名称
-    /// </summary>
-    /// <param name="model">模型名称</param>
-    public void SetModel(string model)
-    {
-        SetConfig("Model", model);
-    }
-
-    /// <summary>
-    /// 获取系统提示
-    /// </summary>
-    /// <returns>系统提示</returns>
-    public string GetSystemPrompt()
-    {
-        return GetValue(
-            "SystemPrompt",
-            "你是一名优秀的心理咨询师，具有丰富的咨询经验。你的工作是为用户提供情感支持，解决用户的疑问。"
-        );
-    }
-
-    /// <summary>
-    /// 设置系统提示
-    /// </summary>
-    /// <param name="systemPrompt">系统提示</param>
-    public void SetSystemPrompt(string systemPrompt)
-    {
-        SetConfig("SystemPrompt", systemPrompt);
-    }
-
-    /// <summary>
-    /// 获取是否显示推理过程
-    /// </summary>
-    /// <returns>是否显示推理过程</returns>
-    public bool GetShowReasoning()
-    {
-        var value = GetValue("ShowReasoning", "true");
-        return bool.TryParse(value, out bool result) && result;
-    }
-
-    /// <summary>
-    /// 设置是否显示推理过程
-    /// </summary>
-    /// <param name="showReasoning">是否显示推理过程</param>
-    public void SetShowReasoning(bool showReasoning)
-    {
-        SetConfig("ShowReasoning", showReasoning.ToString());
-    }
-
-    /// <summary>
-    /// 获取温度参数
-    /// </summary>
-    /// <returns>温度参数</returns>
-    public float GetTemperature()
-    {
-        var value = GetValue("Temperature", "1.3");
-        return float.TryParse(value, out float result) ? result : 1.3f;
-    }
-
-    /// <summary>
-    /// 设置温度参数
-    /// </summary>
-    /// <param name="temperature">温度参数</param>
-    public void SetTemperature(float temperature)
-    {
-        SetConfig("Temperature", temperature.ToString());
-    }
-
-    /// <summary>
-    /// 获取最大令牌数
-    /// </summary>
-    /// <returns>最大令牌数</returns>
-    public int GetMaxTokens()
-    {
-        var value = GetValue("MaxTokens", "2000");
-        return int.TryParse(value, out int result) ? result : 2000;
-    }
-
-    /// <summary>
-    /// 设置最大令牌数
-    /// </summary>
-    /// <param name="maxTokens">最大令牌数</param>
-    public void SetMaxTokens(int maxTokens)
-    {
-        SetConfig("MaxTokens", maxTokens.ToString());
-    }
-
-    /// <summary>
-    /// 初始化默认配置（如果不存在）
+    /// 初始化默认配置
     /// </summary>
     public void InitializeDefaultConfig()
     {
-        if (!ConfigExists("ApiBase"))
-            SetConfig("ApiBase", "https://api.deepseek.com");
+        var defaultConfig = new Config();
+        var properties = typeof(Config).GetProperties();
 
-        if (!ConfigExists("Model"))
-            SetConfig("Model", "deepseek-reasoner");
-
-        if (!ConfigExists("SystemPrompt"))
-            SetConfig(
-                "SystemPrompt",
-                "你是一名优秀的心理咨询师，具有丰富的咨询经验。你的工作是为用户提供情感支持，解决用户的疑问。"
-            );
-
-        if (!ConfigExists("ShowReasoning"))
-            SetConfig("ShowReasoning", "true");
-
-        if (!ConfigExists("Temperature"))
-            SetConfig("Temperature", "1.3");
-
-        if (!ConfigExists("MaxTokens"))
-            SetConfig("MaxTokens", "2000");
-
-        // API密钥不设置默认值，从环境变量获取
-        if (string.IsNullOrEmpty(GetValue("ApiKey", "")))
+        foreach (var property in properties)
         {
-            var envApiKey = Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY");
-            if (!string.IsNullOrEmpty(envApiKey))
-                SetConfig("ApiKey", envApiKey);
+            var propertyName = property.Name;
+            if (!ConfigExists(propertyName))
+            {
+                var value = property.GetValue(defaultConfig);
+                if (value != null)
+                {
+                    SetConfig(propertyName, value.ToString());
+                    Console.WriteLine($"初始化默认配置: {propertyName}={value}");
+                }
+            }
         }
+    }
+
+    /// <summary>
+    /// 重置所有配置为默认值
+    /// </summary>
+    public void ResetAllToDefaults()
+    {
+        var defaultConfig = new Config();
+        SaveFullConfig(defaultConfig);
+        Console.WriteLine("所有配置已重置为默认值");
     }
 }

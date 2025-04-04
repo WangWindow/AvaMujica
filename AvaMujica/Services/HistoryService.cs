@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AvaMujica.Models;
 
@@ -9,25 +10,28 @@ namespace AvaMujica.Services;
 /// <summary>
 /// 历史记录服务
 /// </summary>
-/// <remarks>
-/// 构造函数
-/// </remarks>
-/// <param name="databaseService">数据库服务</param>
-public class HistoryService(DatabaseService databaseService)
+public class HistoryService
 {
-    /// <summary>
-    /// 数据库服务
-    /// </summary>
-    private readonly DatabaseService _databaseService = databaseService;
+    private readonly DatabaseService _databaseService = DatabaseService.Instance;
 
     /// <summary>
-    /// 获取会话历史记录
+    /// 单例实例
     /// </summary>
-    /// <returns>按日期分组的历史记录</returns>
-    public async Task<List<HistoryGroup>> GetHistoryGroupsAsync()
+    private static HistoryService? _instance;
+    private static readonly Lock _lock = new();
+    public static HistoryService Instance
     {
-        var historyItems = await _databaseService.GetHistoryInfoAsync();
-        return GroupHistoryByDate(historyItems);
+        get
+        {
+            if (_instance == null)
+            {
+                lock (_lock)
+                {
+                    _instance ??= new HistoryService();
+                }
+            }
+            return _instance;
+        }
     }
 
     /// <summary>
@@ -35,26 +39,71 @@ public class HistoryService(DatabaseService databaseService)
     /// </summary>
     /// <param name="type">会话类型</param>
     /// <returns>按日期分组的历史记录</returns>
-    public async Task<List<HistoryGroup>> GetHistoryGroupsByTypeAsync(string type)
+    public async Task<List<ChatSessionGroup>> GetChatSessionHistorysByTypeAsync(string type)
     {
-        var historyItems = await _databaseService.GetHistoryInfoByTypeAsync(type);
+        var historyItems = await GetChatSessionByTypeAsync(type);
         return GroupHistoryByDate(historyItems);
+    }
+
+    /// <summary>
+    /// 获取历史记录信息
+    /// </summary>
+    /// <returns>历史记录信息</returns>
+    public async Task<List<ChatSession>> GetChatSessionAsync()
+    {
+        return await Task.Run(() =>
+        {
+            return _databaseService.Query<ChatSession>(
+                "SELECT Id, Title, Type, CreatedTime FROM ChatSessions ORDER BY UpdatedTime DESC",
+                reader => new ChatSession
+                {
+                    Id = reader.GetString(0),
+                    Title = reader.GetString(1),
+                    Type = reader.GetString(2),
+                    CreatedTime = reader.GetDateTime(3),
+                }
+            );
+        });
+    }
+
+    /// <summary>
+    /// 获取特定类型的历史记录信息
+    /// </summary>
+    /// <param name="type">会话类型</param>
+    /// <returns>历史记录信息</returns>
+    public async Task<List<ChatSession>> GetChatSessionByTypeAsync(string type)
+    {
+        // 直接使用类型名称进行查询，不需要转换
+        return await Task.Run(() =>
+        {
+            return _databaseService.Query<ChatSession>(
+                "SELECT Id, Title, Type, CreatedTime FROM ChatSessions WHERE Type = $type ORDER BY UpdatedTime DESC",
+                reader => new ChatSession
+                {
+                    Id = reader.GetString(0),
+                    Title = reader.GetString(1),
+                    Type = reader.GetString(2),
+                    CreatedTime = reader.GetDateTime(3),
+                },
+                new Dictionary<string, object> { { "$type", type } }
+            );
+        });
     }
 
     /// <summary>
     /// 将历史记录按日期分组
     /// </summary>
-    private List<HistoryGroup> GroupHistoryByDate(List<HistoryInfo> historyItems)
+    private List<ChatSessionGroup> GroupHistoryByDate(List<ChatSession> historyItems)
     {
-        var result = new List<HistoryGroup>();
+        var result = new List<ChatSessionGroup>();
 
         // 按日期分组
         var groupedHistory = historyItems
-            .OrderByDescending(h => h.Time)
-            .GroupBy(h => h.Time.Date)
+            .OrderByDescending(h => h.CreatedTime)
+            .GroupBy(h => h.CreatedTime.Date)
             .Select(g => new { Date = g.Key, Items = g.ToList() });
 
-        // 转换为HistoryGroup对象
+        // 转换为ChatSessionGroup对象
         foreach (var group in groupedHistory)
         {
             string groupKey;
@@ -79,7 +128,7 @@ public class HistoryService(DatabaseService databaseService)
                 groupKey = group.Date.ToString("yyyy年M月");
             }
 
-            result.Add(new HistoryGroup(groupKey, group.Items));
+            result.Add(new ChatSessionGroup(groupKey, group.Items));
         }
 
         return result;

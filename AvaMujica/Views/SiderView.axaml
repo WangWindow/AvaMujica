@@ -61,14 +61,13 @@
                         HorizontalAlignment="Stretch"
                         SelectedIndex="0"
                         SelectedItem="{Binding SelectedSessionType}">
-                        <ComboBoxItem Content="所有会话" />
-                        <ComboBoxItem Content="心理咨询会话" />
-                        <ComboBoxItem Content="心理评估会话" />
-                        <ComboBoxItem Content="干预方案会话" />
+                        <ComboBoxItem Content="心理咨询" />
+                        <ComboBoxItem Content="心理评估" />
+                        <ComboBoxItem Content="干预方案" />
                     </ComboBox>
 
                     <!--  分组历史记录  -->
-                    <ItemsControl Name="HistoryItems" ItemsSource="{Binding HistoryGroups}">
+                    <ItemsControl Name="HistoryItems" ItemsSource="{Binding ChatSessionGroups}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <!--  时间分组标题  -->
@@ -118,7 +117,7 @@
                                                             HorizontalAlignment="Right"
                                                             VerticalAlignment="Center"
                                                             Foreground="{DynamicResource SystemBaseMediumColor}"
-                                                            Text="{Binding FormattedTime}" />
+                                                            Text="{Binding UpdatedTime}" />
                                                     </Grid>
                                                 </Button>
                                             </DataTemplate>

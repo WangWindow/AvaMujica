@@ -1,6 +1,6 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
 using AvaMujica.Models;
 using AvaMujica.Services;
@@ -12,17 +12,20 @@ namespace AvaMujica.ViewModels;
 /// <summary>
 /// 主视图模型
 /// </summary>
-public partial class MainViewModel : ViewModelBase
+public partial class MainViewModel : ObservableObject
 {
+    private readonly ChatService _chatService = ChatService.Instance;
+    private readonly HistoryService _historyService = HistoryService.Instance;
+
+    /// <summary>
+    /// SessionID 到 ChatViewModel 的映射字典，用于快速查找
+    /// </summary>
+    private readonly Dictionary<string, ChatViewModel> _chatViewModelMap = new();
+
     /// <summary>
     /// 窗口标题
     /// </summary>
     public string Title { get; set; } = "AvaMujica";
-
-    /// <summary>
-    /// 服务集合
-    /// </summary>
-    private readonly ServiceCollection _services;
 
     /// <summary>
     /// 侧边栏是否打开(默认关闭)
@@ -80,15 +83,12 @@ public partial class MainViewModel : ViewModelBase
     /// <summary>
     /// 历史记录集合（按日期分组）
     /// </summary>
-    public ObservableCollection<HistoryGroup> HistoryGroups { get; } = [];
+    public ObservableCollection<ChatSessionGroup> ChatSessionGroups { get; } = [];
 
     public MainViewModel()
     {
         try
         {
-            // 获取服务实例
-            _services = ServiceCollection.Instance;
-
             // 初始化视图模型
             SiderViewModel = new SiderViewModel(this);
             SettingsViewModel = new SettingsViewModel(this);
@@ -99,9 +99,6 @@ public partial class MainViewModel : ViewModelBase
         catch (Exception ex)
         {
             Console.WriteLine($"MainViewModel初始化失败: {ex.Message}");
-            // 提供一个基础的错误处理，避免应用崩溃
-            _services = ServiceCollection.Instance; // 尝试重新获取服务
-
             // 确保在出现异常时仍然初始化所需属性
             SiderViewModel ??= new SiderViewModel(this);
             SettingsViewModel ??= new SettingsViewModel(this);
@@ -132,19 +129,22 @@ public partial class MainViewModel : ViewModelBase
     {
         try
         {
-            var sessions = await _services.ChatService.GetAllSessionsAsync();
+            var sessions = await _chatService.GetAllSessionsAsync();
 
             Chats.Clear();
+            _chatViewModelMap.Clear();
+
             foreach (var session in sessions)
             {
-                var chatViewModel = new ChatViewModel(_services.ChatService)
+                var chatViewModel = new ChatViewModel()
                 {
                     ChatId = session.Id,
                     ChatTitle = session.Title,
-                    StartTime = session.CreatedAt,
+                    StartTime = session.CreatedTime.ToString("HH:mm"),
                 };
                 await chatViewModel.LoadMessagesAsync(session.Id);
                 Chats.Add(chatViewModel);
+                _chatViewModelMap[session.Id] = chatViewModel;
             }
 
             // 如果有会话，选择第一个作为当前会话
@@ -172,18 +172,24 @@ public partial class MainViewModel : ViewModelBase
     {
         try
         {
-            var historyGroups = await _services.ChatService.GetHistoryGroupsAsync();
+            var historyGroups = await _historyService.GetChatSessionHistorysByTypeAsync(
+                ChatSessionType.PsychologicalConsultation
+            );
 
-            HistoryGroups.Clear();
+            ChatSessionGroups.Clear();
             foreach (var group in historyGroups)
             {
                 // 关联ChatViewModel到历史记录
                 foreach (var item in group.Items)
                 {
-                    item.ChatViewModel = Chats.FirstOrDefault(c => c.ChatId == item.Id);
+                    // 使用映射字典快速查找ChatViewModel
+                    if (_chatViewModelMap.TryGetValue(item.Id, out var chatViewModel))
+                    {
+                        item.ChatViewModel = chatViewModel;
+                    }
                 }
 
-                HistoryGroups.Add(group);
+                ChatSessionGroups.Add(group);
             }
         }
         catch (Exception ex)
@@ -276,27 +282,28 @@ public partial class MainViewModel : ViewModelBase
         try
         {
             // 确定会话类型
-            string sessionType = "咨询";
+            string sessionType = ChatSessionType.PsychologicalConsultation;
             if (IsAssessmentModuleSelected)
-                sessionType = "评估";
+                sessionType = ChatSessionType.PsychologicalAssessment;
             else if (IsInterventionModuleSelected)
-                sessionType = "干预";
+                sessionType = ChatSessionType.InterventionPlan;
 
             // 创建会话
-            var session = await _services.ChatService.CreateSessionAsync(
+            var session = await _chatService.CreateSessionAsync(
                 $"新会话 {Chats.Count + 1}",
                 sessionType
             );
 
             // 创建视图模型
-            var newChat = new ChatViewModel(_services.ChatService)
+            var newChat = new ChatViewModel()
             {
                 ChatId = session.Id,
                 ChatTitle = session.Title,
-                StartTime = session.CreatedAt,
+                StartTime = session.CreatedTime.ToString("HH:mm"),
             };
 
             Chats.Add(newChat);
+            _chatViewModelMap[session.Id] = newChat;
             CurrentChat = newChat;
 
             // 刷新历史记录
@@ -337,8 +344,8 @@ public partial class MainViewModel : ViewModelBase
     /// <param name="sessionId">会话ID</param>
     public void SwitchToChat(string sessionId)
     {
-        var chat = Chats.FirstOrDefault(c => c.ChatId == sessionId);
-        if (chat != null)
+        // 使用映射字典快速查找ChatViewModel
+        if (_chatViewModelMap.TryGetValue(sessionId, out var chat))
         {
             CurrentChat = chat;
             IsSiderOpen = false;
@@ -352,13 +359,13 @@ public partial class MainViewModel : ViewModelBase
     {
         try
         {
-            await _services.ChatService.DeleteSessionAsync(sessionId);
+            await _chatService.DeleteSessionAsync(sessionId);
 
-            // 从列表中移除
-            var chat = Chats.FirstOrDefault(c => c.ChatId == sessionId);
-            if (chat != null)
+            // 从列表和映射中移除
+            if (_chatViewModelMap.TryGetValue(sessionId, out var chat))
             {
                 Chats.Remove(chat);
+                _chatViewModelMap.Remove(sessionId);
 
                 // 如果删除的是当前会话，切换到其他会话
                 if (CurrentChat == chat)
@@ -385,8 +392,13 @@ public partial class MainViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// 获取服务集合
+    /// 根据会话ID获取对应的ChatViewModel
     /// </summary>
-    /// <returns>服务集合</returns>
-    public ServiceCollection GetServices() => _services;
+    /// <param name="sessionId">会话ID</param>
+    /// <returns>对应的ChatViewModel，如果不存在返回null</returns>
+    public ChatViewModel? GetChatViewModel(string sessionId)
+    {
+        _chatViewModelMap.TryGetValue(sessionId, out var chatViewModel);
+        return chatViewModel;
+    }
 }
