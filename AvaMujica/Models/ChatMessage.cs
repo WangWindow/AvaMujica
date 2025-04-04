@@ -1,11 +1,12 @@
 using System;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace AvaMujica.Models;
 
 /// <summary>
 /// 聊天消息类
 /// </summary>
-public class ChatMessage
+public partial class ChatMessage : ObservableObject
 {
     /// <summary>
     /// 消息ID
@@ -23,14 +24,17 @@ public class ChatMessage
     public string Role { get; set; } = string.Empty;
 
     /// <summary>
+    /// <summary>
     /// 内容
     /// </summary>
-    public string Content { get; set; } = string.Empty;
+    [ObservableProperty]
+    private string content = string.Empty;
 
     /// <summary>
     /// 推理内容
     /// </summary>
-    public string? ReasoningContent { get; set; }
+    [ObservableProperty]
+    private string? reasoningContent;
 
     /// <summary>
     /// 消息发送时间

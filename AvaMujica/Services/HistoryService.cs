@@ -8,12 +8,11 @@ using AvaMujica.Models;
 namespace AvaMujica.Services;
 
 /// <summary>
-/// 聊天历史记录服务，负责会话和消息管理
+/// 聊天历史记录服务
 /// </summary>
 public class HistoryService
 {
     private readonly DatabaseService _databaseService = DatabaseService.Instance;
-    private readonly ApiService _apiService = ApiService.Instance;
 
     /// <summary>
     /// 单例实例
@@ -172,27 +171,6 @@ public class HistoryService
     }
 
     /// <summary>
-    /// 删除会话
-    /// </summary>
-    public async Task DeleteSessionAsync(string sessionId)
-    {
-        await Task.Run(() =>
-        {
-            // 删除会话的所有消息
-            _databaseService.ExecuteNonQuery(
-                "DELETE FROM ChatMessages WHERE SessionId = $sessionId",
-                new Dictionary<string, object> { { "$sessionId", sessionId } }
-            );
-
-            // 删除会话
-            _databaseService.ExecuteNonQuery(
-                "DELETE FROM ChatSessions WHERE Id = $sessionId",
-                new Dictionary<string, object> { { "$sessionId", sessionId } }
-            );
-        });
-    }
-
-    /// <summary>
     /// 获取指定会话的所有消息
     /// </summary>
     public async Task<List<ChatMessage>> GetSessionMessagesAsync(string sessionId)
@@ -286,102 +264,6 @@ public class HistoryService
                 }
             );
         });
-    }
-
-    /// <summary>
-    /// 获取指定会话的最新一条助手消息
-    /// </summary>
-    public async Task<ChatMessage?> GetLatestAssistantMessageAsync(string sessionId)
-    {
-        return await Task.Run(() =>
-        {
-            var messages = _databaseService.Query<ChatMessage>(
-                "SELECT * FROM ChatMessages WHERE SessionId = $sessionId AND Role = 'assistant' ORDER BY SendTime DESC LIMIT 1",
-                reader => new ChatMessage
-                {
-                    Id = reader.GetString(0),
-                    SessionId = reader.GetString(1),
-                    Role = reader.GetString(2),
-                    Content = reader.GetString(3),
-                    ReasoningContent = reader.IsDBNull(4) ? null : reader.GetString(4),
-                    SendTime = DateTime.Parse(reader.GetString(5)),
-                },
-                new Dictionary<string, object> { { "$sessionId", sessionId } }
-            );
-
-            return messages.Count > 0 ? messages[0] : null;
-        });
-    }
-
-    /// <summary>
-    /// 发送消息并获取AI回复
-    /// </summary>
-    public async Task<ChatMessage> SendMessageAsync(
-        string sessionId,
-        string userContent,
-        Action<string>? onReceiveToken = null,
-        Action<string>? onReceiveReasoning = null
-    )
-    {
-        if (string.IsNullOrWhiteSpace(userContent))
-        {
-            throw new ArgumentException("消息内容不能为空", nameof(userContent));
-        }
-
-        // 添加用户消息
-        var userMessage = ChatMessage.CreateUserMessage(sessionId, userContent);
-        await AddMessageAsync(sessionId, userMessage);
-
-        // 创建助手消息（初始为空）
-        var assistantMessage = ChatMessage.CreateAssistantMessage(sessionId);
-
-        // 先保存空消息到数据库
-        await AddMessageAsync(sessionId, assistantMessage);
-
-        // 调用API获取响应，并随时更新数据库
-        await _apiService.ChatAsync(
-            userContent,
-            async (type, message) =>
-            {
-                await HandleApiResponse(
-                    assistantMessage,
-                    type,
-                    message,
-                    onReceiveToken,
-                    onReceiveReasoning
-                );
-            }
-        );
-
-        return assistantMessage;
-    }
-
-    /// <summary>
-    /// 处理API响应，更新消息内容并保存到数据库
-    /// </summary>
-    private async Task HandleApiResponse(
-        ChatMessage assistantMessage,
-        ResponseType type,
-        string message,
-        Action<string>? onReceiveToken = null,
-        Action<string>? onReceiveReasoning = null
-    )
-    {
-        if (type == ResponseType.Content)
-        {
-            // 更新内容
-            assistantMessage.Content += message;
-            onReceiveToken?.Invoke(message);
-        }
-        else if (type == ResponseType.ReasoningContent)
-        {
-            // 更新推理内容
-            assistantMessage.ReasoningContent += message;
-            onReceiveReasoning?.Invoke(message);
-        }
-
-        // 每收到一块内容就更新数据库
-        await UpdateMessageAsync(assistantMessage);
     }
 
     /// <summary>

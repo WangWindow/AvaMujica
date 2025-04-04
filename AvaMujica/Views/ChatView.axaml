@@ -80,23 +80,6 @@
                                         CornerRadius="10"
                                         IsVisible="{Binding Role, Converter={StaticResource ValueEqualsConverter}, ConverterParameter=assistant}">
                                         <StackPanel>
-                                            <!--  加载中状态显示  -->
-                                            <StackPanel
-                                                Margin="0,5,0,10"
-                                                HorizontalAlignment="Center"
-                                                IsVisible="{Binding Converter={StaticResource MessageLoadingConverter}}">
-                                                <ProgressBar
-                                                    Width="100"
-                                                    Height="4"
-                                                    IsIndeterminate="True" />
-                                                <TextBlock
-                                                    Margin="0,5,0,0"
-                                                    HorizontalAlignment="Center"
-                                                    FontSize="12"
-                                                    Foreground="#666666"
-                                                    Text="思考中..." />
-                                            </StackPanel>
-
                                             <!--  推理过程（可折叠，默认展开）  -->
                                             <Expander IsExpanded="True" IsVisible="{Binding ReasoningContent, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
                                                 <Expander.Header>
@@ -148,6 +131,8 @@
                     Background="Transparent"
                     BorderBrush="#BBDEFB"
                     BorderThickness="1"
+                    Command="{Binding QuickMessageCommand}"
+                    CommandParameter="感到焦虑"
                     CornerRadius="15"
                     FontSize="11">
                     <StackPanel Orientation="Horizontal" Spacing="4">
@@ -155,7 +140,7 @@
                             Width="12"
                             Height="12"
                             Data="{StaticResource emoji_sad_regular}" />
-                        <TextBlock Text="我感到焦虑" />
+                        <TextBlock Text="感到焦虑" />
                     </StackPanel>
                 </Button>
                 <Button
@@ -163,6 +148,8 @@
                     Background="Transparent"
                     BorderBrush="#BBDEFB"
                     BorderThickness="1"
+                    Command="{Binding QuickMessageCommand}"
+                    CommandParameter="需要放松"
                     CornerRadius="15"
                     FontSize="11">
                     <StackPanel Orientation="Horizontal" Spacing="4">
@@ -178,6 +165,8 @@
                     Background="Transparent"
                     BorderBrush="#BBDEFB"
                     BorderThickness="1"
+                    Command="{Binding QuickMessageCommand}"
+                    CommandParameter="睡眠问题"
                     CornerRadius="15"
                     FontSize="11">
                     <StackPanel Orientation="Horizontal" Spacing="4">

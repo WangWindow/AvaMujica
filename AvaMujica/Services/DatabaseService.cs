@@ -7,7 +7,7 @@ using Microsoft.Data.Sqlite;
 namespace AvaMujica.Services;
 
 /// <summary>
-/// 数据库操作服务类
+/// 数据库操作服务
 /// </summary>
 public class DatabaseService : IDisposable
 {

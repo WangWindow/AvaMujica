@@ -14,7 +14,6 @@
     </Application.DataTemplates>
 
     <Application.Resources>
-        <local:MessageLoadingConverter x:Key="MessageLoadingConverter" />
         <local:ValueEqualsConverter x:Key="ValueEqualsConverter" />
     </Application.Resources>
 

@@ -13,6 +13,7 @@ namespace AvaMujica.ViewModels;
 /// </summary>
 public partial class ChatViewModel : ViewModelBase
 {
+    private readonly ApiService _apiService = ApiService.Instance;
     private readonly HistoryService _historyService = HistoryService.Instance;
 
     /// <summary>
@@ -61,6 +62,32 @@ public partial class ChatViewModel : ViewModelBase
     }
 
     /// <summary>
+    /// 快速消息命令
+    /// </summary>
+    [RelayCommand]
+    private async Task QuickMessage(string message)
+    {
+        // 针对特定快捷消息添加更详细的描述
+        string enhancedMessage = message;
+        switch (message)
+        {
+            case "感到焦虑":
+                enhancedMessage = "我最近感到非常焦虑，总是担心各种事情，请给我一些建议。";
+                break;
+            case "需要放松":
+                enhancedMessage =
+                    "我最近压力很大，需要一些放松的方法，能介绍几种简单有效的放松技巧吗？";
+                break;
+            case "睡眠问题":
+                enhancedMessage = "我最近睡眠质量很差，难以入睡，请问有什么改善睡眠的方法？";
+                break;
+        }
+
+        InputText = enhancedMessage;
+        await SendAsync();
+    }
+
+    /// <summary>
     /// 发送消息命令
     /// </summary>
     [RelayCommand(CanExecute = nameof(CanSend))]
@@ -83,6 +110,9 @@ public partial class ChatViewModel : ViewModelBase
 
         ChatMessageList.Add(userMessage);
 
+        // 保存用户消息到数据库
+        await _historyService.AddMessageAsync(ChatId, userMessage);
+
         // 如果是首次对话，更新标题
         if (ChatMessageList.Count <= 1)
         {
@@ -97,23 +127,35 @@ public partial class ChatViewModel : ViewModelBase
             }
         }
 
-        // 创建一个空的回复消息，表示正在思考
+        // 创建回复消息
         var responseMessage = new ChatMessage
         {
             Role = "assistant",
             Content = string.Empty,
+            ReasoningContent = string.Empty,
             SendTime = DateTime.Now,
             SessionId = ChatId,
         };
 
         ChatMessageList.Add(responseMessage);
 
-        // 发送消息并获取响应
-        await _historyService.SendMessageAsync(
-            ChatId,
+        // 直接使用ApiService发送消息并获取响应
+        await _apiService.ChatAsync(
             userInput,
-            token => responseMessage.Content += token,
-            reasoning => responseMessage.ReasoningContent += reasoning
+            async (type, content) =>
+            {
+                if (type == ResponseType.Content)
+                {
+                    responseMessage.Content += content;
+                }
+                else if (type == ResponseType.ReasoningContent)
+                {
+                    responseMessage.ReasoningContent += content;
+                }
+
+                // 更新数据库中的消息
+                await _historyService.UpdateMessageAsync(responseMessage);
+            }
         );
     }
 

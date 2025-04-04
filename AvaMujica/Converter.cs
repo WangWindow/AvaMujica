@@ -6,37 +6,6 @@ using AvaMujica.Models;
 namespace AvaMujica;
 
 /// <summary>
-/// 提供消息加载状态的值转换器
-/// </summary>
-public class MessageLoadingConverter : IValueConverter
-{
-    /// <summary>
-    /// 根据消息内容和角色判断是否处于加载状态
-    /// </summary>
-    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
-    {
-        if (value is ChatMessage message)
-        {
-            return string.IsNullOrEmpty(message.Content) && message.Role == "assistant";
-        }
-        return false;
-    }
-
-    /// <summary>
-    /// 反向转换（不实现）
-    /// </summary>
-    public object? ConvertBack(
-        object? value,
-        Type targetType,
-        object? parameter,
-        CultureInfo culture
-    )
-    {
-        throw new NotImplementedException();
-    }
-}
-
-/// <summary>
 /// 通用值比较转换器，比较输入值是否与参数相等
 /// </summary>
 public class ValueEqualsConverter : IValueConverter
@@ -50,7 +19,7 @@ public class ValueEqualsConverter : IValueConverter
     }
 
     /// <summary>
-    /// 反向转换（不实现）
+    /// 反向转换，用于RadioButton选择等双向绑定场景
     /// </summary>
     public object? ConvertBack(
         object? value,
@@ -59,6 +28,10 @@ public class ValueEqualsConverter : IValueConverter
         CultureInfo culture
     )
     {
-        return value?.Equals(parameter);
+        if (value is bool boolValue && boolValue)
+        {
+            return parameter;
+        }
+        return null;
     }
 }
