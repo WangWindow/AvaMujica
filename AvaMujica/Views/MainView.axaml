@@ -8,6 +8,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:AvaMujica"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:AvaMujica.Models"
     xmlns:views="using:AvaMujica.Views"
     xmlns:vm="using:AvaMujica.ViewModels"
     d:DesignHeight="900"
@@ -130,7 +131,7 @@
                                         VerticalAlignment="Center"
                                         Background="Transparent"
                                         Command="{Binding CreateNewChatCommand}"
-                                        IsVisible="{Binding IsConsultationModuleSelected}">
+                                        IsVisible="{Binding CurrentModule, Converter={StaticResource ValueEqualsConverter}, ConverterParameter={x:Static models:ChatSessionType.PsychologicalConsultation}}">
                                         <PathIcon Data="{StaticResource add_square_regular}" />
                                     </Button>
                                 </Panel>
@@ -143,14 +144,15 @@
                                             Padding="8,2"
                                             VerticalAlignment="Center"
                                             Classes="NavTab"
+                                            Command="{Binding SwitchToConsultationModuleCommand}"
                                             GroupName="ModuleNav"
-                                            IsChecked="{Binding IsConsultationModuleSelected}">
+                                            IsChecked="{Binding CurrentModule, Converter={StaticResource ValueEqualsConverter}, ConverterParameter={x:Static models:ChatSessionType.PsychologicalConsultation}}">
                                             <StackPanel Orientation="Horizontal" Spacing="4">
                                                 <PathIcon
                                                     Width="16"
                                                     Height="16"
                                                     Data="{StaticResource chat_regular}" />
-                                                <TextBlock FontSize="12" Text="心理咨询" />
+                                                <TextBlock FontSize="12" Text="{x:Static models:ChatSessionType.PsychologicalConsultation}" />
                                             </StackPanel>
                                         </RadioButton>
 
@@ -159,14 +161,15 @@
                                             Padding="8,2"
                                             VerticalAlignment="Center"
                                             Classes="NavTab"
+                                            Command="{Binding SwitchToAssessmentModuleCommand}"
                                             GroupName="ModuleNav"
-                                            IsChecked="{Binding IsAssessmentModuleSelected}">
+                                            IsChecked="{Binding CurrentModule, Converter={StaticResource ValueEqualsConverter}, ConverterParameter={x:Static models:ChatSessionType.PsychologicalAssessment}}">
                                             <StackPanel Orientation="Horizontal" Spacing="4">
                                                 <PathIcon
                                                     Width="16"
                                                     Height="16"
                                                     Data="{StaticResource clipboard_text_regular}" />
-                                                <TextBlock FontSize="12" Text="心理评估" />
+                                                <TextBlock FontSize="12" Text="{x:Static models:ChatSessionType.PsychologicalConsultation}" />
                                             </StackPanel>
                                         </RadioButton>
 
@@ -175,14 +178,15 @@
                                             Padding="8,2"
                                             VerticalAlignment="Center"
                                             Classes="NavTab"
+                                            Command="{Binding SwitchToInterventionModuleCommand}"
                                             GroupName="ModuleNav"
-                                            IsChecked="{Binding IsInterventionModuleSelected}">
+                                            IsChecked="{Binding CurrentModule, Converter={StaticResource ValueEqualsConverter}, ConverterParameter={x:Static models:ChatSessionType.InterventionPlan}}">
                                             <StackPanel Orientation="Horizontal" Spacing="4">
                                                 <PathIcon
                                                     Width="16"
                                                     Height="16"
                                                     Data="{StaticResource book_regular}" />
-                                                <TextBlock FontSize="12" Text="干预方案" />
+                                                <TextBlock FontSize="12" Text="{x:Static models:ChatSessionType.InterventionPlan}" />
                                             </StackPanel>
                                         </RadioButton>
                                     </StackPanel>
@@ -194,12 +198,12 @@
                     <!--  TODO: 主内容区域 - 包含功能模块  -->
                     <Grid Grid.Row="1">
                         <!--  心理咨询模块  -->
-                        <Grid IsVisible="{Binding IsConsultationModuleSelected}">
+                        <Grid IsVisible="{Binding CurrentModule, Converter={StaticResource ValueEqualsConverter}, ConverterParameter={x:Static models:ChatSessionType.PsychologicalConsultation}}">
                             <views:ChatView DataContext="{Binding CurrentChat}" />
                         </Grid>
 
                         <!--  心理评估模块  -->
-                        <Grid IsVisible="{Binding IsAssessmentModuleSelected}">
+                        <Grid IsVisible="{Binding CurrentModule, Converter={StaticResource ValueEqualsConverter}, ConverterParameter={x:Static models:ChatSessionType.PsychologicalAssessment}}">
                             <TextBlock
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
@@ -208,7 +212,7 @@
                         </Grid>
 
                         <!--  干预方案模块  -->
-                        <Grid IsVisible="{Binding IsInterventionModuleSelected}">
+                        <Grid IsVisible="{Binding CurrentModule, Converter={StaticResource ValueEqualsConverter}, ConverterParameter={x:Static models:ChatSessionType.InterventionPlan}}">
                             <TextBlock
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"

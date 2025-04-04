@@ -52,22 +52,10 @@ public partial class MainViewModel : ViewModelBase
     private bool isSettingsViewVisible = false;
 
     /// <summary>
-    /// 是否选择了心理咨询模块（默认选中）
+    /// 当前选中的模块
     /// </summary>
     [ObservableProperty]
-    private bool isConsultationModuleSelected = true;
-
-    /// <summary>
-    /// 是否选择了心理评估模块
-    /// </summary>
-    [ObservableProperty]
-    private bool isAssessmentModuleSelected = false;
-
-    /// <summary>
-    /// 是否选择了干预方案模块
-    /// </summary>
-    [ObservableProperty]
-    private bool isInterventionModuleSelected = false;
+    private string currentModule = ChatSessionType.PsychologicalConsultation;
 
     /// <summary>
     /// 所有对话列表
@@ -159,49 +147,12 @@ public partial class MainViewModel : ViewModelBase
     }
 
     /// <summary>
-    /// 当心理咨询模块选择状态改变时触发
-    /// </summary>
-    partial void OnIsConsultationModuleSelectedChanged(bool value)
-    {
-        if (value)
-        {
-            IsAssessmentModuleSelected = false;
-            IsInterventionModuleSelected = false;
-        }
-    }
-
-    /// <summary>
-    /// 当心理评估模块选择状态改变时触发
-    /// </summary>
-    partial void OnIsAssessmentModuleSelectedChanged(bool value)
-    {
-        if (value)
-        {
-            IsConsultationModuleSelected = false;
-            IsInterventionModuleSelected = false;
-        }
-    }
-
-    /// <summary>
-    /// 当干预方案模块选择状态改变时触发
-    /// </summary>
-    partial void OnIsInterventionModuleSelectedChanged(bool value)
-    {
-        if (value)
-        {
-            IsConsultationModuleSelected = false;
-            IsAssessmentModuleSelected = false;
-        }
-    }
-
-    /// <summary>
     /// 切换到心理咨询模块
     /// </summary>
     [RelayCommand]
     public void SwitchToConsultationModule()
     {
-        IsConsultationModuleSelected = true;
-        IsSettingsViewVisible = false;
+        CurrentModule = ChatSessionType.PsychologicalConsultation;
     }
 
     /// <summary>
@@ -210,8 +161,7 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void SwitchToAssessmentModule()
     {
-        IsAssessmentModuleSelected = true;
-        IsSettingsViewVisible = false;
+        CurrentModule = ChatSessionType.PsychologicalAssessment;
     }
 
     /// <summary>
@@ -220,8 +170,7 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void SwitchToInterventionModule()
     {
-        IsInterventionModuleSelected = true;
-        IsSettingsViewVisible = false;
+        CurrentModule = ChatSessionType.InterventionPlan;
     }
 
     /// <summary>
@@ -240,11 +189,8 @@ public partial class MainViewModel : ViewModelBase
     public async Task CreateNewChatAsync()
     {
         // 确定会话类型
-        string sessionType = ChatSessionType.PsychologicalConsultation;
-        if (IsAssessmentModuleSelected)
-            sessionType = ChatSessionType.PsychologicalAssessment;
-        else if (IsInterventionModuleSelected)
-            sessionType = ChatSessionType.InterventionPlan;
+        // 根据当前选中的模块确定会话类型
+        string sessionType = CurrentModule;
 
         // 创建会话
         var session = await _historyService.CreateSessionAsync(
@@ -289,7 +235,6 @@ public partial class MainViewModel : ViewModelBase
     /// <summary>
     /// 根据ID切换当前会话
     /// </summary>
-    /// <param name="sessionId">会话ID</param>
     public void SwitchToChat(string sessionId)
     {
         // 使用映射字典快速查找ChatViewModel
@@ -303,8 +248,6 @@ public partial class MainViewModel : ViewModelBase
     /// <summary>
     /// 根据会话ID获取对应的ChatViewModel
     /// </summary>
-    /// <param name="sessionId">会话ID</param>
-    /// <returns>对应的ChatViewModel，如果不存在返回null</returns>
     public ChatViewModel? GetChatViewModel(string sessionId)
     {
         _chatViewModelMap.TryGetValue(sessionId, out var chatViewModel);

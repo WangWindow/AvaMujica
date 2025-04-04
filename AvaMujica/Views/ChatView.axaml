@@ -25,7 +25,7 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
-        <!--  对话名称/标题区域  -->
+        <!--  TODO: 对话名称/标题区域  -->
         <Border
             Grid.Row="0"
             Padding="10,5"
@@ -42,7 +42,7 @@
             </Grid>
         </Border>
 
-        <!--  聊天消息区域  -->
+        <!--  TODO: 聊天消息区域  -->
         <Grid Grid.Row="1">
             <ScrollViewer Name="MessageScroller">
                 <StackPanel>
@@ -129,7 +129,7 @@
             </ScrollViewer>
         </Grid>
 
-        <!--  输入区域  -->
+        <!--  TODO: 输入区域  -->
         <Grid Name="InputArea" Grid.Row="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -190,7 +190,7 @@
                 </Button>
             </StackPanel>
 
-            <!--  输入框与发送按钮  -->
+            <!--  TODO: 输入框与发送按钮  -->
             <DockPanel Grid.Row="1" Margin="5">
                 <!--  语音输入按钮  -->
                 <Button

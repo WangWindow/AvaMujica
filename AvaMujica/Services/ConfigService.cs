@@ -248,14 +248,4 @@ public class ConfigService
             }
         }
     }
-
-    /// <summary>
-    /// 重置所有配置为默认值
-    /// </summary>
-    public void ResetAllToDefaults()
-    {
-        var defaultConfig = new Config();
-        SaveFullConfig(defaultConfig);
-        Console.WriteLine("所有配置已重置为默认值");
-    }
 }

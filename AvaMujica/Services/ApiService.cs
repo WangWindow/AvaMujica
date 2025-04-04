@@ -95,9 +95,6 @@ public class ApiService()
     /// <summary>
     /// 调用 Chat 接口进行对话，支持流式回调
     /// </summary>
-    /// <param name="userPrompt">用户输入的提示</param>
-    /// <param name="onReceiveContent">接收内容的回调函数，参数为内容类型和内容文本</param>
-    /// <returns>异步任务</returns>
     public async Task ChatAsync(
         string userPrompt,
         Func<ResponseType, string, Task> onReceiveContent

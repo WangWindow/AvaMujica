@@ -45,10 +45,6 @@ public class ChatMessage
     /// <summary>
     /// 构造函数
     /// </summary>
-    /// <param name="sessionId">会话ID</param>
-    /// <param name="role">角色</param>
-    /// <param name="content">内容</param>
-    /// <param name="reasoningContent">推理内容</param>
     public ChatMessage(
         string sessionId,
         string role,
@@ -65,9 +61,6 @@ public class ChatMessage
     /// <summary>
     /// 创建一个系统角色的消息
     /// </summary>
-    /// <param name="sessionId">会话ID</param>
-    /// <param name="content">内容</param>
-    /// <returns>系统消息</returns>
     public static ChatMessage CreateSystemMessage(string sessionId, string? content = null) =>
         new(
             sessionId,
@@ -79,19 +72,12 @@ public class ChatMessage
     /// <summary>
     /// 创建一个用户角色的消息
     /// </summary>
-    /// <param name="sessionId">会话ID</param>
-    /// <param name="content">内容</param>
-    /// <returns>用户消息</returns>
     public static ChatMessage CreateUserMessage(string sessionId, string content) =>
         new(sessionId, "user", content);
 
     /// <summary>
     /// 创建一个助手角色的消息
     /// </summary>
-    /// <param name="sessionId">会话ID</param>
-    /// <param name="content">内容</param>
-    /// <param name="reasoningContent">推理内容</param>
-    /// <returns>助手消息</returns>
     public static ChatMessage CreateAssistantMessage(
         string sessionId,
         string content = "",

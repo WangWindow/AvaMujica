@@ -59,6 +59,6 @@ public class ValueEqualsConverter : IValueConverter
         CultureInfo culture
     )
     {
-        throw new NotImplementedException();
+        return value?.Equals(parameter);
     }
 }
