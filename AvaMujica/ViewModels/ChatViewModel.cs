@@ -48,29 +48,13 @@ public partial class ChatViewModel() : ViewModelBase
     /// </summary>
     public async Task LoadMessagesAsync(string sessionId)
     {
-        try
+        var messages = await _chatService.GetSessionMessagesAsync(sessionId);
+
+        ChatMessageList.Clear();
+
+        foreach (var message in messages)
         {
-            var messages = await _chatService.GetSessionMessagesAsync(sessionId);
-
-            ChatMessageList.Clear();
-
-            foreach (var message in messages)
-            {
-                ChatMessageList.Add(message);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"加载消息失败: {ex.Message}");
-
-            ChatMessageList.Add(
-                new ChatMessage
-                {
-                    Role = "system",
-                    Content = $"加载消息失败: {ex.Message}",
-                    SendTime = DateTime.Now,
-                }
-            );
+            ChatMessageList.Add(message);
         }
     }
 
@@ -94,84 +78,67 @@ public partial class ChatViewModel() : ViewModelBase
         string userInput = InputText;
         InputText = string.Empty;
 
-        try
+        // 添加用户消息
+        var userMessage = new ChatMessage
         {
-            // 添加用户消息
-            var userMessage = new ChatMessage
+            Role = "user",
+            Content = userInput,
+            SendTime = DateTime.Now,
+        };
+
+        ChatMessageList.Add(userMessage);
+        NotifyScrollToBottom();
+
+        // 如果是首次对话，更新标题
+        if (ChatMessageList.Count <= 1)
+        {
+            ChatTitle = userInput.Length > 10 ? userInput[..10] + "..." : userInput;
+
+            // 更新会话标题
+            var session = await _chatService.GetSessionAsync(ChatId);
+            if (session != null)
             {
-                Role = "user",
-                Content = userInput,
-                SendTime = DateTime.Now,
-            };
+                session.Title = ChatTitle;
+                await _chatService.UpdateSessionAsync(session);
+            }
+        }
 
-            ChatMessageList.Add(userMessage);
-            NotifyScrollToBottom();
+        // 创建一个空的回复消息，表示正在思考
+        var responseMessage = new ChatMessage
+        {
+            Role = "assistant",
+            Content = string.Empty,
+            SendTime = DateTime.Now,
+        };
 
-            // 如果是首次对话，更新标题
-            if (ChatMessageList.Count <= 1)
+        ChatMessageList.Add(responseMessage);
+        NotifyScrollToBottom();
+
+        // 发送消息并获取响应
+        await _chatService.SendMessageAsync(
+            ChatId,
+            userInput,
+            token =>
             {
-                ChatTitle = userInput.Length > 10 ? userInput[..10] + "..." : userInput;
-
-                // 更新会话标题
-                var session = await _chatService.GetSessionAsync(ChatId);
-                if (session != null)
+                var message = _chatService.GetLatestAssistantMessageAsync(ChatId).Result;
+                if (message != null)
                 {
-                    session.Title = ChatTitle;
-                    await _chatService.UpdateSessionAsync(session);
+                    responseMessage.Content = message.Content;
+                    responseMessage.ReasoningContent = message.ReasoningContent;
+                    NotifyScrollToBottom();
+                }
+            },
+            reasoning =>
+            {
+                var message = _chatService.GetLatestAssistantMessageAsync(ChatId).Result;
+                if (message != null)
+                {
+                    responseMessage.Content = message.Content;
+                    responseMessage.ReasoningContent = message.ReasoningContent;
+                    NotifyScrollToBottom();
                 }
             }
-
-            // 创建一个空的回复消息，表示正在思考
-            var responseMessage = new ChatMessage
-            {
-                Role = "assistant",
-                Content = string.Empty,
-                SendTime = DateTime.Now,
-            };
-
-            ChatMessageList.Add(responseMessage);
-            NotifyScrollToBottom();
-
-            // 发送消息并获取响应
-            await _chatService.SendMessageAsync(
-                ChatId,
-                userInput,
-                token =>
-                {
-                    var message = _chatService.GetLatestAssistantMessageAsync(ChatId).Result;
-                    if (message != null)
-                    {
-                        responseMessage.Content = message.Content;
-                        responseMessage.ReasoningContent = message.ReasoningContent;
-                        NotifyScrollToBottom();
-                    }
-                },
-                reasoning =>
-                {
-                    var message = _chatService.GetLatestAssistantMessageAsync(ChatId).Result;
-                    if (message != null)
-                    {
-                        responseMessage.Content = message.Content;
-                        responseMessage.ReasoningContent = message.ReasoningContent;
-                        NotifyScrollToBottom();
-                    }
-                }
-            );
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"发送消息失败: {ex.Message}");
-
-            ChatMessageList.Add(
-                new ChatMessage
-                {
-                    Role = "system",
-                    Content = $"发送消息失败: {ex.Message}",
-                    SendTime = DateTime.Now,
-                }
-            );
-            NotifyScrollToBottom();
-        }
+        );
     }
 
     /// <summary>

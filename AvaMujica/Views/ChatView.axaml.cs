@@ -50,12 +50,6 @@ public partial class ChatView : UserControl
 
         // 滚动到底部
         ScrollToBottom();
-
-        // 订阅 ViewModel 的滚动事件
-        if (_viewModel != null)
-        {
-            _viewModel.ScrollToBottomRequested += ScrollToBottom;
-        }
     }
 
     /// <summary>

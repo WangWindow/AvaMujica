@@ -49,7 +49,7 @@ public class ConfigService
         string sql = "SELECT Key, Value FROM Configs WHERE Key = @Key";
         var parameters = new Dictionary<string, object> { { "@Key", key } };
 
-        var configs = _databaseService.Query(
+        var configs = _databaseService.Query<ConfigAdapter>(
             sql,
             reader => new ConfigAdapter { Key = reader.GetString(0), Value = reader.GetString(1) },
             parameters
@@ -148,30 +148,23 @@ public class ConfigService
         }
         else
         {
-            try
+            if (typeof(T) == typeof(bool) && bool.TryParse(dbConfig.Value, out bool boolValue))
             {
-                if (typeof(T) == typeof(bool) && bool.TryParse(dbConfig.Value, out bool boolValue))
-                {
-                    property.SetValue(config, boolValue);
-                    return true;
-                }
-                else if (
-                    typeof(T) == typeof(float)
-                    && float.TryParse(dbConfig.Value, out float floatValue)
-                )
-                {
-                    property.SetValue(config, floatValue);
-                    return true;
-                }
-                else if (typeof(T) == typeof(int) && int.TryParse(dbConfig.Value, out int intValue))
-                {
-                    property.SetValue(config, intValue);
-                    return true;
-                }
+                property.SetValue(config, boolValue);
+                return true;
             }
-            catch (Exception ex)
+            else if (
+                typeof(T) == typeof(float)
+                && float.TryParse(dbConfig.Value, out float floatValue)
+            )
             {
-                Console.WriteLine($"转换失败: {property.Name} - {ex.Message}");
+                property.SetValue(config, floatValue);
+                return true;
+            }
+            else if (typeof(T) == typeof(int) && int.TryParse(dbConfig.Value, out int intValue))
+            {
+                property.SetValue(config, intValue);
+                return true;
             }
         }
         return false;

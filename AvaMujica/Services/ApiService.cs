@@ -78,45 +78,37 @@ public class ApiService()
         string fullContent = string.Empty;
         string fullReasoning = string.Empty;
 
-        try
+        var choices = client.ChatStreamAsync(request, new CancellationToken());
+        if (choices != null)
         {
-            var choices = client.ChatStreamAsync(request, new CancellationToken());
-            if (choices != null)
+            // 首先收集推理内容
+            await foreach (var choice in choices)
             {
-                // 首先收集推理内容
-                await foreach (var choice in choices)
+                if (choice.Delta?.ReasoningContent != null)
                 {
-                    if (choice.Delta?.ReasoningContent != null)
-                    {
-                        string reasoning = choice.Delta.ReasoningContent;
-                        fullReasoning += reasoning;
+                    string reasoning = choice.Delta.ReasoningContent;
+                    fullReasoning += reasoning;
 
-                        if (!string.IsNullOrEmpty(reasoning))
-                        {
-                            onStreamMessage?.Invoke(ResponseType.ReasoningContent, reasoning);
-                        }
-                    }
-                }
-
-                // 然后收集回复内容
-                await foreach (var choice in choices)
-                {
-                    if (choice.Delta?.Content != null)
+                    if (!string.IsNullOrEmpty(reasoning))
                     {
-                        string content = choice.Delta.Content;
-                        fullContent += content;
-                        onStreamMessage?.Invoke(ResponseType.Content, content);
+                        onStreamMessage?.Invoke(ResponseType.ReasoningContent, reasoning);
                     }
                 }
             }
 
-            return (fullContent, fullReasoning);
+            // 然后收集回复内容
+            await foreach (var choice in choices)
+            {
+                if (choice.Delta?.Content != null)
+                {
+                    string content = choice.Delta.Content;
+                    fullContent += content;
+                    onStreamMessage?.Invoke(ResponseType.Content, content);
+                }
+            }
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"API调用失败: {ex.Message}");
-            throw;
-        }
+
+        return (fullContent, fullReasoning);
     }
 }
 

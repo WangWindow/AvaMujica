@@ -23,11 +23,6 @@ public partial class MainViewModel : ObservableObject
     private readonly Dictionary<string, ChatViewModel> _chatViewModelMap = new();
 
     /// <summary>
-    /// 窗口标题
-    /// </summary>
-    public string Title { get; set; } = "AvaMujica";
-
-    /// <summary>
     /// 侧边栏是否打开(默认关闭)
     /// </summary>
     [ObservableProperty]
@@ -185,7 +180,7 @@ public partial class MainViewModel : ObservableObject
                     // 使用映射字典快速查找ChatViewModel
                     if (_chatViewModelMap.TryGetValue(item.Id, out var chatViewModel))
                     {
-                        item.ChatViewModel = chatViewModel;
+                        // item.ChatViewModel = chatViewModel;
                     }
                 }
 

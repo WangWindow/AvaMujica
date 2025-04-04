@@ -331,44 +331,34 @@ public class ChatService()
         // 先保存空消息到数据库
         await AddMessageAsync(sessionId, assistantMessage);
 
-        try
-        {
-            // 调用API获取响应，并随时更新数据库
-            await _apiService.ChatAsync(
-                userContent,
-                async (type, message) =>
+        // 调用API获取响应，并随时更新数据库
+        await _apiService.ChatAsync(
+            userContent,
+            async (type, message) =>
+            {
+                if (type == ResponseType.Content)
                 {
-                    if (type == ResponseType.Content)
-                    {
-                        // 更新内容
-                        assistantMessage.Content += message;
-                        onReceiveToken?.Invoke(message);
+                    // 更新内容
+                    assistantMessage.Content += message;
+                    onReceiveToken?.Invoke(message);
 
-                        // 每收到一块内容就更新数据库
-                        await UpdateMessageAsync(assistantMessage);
-                    }
-                    else if (type == ResponseType.ReasoningContent) // 使用预先获取的配置
-                    {
-                        // 更新推理内容
-                        assistantMessage.ReasoningContent += message;
-                        onReceiveReasoning?.Invoke(message);
-
-                        // 每收到一块推理内容就更新数据库
-                        await UpdateMessageAsync(assistantMessage);
-                    }
+                    // 每收到一块内容就更新数据库
+                    await UpdateMessageAsync(assistantMessage);
                 }
-            );
+                else if (type == ResponseType.ReasoningContent) // 使用预先获取的配置
+                {
+                    // 更新推理内容
+                    assistantMessage.ReasoningContent += message;
+                    onReceiveReasoning?.Invoke(message);
 
-            // 最后确保完全更新到数据库
-            await UpdateMessageAsync(assistantMessage);
-        }
-        catch (Exception ex)
-        {
-            // 出错时也要保存消息，但添加错误信息
-            assistantMessage.Content = $"发生错误: {ex.Message}";
-            await UpdateMessageAsync(assistantMessage);
-            throw; // 重新抛出异常，让调用者可以处理
-        }
+                    // 每收到一块推理内容就更新数据库
+                    await UpdateMessageAsync(assistantMessage);
+                }
+            }
+        );
+
+        // 最后确保完全更新到数据库
+        await UpdateMessageAsync(assistantMessage);
 
         return assistantMessage;
     }

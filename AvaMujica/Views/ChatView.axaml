@@ -10,32 +10,40 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:AvaMujica.Models"
     xmlns:vm="using:AvaMujica.ViewModels"
-    d:DesignHeight="450"
-    d:DesignWidth="270"
+    d:DesignHeight="900"
+    d:DesignWidth="400"
     x:DataType="vm:ChatViewModel"
     mc:Ignorable="d">
-
-    <UserControl.Resources>
-        <local:RoleToIsUserConverter x:Key="RoleToIsUserConverter" />
-        <local:MessageLoadingConverter x:Key="MessageLoadingConverter" />
-    </UserControl.Resources>
-
     <Design.DataContext>
-        <vm:ChatViewModel>
-            <x:Arguments>
-                <x:Null />
-            </x:Arguments>
-        </vm:ChatViewModel>
+        <vm:ChatViewModel />
     </Design.DataContext>
 
     <Grid Name="RootGrid">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
+        <!--  对话名称/标题区域  -->
+        <Border
+            Grid.Row="0"
+            Padding="10,5"
+            Background="{DynamicResource SystemChromeMediumLowColor}"
+            BorderBrush="{DynamicResource SystemBaseLowColor}"
+            BorderThickness="0,0,0,1">
+            <Grid>
+                <TextBlock
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    FontSize="14"
+                    FontWeight="Medium"
+                    Text="{Binding ChatTitle}" />
+            </Grid>
+        </Border>
+
         <!--  聊天消息区域  -->
-        <Grid Grid.Row="0">
+        <Grid Grid.Row="1">
             <ScrollViewer Name="MessageScroller">
                 <StackPanel>
                     <ItemsControl Name="ChatMessageList" ItemsSource="{Binding ChatMessageList}">
@@ -122,7 +130,7 @@
         </Grid>
 
         <!--  输入区域  -->
-        <Grid Name="InputArea" Grid.Row="1">
+        <Grid Name="InputArea" Grid.Row="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />

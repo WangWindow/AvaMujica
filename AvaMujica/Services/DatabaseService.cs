@@ -169,25 +169,21 @@ public class DatabaseService : IDisposable
     /// <returns>查询结果第一行第一列的值</returns>
     public object? ExecuteScalar(string sql, Dictionary<string, object>? parameters = null)
     {
-        try
+        using var connection = new SqliteConnection(_connectionString);
+        connection.Open();
+
+        using var command = connection.CreateCommand();
+        command.CommandText = sql;
+
+        if (parameters != null)
         {
-            using var connection = new SqliteConnection(_connectionString);
-            connection.Open();
-
-            using var command = connection.CreateCommand();
-            command.CommandText = sql;
-
-            if (parameters != null)
+            foreach (var param in parameters)
             {
-                foreach (var param in parameters)
-                {
-                    command.Parameters.AddWithValue(param.Key, param.Value);
-                }
+                command.Parameters.AddWithValue(param.Key, param.Value);
             }
-
-            return command.ExecuteScalar();
         }
-        finally { }
+
+        return command.ExecuteScalar();
     }
 
     /// <summary>
@@ -224,14 +220,14 @@ public class DatabaseService : IDisposable
     }
 
     /// <summary>
-    /// 获取多行查询结果
+    /// 通用的查询方法
     /// </summary>
     /// <typeparam name="T">返回对象类型</typeparam>
     /// <param name="sql">SQL命令</param>
     /// <param name="mapper">从SqliteDataReader映射到对象的函数</param>
     /// <param name="parameters">命令参数</param>
     /// <returns>映射后的对象列表</returns>
-    public List<T> Query<T>(
+    private List<T> QueryInternal<T>(
         string sql,
         Func<SqliteDataReader, T> mapper,
         Dictionary<string, object>? parameters = null
@@ -263,6 +259,23 @@ public class DatabaseService : IDisposable
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// 获取多行查询结果
+    /// </summary>
+    /// <typeparam name="T">返回对象类型</typeparam>
+    /// <param name="sql">SQL命令</param>
+    /// <param name="mapper">从SqliteDataReader映射到对象的函数</param>
+    /// <param name="parameters">命令参数</param>
+    /// <returns>映射后的对象列表</returns>
+    public List<T> Query<T>(
+        string sql,
+        Func<SqliteDataReader, T> mapper,
+        Dictionary<string, object>? parameters = null
+    )
+    {
+        return QueryInternal(sql, mapper, parameters);
     }
 
     public void Dispose() => _connection.Dispose();

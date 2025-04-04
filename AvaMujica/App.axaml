@@ -13,6 +13,11 @@
         <local:ViewLocator />
     </Application.DataTemplates>
 
+    <Application.Resources>
+        <local:RoleToIsUserConverter x:Key="RoleToIsUserConverter" />
+        <local:MessageLoadingConverter x:Key="MessageLoadingConverter" />
+    </Application.Resources>
+
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://AvaMujica/Assets/Icons.axaml" />

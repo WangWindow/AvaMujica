@@ -68,7 +68,7 @@ public partial class SiderViewModel : ViewModelBase
         _mainViewModel = mainViewModel;
 
         // 设置属性更改通知
-        this.PropertyChanged += (sender, args) =>
+        PropertyChanged += (sender, args) =>
         {
             if (args.PropertyName == nameof(ChatSessionGroups))
             {
@@ -93,58 +93,35 @@ public partial class SiderViewModel : ViewModelBase
     /// </summary>
     private async Task FilterHistoryByTypeAsync(string sessionType)
     {
-        try
+        IsLoading = true;
+        HasError = false;
+
+        List<ChatSessionGroup> historyGroups = sessionType switch
         {
-            IsLoading = true;
-            HasError = false;
+            ChatSessionType.PsychologicalConsultation =>
+                await _historyService.GetChatSessionHistorysByTypeAsync(
+                    ChatSessionType.PsychologicalConsultation
+                ),
+            ChatSessionType.PsychologicalAssessment =>
+                await _historyService.GetChatSessionHistorysByTypeAsync(
+                    ChatSessionType.PsychologicalAssessment
+                ),
+            ChatSessionType.InterventionPlan =>
+                await _historyService.GetChatSessionHistorysByTypeAsync(
+                    ChatSessionType.InterventionPlan
+                ),
+            _ => await _historyService.GetChatSessionHistorysByTypeAsync(
+                ChatSessionType.PsychologicalConsultation
+            ),
+        };
 
-            List<ChatSessionGroup> historyGroups;
-
-            try
-            {
-                historyGroups = sessionType switch
-                {
-                    ChatSessionType.PsychologicalConsultation =>
-                        await _historyService.GetChatSessionHistorysByTypeAsync(
-                            ChatSessionType.PsychologicalConsultation
-                        ),
-                    ChatSessionType.PsychologicalAssessment =>
-                        await _historyService.GetChatSessionHistorysByTypeAsync(
-                            ChatSessionType.PsychologicalAssessment
-                        ),
-                    ChatSessionType.InterventionPlan =>
-                        await _historyService.GetChatSessionHistorysByTypeAsync(
-                            ChatSessionType.InterventionPlan
-                        ),
-                    _ => await _historyService.GetChatSessionHistorysByTypeAsync(
-                        ChatSessionType.PsychologicalConsultation
-                    ),
-                };
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"获取历史记录失败: {ex.Message}");
-                historyGroups = [];
-            }
-
-            _mainViewModel.ChatSessionGroups.Clear();
-            foreach (var group in historyGroups)
-            {
-                _mainViewModel.ChatSessionGroups.Add(group);
-            }
-
-            HasChats = _mainViewModel.ChatSessionGroups.Any(g => g.Items.Count > 0);
-        }
-        catch (Exception ex)
+        _mainViewModel.ChatSessionGroups.Clear();
+        foreach (var group in historyGroups)
         {
-            HasError = true;
-            ErrorMessage = $"筛选历史记录失败: {ex.Message}";
-            Console.WriteLine(ErrorMessage);
+            _mainViewModel.ChatSessionGroups.Add(group);
         }
-        finally
-        {
-            IsLoading = false;
-        }
+
+        HasChats = _mainViewModel.ChatSessionGroups.Any(g => g.Items.Count > 0);
     }
 
     /// <summary>
@@ -162,22 +139,9 @@ public partial class SiderViewModel : ViewModelBase
     [RelayCommand]
     private async Task CreateNewChatAsync()
     {
-        try
-        {
-            IsLoading = true;
-            HasError = false;
-            await _mainViewModel.CreateNewChatAsync();
-        }
-        catch (Exception ex)
-        {
-            HasError = true;
-            ErrorMessage = $"创建新会话失败: {ex.Message}";
-            Console.WriteLine(ErrorMessage);
-        }
-        finally
-        {
-            IsLoading = false;
-        }
+        IsLoading = true;
+        HasError = false;
+        await _mainViewModel.CreateNewChatAsync();
     }
 
     /// <summary>
@@ -198,76 +162,6 @@ public partial class SiderViewModel : ViewModelBase
         if (chatSession != null)
         {
             _mainViewModel.SwitchToChat(chatSession.Id);
-        }
-    }
-
-    /// <summary>
-    /// 删除历史会话命令
-    /// </summary>
-    [RelayCommand]
-    private async Task DeleteHistoryItemAsync(ChatSession chatSession)
-    {
-        if (chatSession == null)
-            return;
-
-        try
-        {
-            IsLoading = true;
-            HasError = false;
-
-            // 通过主视图模型删除会话，确保UI状态一致
-            await _mainViewModel.DeleteChatAsync(chatSession.Id);
-
-            // 刷新列表
-            await RefreshHistoryAsync();
-        }
-        catch (Exception ex)
-        {
-            HasError = true;
-            ErrorMessage = $"删除会话失败: {ex.Message}";
-            Console.WriteLine(ErrorMessage);
-        }
-        finally
-        {
-            IsLoading = false;
-        }
-    }
-
-    /// <summary>
-    /// 清除所有会话命令
-    /// </summary>
-    [RelayCommand]
-    private async Task ClearAllHistoryAsync()
-    {
-        try
-        {
-            IsLoading = true;
-            HasError = false;
-
-            // 获取所有会话
-            var sessions = await _chatService.GetAllSessionsAsync();
-
-            // 逐个删除会话
-            foreach (var session in sessions)
-            {
-                await _chatService.DeleteSessionAsync(session.Id);
-            }
-
-            // 刷新历史记录
-            await RefreshHistoryAsync();
-
-            // 创建新会话
-            await _mainViewModel.CreateNewChatAsync();
-        }
-        catch (Exception ex)
-        {
-            HasError = true;
-            ErrorMessage = $"清空历史记录失败: {ex.Message}";
-            Console.WriteLine(ErrorMessage);
-        }
-        finally
-        {
-            IsLoading = false;
         }
     }
 }

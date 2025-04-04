@@ -50,11 +50,6 @@ public class ChatSession
     public List<ChatMessage> Messages { get; set; } = [];
 
     /// <summary>
-    /// 关联的ChatViewModel（仅用于UI显示，不保存到数据库）
-    /// </summary>
-    public ChatViewModel? ChatViewModel { get; set; }
-
-    /// <summary>
     /// 构造函数
     /// </summary>
     /// <param name="title">会话标题</param>
@@ -71,21 +66,15 @@ public class ChatSession
 /// <summary>
 /// 会话分组类
 /// </summary>
-public class ChatSessionGroup
+public class ChatSessionGroup(string key, List<ChatSession> items)
 {
     /// <summary>
     /// 分组的键
     /// </summary>
-    public string Key { get; }
+    public string Key { get; } = key;
 
     /// <summary>
     /// 分组的历史记录信息
     /// </summary>
-    public List<ChatSession> Items { get; }
-
-    public ChatSessionGroup(string key, List<ChatSession> items)
-    {
-        Key = key;
-        Items = items;
-    }
+    public List<ChatSession> Items { get; } = items;
 }
