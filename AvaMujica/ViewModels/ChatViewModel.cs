@@ -11,9 +11,9 @@ namespace AvaMujica.ViewModels;
 /// <summary>
 /// 聊天视图模型
 /// </summary>
-public partial class ChatViewModel() : ViewModelBase
+public partial class ChatViewModel : ViewModelBase
 {
-    private readonly ChatService _chatService = ChatService.Instance;
+    private readonly HistoryService _historyService = HistoryService.Instance;
 
     /// <summary>
     /// 输入文本
@@ -26,12 +26,6 @@ public partial class ChatViewModel() : ViewModelBase
     /// </summary>
     [ObservableProperty]
     private string chatTitle = "新对话";
-
-    /// <summary>
-    /// 聊天开始时间
-    /// </summary>
-    [ObservableProperty]
-    private string startTime = DateTime.Now.ToString("HH:mm");
 
     /// <summary>
     /// 聊天ID
@@ -48,7 +42,7 @@ public partial class ChatViewModel() : ViewModelBase
     /// </summary>
     public async Task LoadMessagesAsync(string sessionId)
     {
-        var messages = await _chatService.GetSessionMessagesAsync(sessionId);
+        var messages = await _historyService.GetSessionMessagesAsync(sessionId);
 
         ChatMessageList.Clear();
 
@@ -78,16 +72,16 @@ public partial class ChatViewModel() : ViewModelBase
         string userInput = InputText;
         InputText = string.Empty;
 
-        // 添加用户消息
+        // 添加用户消息到UI
         var userMessage = new ChatMessage
         {
             Role = "user",
             Content = userInput,
             SendTime = DateTime.Now,
+            SessionId = ChatId,
         };
 
         ChatMessageList.Add(userMessage);
-        NotifyScrollToBottom();
 
         // 如果是首次对话，更新标题
         if (ChatMessageList.Count <= 1)
@@ -95,11 +89,11 @@ public partial class ChatViewModel() : ViewModelBase
             ChatTitle = userInput.Length > 10 ? userInput[..10] + "..." : userInput;
 
             // 更新会话标题
-            var session = await _chatService.GetSessionAsync(ChatId);
+            var session = await _historyService.GetSessionAsync(ChatId);
             if (session != null)
             {
                 session.Title = ChatTitle;
-                await _chatService.UpdateSessionAsync(session);
+                await _historyService.UpdateSessionAsync(session);
             }
         }
 
@@ -109,35 +103,17 @@ public partial class ChatViewModel() : ViewModelBase
             Role = "assistant",
             Content = string.Empty,
             SendTime = DateTime.Now,
+            SessionId = ChatId,
         };
 
         ChatMessageList.Add(responseMessage);
-        NotifyScrollToBottom();
 
         // 发送消息并获取响应
-        await _chatService.SendMessageAsync(
+        await _historyService.SendMessageAsync(
             ChatId,
             userInput,
-            token =>
-            {
-                var message = _chatService.GetLatestAssistantMessageAsync(ChatId).Result;
-                if (message != null)
-                {
-                    responseMessage.Content = message.Content;
-                    responseMessage.ReasoningContent = message.ReasoningContent;
-                    NotifyScrollToBottom();
-                }
-            },
-            reasoning =>
-            {
-                var message = _chatService.GetLatestAssistantMessageAsync(ChatId).Result;
-                if (message != null)
-                {
-                    responseMessage.Content = message.Content;
-                    responseMessage.ReasoningContent = message.ReasoningContent;
-                    NotifyScrollToBottom();
-                }
-            }
+            token => responseMessage.Content += token,
+            reasoning => responseMessage.ReasoningContent += reasoning
         );
     }
 
@@ -145,17 +121,4 @@ public partial class ChatViewModel() : ViewModelBase
     /// 判断是否可以发送消息
     /// </summary>
     private bool CanSend() => !string.IsNullOrEmpty(InputText);
-
-    /// <summary>
-    /// 滚动到底部的事件
-    /// </summary>
-    public event Action? ScrollToBottomRequested;
-
-    /// <summary>
-    /// 通知视图滚动到底部
-    /// </summary>
-    private void NotifyScrollToBottom()
-    {
-        ScrollToBottomRequested?.Invoke();
-    }
 }

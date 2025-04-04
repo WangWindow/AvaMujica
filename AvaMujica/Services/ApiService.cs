@@ -34,21 +34,10 @@ public class ApiService()
         }
     }
 
-    static ApiService()
-    {
-        _instance = new ApiService();
-    }
-
     /// <summary>
-    /// 调用 Chat 接口进行流式对话
+    /// 调用 Chat 接口进行对话
     /// </summary>
-    /// <param name="userPrompt">用户输入的提示</param>
-    /// <param name="onStreamMessage">接收消息的回调</param>
-    /// <returns>完整的回复内容及推理内容</returns>
-    public async Task<(string content, string reasoning)> ChatAsync(
-        string userPrompt,
-        Action<ResponseType, string>? onStreamMessage = null
-    )
+    public async Task<(string content, string reasoning)> ChatAsync(string userPrompt)
     {
         // 加载配置
         var settings = _configService.LoadFullConfig();
@@ -79,36 +68,85 @@ public class ApiService()
         string fullReasoning = string.Empty;
 
         var choices = client.ChatStreamAsync(request, new CancellationToken());
-        if (choices != null)
+        if (choices == null)
         {
-            // 首先收集推理内容
-            await foreach (var choice in choices)
-            {
-                if (choice.Delta?.ReasoningContent != null)
-                {
-                    string reasoning = choice.Delta.ReasoningContent;
-                    fullReasoning += reasoning;
+            // 处理错误情况
+            return (string.Empty, string.Empty);
+        }
 
-                    if (!string.IsNullOrEmpty(reasoning))
-                    {
-                        onStreamMessage?.Invoke(ResponseType.ReasoningContent, reasoning);
-                    }
-                }
+        await foreach (var choice in choices)
+        {
+            if (choice.Delta?.ReasoningContent != null)
+            {
+                string reasoning = choice.Delta.ReasoningContent;
+                fullReasoning += reasoning;
             }
 
-            // 然后收集回复内容
-            await foreach (var choice in choices)
+            if (choice.Delta?.Content != null)
             {
-                if (choice.Delta?.Content != null)
-                {
-                    string content = choice.Delta.Content;
-                    fullContent += content;
-                    onStreamMessage?.Invoke(ResponseType.Content, content);
-                }
+                string content = choice.Delta.Content;
+                fullContent += content;
             }
         }
 
         return (fullContent, fullReasoning);
+    }
+
+    /// <summary>
+    /// 调用 Chat 接口进行对话，支持流式回调
+    /// </summary>
+    /// <param name="userPrompt">用户输入的提示</param>
+    /// <param name="onReceiveContent">接收内容的回调函数，参数为内容类型和内容文本</param>
+    /// <returns>异步任务</returns>
+    public async Task ChatAsync(
+        string userPrompt,
+        Func<ResponseType, string, Task> onReceiveContent
+    )
+    {
+        // 加载配置
+        var settings = _configService.LoadFullConfig();
+
+        // 创建 DeepSeek 客户端
+        using var httpClient = new HttpClient
+        {
+            BaseAddress = new Uri(settings.ApiBase),
+            Timeout = TimeSpan.FromSeconds(300),
+        };
+
+        var client = new DeepSeekClient(httpClient, settings.ApiKey);
+
+        var request = new ChatRequest
+        {
+            Messages =
+            [
+                Message.NewSystemMessage(settings.SystemPrompt),
+                Message.NewUserMessage(userPrompt),
+            ],
+            Model = settings.Model,
+            Temperature = settings.Temperature,
+            MaxTokens = settings.MaxTokens,
+        };
+
+        var choices = client.ChatStreamAsync(request, new CancellationToken());
+        if (choices == null)
+        {
+            return;
+        }
+
+        await foreach (var choice in choices)
+        {
+            if (choice.Delta?.ReasoningContent != null)
+            {
+                string reasoning = choice.Delta.ReasoningContent;
+                await onReceiveContent(ResponseType.ReasoningContent, reasoning);
+            }
+
+            if (choice.Delta?.Content != null)
+            {
+                string content = choice.Delta.Content;
+                await onReceiveContent(ResponseType.Content, content);
+            }
+        }
     }
 }
 

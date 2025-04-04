@@ -15,7 +15,6 @@ namespace AvaMujica.ViewModels;
 /// </summary>
 public partial class SiderViewModel : ViewModelBase
 {
-    private readonly ChatService _chatService = ChatService.Instance;
     private readonly HistoryService _historyService = HistoryService.Instance;
 
     /// <summary>

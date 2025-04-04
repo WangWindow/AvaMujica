@@ -57,7 +57,7 @@
                                         HorizontalAlignment="Right"
                                         Background="#DCF8C6"
                                         CornerRadius="10"
-                                        IsVisible="{Binding Role, Converter={StaticResource RoleToIsUserConverter}}">
+                                        IsVisible="{Binding Role, Converter={StaticResource ValueEqualsConverter}, ConverterParameter=user}">
                                         <StackPanel>
                                             <TextBlock
                                                 Foreground="#1A1A1A"
@@ -78,7 +78,7 @@
                                         HorizontalAlignment="Left"
                                         Background="White"
                                         CornerRadius="10"
-                                        IsVisible="{Binding Role, Converter={StaticResource RoleToIsUserConverter}, ConverterParameter=false}">
+                                        IsVisible="{Binding Role, Converter={StaticResource ValueEqualsConverter}, ConverterParameter=assistant}">
                                         <StackPanel>
                                             <!--  加载中状态显示  -->
                                             <StackPanel

@@ -47,16 +47,5 @@ public partial class ChatView : UserControl
     {
         _messageScroller = this.FindControl<ScrollViewer>("MessageScroller");
         _viewModel = DataContext as ViewModels.ChatViewModel;
-
-        // 滚动到底部
-        ScrollToBottom();
-    }
-
-    /// <summary>
-    /// 处理发送按钮点击事件
-    /// </summary>
-    private void ScrollToBottom()
-    {
-        _messageScroller?.ScrollToEnd();
     }
 }

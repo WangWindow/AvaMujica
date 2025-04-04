@@ -8,8 +8,6 @@ namespace AvaMujica.ViewModels;
 /// </summary>
 public partial class SettingsViewModel(MainViewModel mainViewModel) : ViewModelBase
 {
-    private readonly ConfigService _configService = ConfigService.Instance;
-
     /// <summary>
     /// 主视图模型
     /// </summary>

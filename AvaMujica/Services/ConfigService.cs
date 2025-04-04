@@ -12,9 +12,6 @@ namespace AvaMujica.Services;
 /// <summary>
 /// 配置服务
 /// </summary>
-/// <remarks>
-/// 构造函数
-/// </remarks>
 public class ConfigService
 {
     private readonly DatabaseService _databaseService = DatabaseService.Instance;
@@ -42,8 +39,6 @@ public class ConfigService
     /// <summary>
     /// 获取指定键的配置
     /// </summary>
-    /// <param name="key">配置键</param>
-    /// <returns>配置对象，如果未找到则返回null</returns>
     public ConfigAdapter? GetConfig(string key)
     {
         string sql = "SELECT Key, Value FROM Configs WHERE Key = @Key";
@@ -61,9 +56,6 @@ public class ConfigService
     /// <summary>
     /// 获取指定键的配置值
     /// </summary>
-    /// <param name="key">配置键</param>
-    /// <param name="defaultValue">默认值（如果配置不存在）</param>
-    /// <returns>配置值，不存在则返回默认值</returns>
     public string GetValue(string key, string defaultValue = "")
     {
         var config = GetConfig(key);
@@ -73,7 +65,6 @@ public class ConfigService
     /// <summary>
     /// 获取所有配置
     /// </summary>
-    /// <returns>配置列表</returns>
     public List<ConfigAdapter> GetAllConfigs()
     {
         string sql = "SELECT Key, Value FROM Configs";
@@ -86,8 +77,6 @@ public class ConfigService
     /// <summary>
     /// 设置配置
     /// </summary>
-    /// <param name="key">配置键</param>
-    /// <param name="value">配置值</param>
     public void SetConfig(string key, string value)
     {
         string sql =
@@ -103,8 +92,6 @@ public class ConfigService
     /// <summary>
     /// 删除配置
     /// </summary>
-    /// <param name="key">配置键</param>
-    /// <returns>是否成功删除</returns>
     public bool DeleteConfig(string key)
     {
         string sql = "DELETE FROM Configs WHERE Key = @Key";
@@ -117,8 +104,6 @@ public class ConfigService
     /// <summary>
     /// 检查配置是否存在
     /// </summary>
-    /// <param name="key">配置键</param>
-    /// <returns>是否存在</returns>
     public bool ConfigExists(string key)
     {
         string sql = "SELECT COUNT(*) FROM Configs WHERE Key = @Key";
@@ -131,10 +116,6 @@ public class ConfigService
     /// <summary>
     /// 尝试将配置值转换为指定类型
     /// </summary>
-    /// <typeparam name="T">目标类型</typeparam>
-    /// <param name="dbConfig">配置对象</param>
-    /// <param name="property">属性信息</param>
-    /// <param name="config">配置对象实例</param>
     private bool TryConvertAndSetValue<T>(
         ConfigAdapter dbConfig,
         PropertyInfo property,
@@ -173,7 +154,6 @@ public class ConfigService
     /// <summary>
     /// 加载完整的Config对象
     /// </summary>
-    /// <returns>包含所有配置项的Config对象</returns>
     public Config LoadFullConfig()
     {
         // 创建一个默认配置对象
@@ -232,7 +212,6 @@ public class ConfigService
     /// <summary>
     /// 保存完整的Config对象到数据库
     /// </summary>
-    /// <param name="config">要保存的配置对象</param>
     public void SaveFullConfig(Config config)
     {
         var properties = typeof(Config).GetProperties();

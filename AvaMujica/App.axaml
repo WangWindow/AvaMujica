@@ -14,8 +14,8 @@
     </Application.DataTemplates>
 
     <Application.Resources>
-        <local:RoleToIsUserConverter x:Key="RoleToIsUserConverter" />
         <local:MessageLoadingConverter x:Key="MessageLoadingConverter" />
+        <local:ValueEqualsConverter x:Key="ValueEqualsConverter" />
     </Application.Resources>
 
     <Application.Styles>

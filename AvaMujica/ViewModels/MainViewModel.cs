@@ -12,15 +12,14 @@ namespace AvaMujica.ViewModels;
 /// <summary>
 /// 主视图模型
 /// </summary>
-public partial class MainViewModel : ObservableObject
+public partial class MainViewModel : ViewModelBase
 {
-    private readonly ChatService _chatService = ChatService.Instance;
     private readonly HistoryService _historyService = HistoryService.Instance;
 
     /// <summary>
     /// SessionID 到 ChatViewModel 的映射字典，用于快速查找
     /// </summary>
-    private readonly Dictionary<string, ChatViewModel> _chatViewModelMap = new();
+    private readonly Dictionary<string, ChatViewModel> _chatViewModelMap = [];
 
     /// <summary>
     /// 侧边栏是否打开(默认关闭)
@@ -104,7 +103,7 @@ public partial class MainViewModel : ObservableObject
     /// </summary>
     private async Task LoadChatsAsync()
     {
-        var sessions = await _chatService.GetAllSessionsAsync();
+        var sessions = await _historyService.GetAllSessionsAsync();
 
         Chats.Clear();
         _chatViewModelMap.Clear();
@@ -115,7 +114,6 @@ public partial class MainViewModel : ObservableObject
             {
                 ChatId = session.Id,
                 ChatTitle = session.Title,
-                StartTime = session.CreatedTime.ToString("HH:mm"),
             };
             await chatViewModel.LoadMessagesAsync(session.Id);
             Chats.Add(chatViewModel);
@@ -249,18 +247,13 @@ public partial class MainViewModel : ObservableObject
             sessionType = ChatSessionType.InterventionPlan;
 
         // 创建会话
-        var session = await _chatService.CreateSessionAsync(
+        var session = await _historyService.CreateSessionAsync(
             $"新会话 {Chats.Count + 1}",
             sessionType
         );
 
         // 创建视图模型
-        var newChat = new ChatViewModel()
-        {
-            ChatId = session.Id,
-            ChatTitle = session.Title,
-            StartTime = session.CreatedTime.ToString("HH:mm"),
-        };
+        var newChat = new ChatViewModel() { ChatId = session.Id, ChatTitle = session.Title };
 
         Chats.Add(newChat);
         _chatViewModelMap[session.Id] = newChat;
@@ -305,38 +298,6 @@ public partial class MainViewModel : ObservableObject
             CurrentChat = chat;
             IsSiderOpen = false;
         }
-    }
-
-    /// <summary>
-    /// 删除会话
-    /// </summary>
-    public async Task DeleteChatAsync(string sessionId)
-    {
-        await _chatService.DeleteSessionAsync(sessionId);
-
-        // 从列表和映射中移除
-        if (_chatViewModelMap.TryGetValue(sessionId, out var chat))
-        {
-            Chats.Remove(chat);
-            _chatViewModelMap.Remove(sessionId);
-
-            // 如果删除的是当前会话，切换到其他会话
-            if (CurrentChat == chat)
-            {
-                if (Chats.Count > 0)
-                {
-                    CurrentChat = Chats[0];
-                }
-                else
-                {
-                    // 没有会话了，创建一个新会话
-                    await CreateNewChatAsync();
-                }
-            }
-        }
-
-        // 刷新历史记录
-        await LoadHistoryGroupsAsync();
     }
 
     /// <summary>

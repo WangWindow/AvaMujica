@@ -136,9 +136,6 @@ public class DatabaseService : IDisposable
     /// <summary>
     /// 执行不返回结果的SQL命令
     /// </summary>
-    /// <param name="sql">SQL命令</param>
-    /// <param name="parameters">命令参数</param>
-    /// <returns>影响的行数</returns>
     public int ExecuteNonQuery(string sql, Dictionary<string, object>? parameters = null)
     {
         lock (_dbLock)
@@ -164,9 +161,6 @@ public class DatabaseService : IDisposable
     /// <summary>
     /// 执行返回单个值的SQL命令
     /// </summary>
-    /// <param name="sql">SQL命令</param>
-    /// <param name="parameters">命令参数</param>
-    /// <returns>查询结果第一行第一列的值</returns>
     public object? ExecuteScalar(string sql, Dictionary<string, object>? parameters = null)
     {
         using var connection = new SqliteConnection(_connectionString);
@@ -189,9 +183,6 @@ public class DatabaseService : IDisposable
     /// <summary>
     /// 使用委托处理查询结果
     /// </summary>
-    /// <param name="sql">SQL命令</param>
-    /// <param name="handleReader">处理SqliteDataReader的委托</param>
-    /// <param name="parameters">命令参数</param>
     public void ExecuteReader(
         string sql,
         Action<SqliteDataReader> handleReader,
@@ -222,11 +213,6 @@ public class DatabaseService : IDisposable
     /// <summary>
     /// 通用的查询方法
     /// </summary>
-    /// <typeparam name="T">返回对象类型</typeparam>
-    /// <param name="sql">SQL命令</param>
-    /// <param name="mapper">从SqliteDataReader映射到对象的函数</param>
-    /// <param name="parameters">命令参数</param>
-    /// <returns>映射后的对象列表</returns>
     private List<T> QueryInternal<T>(
         string sql,
         Func<SqliteDataReader, T> mapper,
@@ -264,11 +250,6 @@ public class DatabaseService : IDisposable
     /// <summary>
     /// 获取多行查询结果
     /// </summary>
-    /// <typeparam name="T">返回对象类型</typeparam>
-    /// <param name="sql">SQL命令</param>
-    /// <param name="mapper">从SqliteDataReader映射到对象的函数</param>
-    /// <param name="parameters">命令参数</param>
-    /// <returns>映射后的对象列表</returns>
     public List<T> Query<T>(
         string sql,
         Func<SqliteDataReader, T> mapper,

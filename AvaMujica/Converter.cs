@@ -6,26 +6,18 @@ using AvaMujica.Models;
 namespace AvaMujica;
 
 /// <summary>
-/// 提供XAML中使用的值转换器
+/// 提供消息加载状态的值转换器
 /// </summary>
-public class RoleToIsUserConverter : IValueConverter
+public class MessageLoadingConverter : IValueConverter
 {
     /// <summary>
-    /// 将Role值转换为是否是用户消息的布尔值
+    /// 根据消息内容和角色判断是否处于加载状态
     /// </summary>
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is string role)
+        if (value is ChatMessage message)
         {
-            bool isUser = role == "user";
-
-            // 如果提供了参数，且参数为字符串"false"，则反转结果
-            if (parameter is string param && param.ToLower() == "false")
-            {
-                return !isUser;
-            }
-
-            return isUser;
+            return string.IsNullOrEmpty(message.Content) && message.Role == "assistant";
         }
         return false;
     }
@@ -45,20 +37,16 @@ public class RoleToIsUserConverter : IValueConverter
 }
 
 /// <summary>
-/// 提供消息加载状态的值转换器
+/// 通用值比较转换器，比较输入值是否与参数相等
 /// </summary>
-public class MessageLoadingConverter : IValueConverter
+public class ValueEqualsConverter : IValueConverter
 {
     /// <summary>
-    /// 根据消息内容和角色判断是否处于加载状态
+    /// 将输入值与参数进行比较，相等则返回true，否则返回false
     /// </summary>
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        if (value is ChatMessage message)
-        {
-            return string.IsNullOrEmpty(message.Content) && message.Role == "assistant";
-        }
-        return false;
+        return value?.Equals(parameter);
     }
 
     /// <summary>

@@ -68,15 +68,13 @@ public class ChatMessage
     /// <param name="sessionId">会话ID</param>
     /// <param name="content">内容</param>
     /// <returns>系统消息</returns>
-    public static ChatMessage CreateSystemMessage(string sessionId, string? content = null)
-    {
-        return new ChatMessage(
+    public static ChatMessage CreateSystemMessage(string sessionId, string? content = null) =>
+        new(
             sessionId,
             "system",
             content
                 ?? "你是一名优秀的心理咨询师，具有丰富的咨询经验。你的工作是为用户提供情感支持，解决用户的疑问。"
         );
-    }
 
     /// <summary>
     /// 创建一个用户角色的消息
@@ -84,10 +82,8 @@ public class ChatMessage
     /// <param name="sessionId">会话ID</param>
     /// <param name="content">内容</param>
     /// <returns>用户消息</returns>
-    public static ChatMessage CreateUserMessage(string sessionId, string content)
-    {
-        return new ChatMessage(sessionId, "user", content);
-    }
+    public static ChatMessage CreateUserMessage(string sessionId, string content) =>
+        new(sessionId, "user", content);
 
     /// <summary>
     /// 创建一个助手角色的消息
@@ -100,8 +96,5 @@ public class ChatMessage
         string sessionId,
         string content = "",
         string? reasoningContent = null
-    )
-    {
-        return new ChatMessage(sessionId, "assistant", content, reasoningContent);
-    }
+    ) => new(sessionId, "assistant", content, reasoningContent);
 }
