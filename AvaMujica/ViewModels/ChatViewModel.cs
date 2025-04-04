@@ -109,7 +109,7 @@ public partial class ChatViewModel : ViewModelBase
         };
 
         ChatMessageList.Add(userMessage);
-        await _historyService.UpdateMessageAsync(userMessage);
+        await _historyService.AddMessageAsync(ChatId, userMessage);
 
         // 如果是首次对话，更新标题
         if (ChatMessageList.Count <= 1)
@@ -135,20 +135,26 @@ public partial class ChatViewModel : ViewModelBase
         };
 
         ChatMessageList.Add(responseMessage);
+        await _historyService.AddMessageAsync(ChatId, responseMessage);
 
         // 直接使用ApiService发送消息并获取响应
         await _apiService.ChatAsync(
             userInput,
-            (type, content) =>
+            async (type, content) =>
             {
-                responseMessage.Content += type == ResponseType.Content ? content : "";
-                responseMessage.ReasoningContent +=
-                    type == ResponseType.ReasoningContent ? content : "";
-                return Task.CompletedTask;
+                if (type == ResponseType.Content)
+                {
+                    responseMessage.Content += content;
+                }
+                else if (type == ResponseType.ReasoningContent)
+                {
+                    responseMessage.ReasoningContent += content;
+                }
+
+                // 更新数据库中的消息
+                await _historyService.UpdateMessageAsync(responseMessage);
             }
         );
-
-        await _historyService.UpdateMessageAsync(responseMessage);
     }
 
     /// <summary>
