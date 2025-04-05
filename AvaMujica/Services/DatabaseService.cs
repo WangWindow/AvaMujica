@@ -56,8 +56,26 @@ public class DatabaseService : IDisposable
     /// </summary>
     private DatabaseService()
     {
-        var appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var dbFolder = Path.Combine(appDataPath, "AvaMujica");
+        string dbFolder;
+
+        // 判断当前运行平台
+        if (OperatingSystem.IsAndroid())
+        {
+            // 在安卓系统上，数据库文件存放在应用程序的私有目录中
+            // 通常是 /data/data/{package_name}/files 或 /data/user/0/{package_name}/files
+            dbFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "AvaMujica"
+            );
+        }
+        else
+        {
+            // 在其他平台（如Windows）上使用原来的路径
+            dbFolder = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "AvaMujica"
+            );
+        }
 
         if (!Directory.Exists(dbFolder))
         {
