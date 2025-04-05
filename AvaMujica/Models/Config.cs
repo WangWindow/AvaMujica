@@ -4,55 +4,57 @@ using System.Collections.Generic;
 namespace AvaMujica.Models;
 
 /// <summary>
-/// 配置类
+/// 配置
 /// </summary>
 public class Config
 {
     /// <summary>
-    /// API 密钥
+    /// 语言
     /// </summary>
-    public string ApiKey { get; set; } =
-        Environment.GetEnvironmentVariable("DEEPSEEK_API_KEY") ?? string.Empty;
+    public string Language { get; set; } = "zh-CN";
 
     /// <summary>
-    /// API 基础地址
+    /// 主题
+    /// </summary>
+    public string Theme { get; set; } = "Auto";
+
+    /// <summary>
+    /// 系统提示词
+    /// </summary>
+    public string SystemPrompt { get; set; } =
+        "你是Ava，一位专业心理咨询师，拥有丰富的心理学知识和咨询经验。你温暖、专业、善解人意，能够帮助来访者探索情感、认知和行为模式，提供有效的心理支持。";
+
+    /// <summary>
+    /// API Key
+    /// </summary>
+    public string ApiKey { get; set; } = string.Empty;
+
+    /// <summary>
+    /// API基础URL
     /// </summary>
     public string ApiBase { get; set; } = "https://api.deepseek.com";
 
     /// <summary>
-    /// 模型名称
+    /// API模型名称
     /// </summary>
-    public string Model { get; set; } = "deepseek-reasoner";
-
-    /// <summary>
-    /// 系统提示
-    /// </summary>
-    public string SystemPrompt { get; set; } =
-        "你是一名优秀的心理咨询师，具有丰富的咨询经验。你的工作是为用户提供情感支持，解决用户的疑问。";
+    public string Model { get; set; } = ChatModels.Chat;
 
     /// <summary>
     /// 温度参数
     /// </summary>
-    public float Temperature { get; set; } = 1.3f;
+    public float Temperature { get; set; } = 1.2f;
 
     /// <summary>
-    /// 最大令牌数
+    /// 最大生成token数
     /// </summary>
     public int MaxTokens { get; set; } = 2000;
 }
 
 /// <summary>
-/// 配置适配器类，用于从数据库中读取配置项
+/// 配置适配器，用于数据库操作
 /// </summary>
 public class ConfigAdapter
 {
-    /// <summary>
-    /// 配置键
-    /// </summary>
     public string Key { get; set; } = string.Empty;
-
-    /// <summary>
-    /// 配置值
-    /// </summary>
     public string Value { get; set; } = string.Empty;
 }

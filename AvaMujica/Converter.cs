@@ -35,3 +35,51 @@ public class ValueEqualsConverter : IValueConverter
         return null;
     }
 }
+
+/// <summary>
+/// 将API Key转换为掩码显示的转换器
+/// </summary>
+public class ApiKeyMaskConverter : IValueConverter
+{
+    /// <summary>
+    /// 将API Key转换为掩码形式显示
+    /// </summary>
+    /// <param name="value">API Key值</param>
+    /// <param name="targetType">目标类型</param>
+    /// <param name="parameter">参数</param>
+    /// <param name="culture">文化信息</param>
+    /// <returns>掩码后的API Key</returns>
+    public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
+    {
+        if (value is string apiKey)
+        {
+            if (string.IsNullOrEmpty(apiKey))
+            {
+                return "未设置";
+            }
+
+            // 只显示前4位和后4位，中间用星号代替
+            if (apiKey.Length <= 8)
+            {
+                return new string('*', apiKey.Length);
+            }
+
+            return $"{apiKey[..4]}****{apiKey[^4..]}";
+        }
+
+        return "未设置";
+    }
+
+    /// <summary>
+    /// 反向转换，这里不需要实现
+    /// </summary>
+    public object? ConvertBack(
+        object? value,
+        Type targetType,
+        object? parameter,
+        CultureInfo culture
+    )
+    {
+        throw new NotImplementedException();
+    }
+}

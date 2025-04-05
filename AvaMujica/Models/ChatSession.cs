@@ -1,18 +1,7 @@
 using System;
 using System.Collections.Generic;
-using AvaMujica.ViewModels;
 
 namespace AvaMujica.Models;
-
-/// <summary>
-/// 会话类型
-/// </summary>
-public static class ChatSessionType
-{
-    public const string PsychologicalConsultation = "心理咨询";
-    public const string PsychologicalAssessment = "心理评估";
-    public const string InterventionPlan = "干预方案";
-}
 
 /// <summary>
 /// 会话类
@@ -61,20 +50,4 @@ public class ChatSession
         if (type != null)
             Type = type;
     }
-}
-
-/// <summary>
-/// 会话分组类
-/// </summary>
-public class ChatSessionGroup(string key, List<ChatSession> items)
-{
-    /// <summary>
-    /// 分组的键
-    /// </summary>
-    public string Key { get; } = key;
-
-    /// <summary>
-    /// 分组的历史记录信息
-    /// </summary>
-    public List<ChatSession> Items { get; } = items;
 }

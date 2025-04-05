@@ -57,7 +57,9 @@
                                         Margin="50,0,5,0"
                                         Padding="10"
                                         HorizontalAlignment="Right"
-                                        Background="#3A6A4B"
+                                        Background="{DynamicResource SystemAccentColorLight3}"
+                                        BorderBrush="{DynamicResource SystemAccentColor}"
+                                        BorderThickness="1"
                                         CornerRadius="10"
                                         IsVisible="{Binding Role, Converter={StaticResource ValueEqualsConverter}, ConverterParameter=user}">
                                         <StackPanel>
@@ -66,7 +68,7 @@
                                             <TextBlock
                                                 Margin="0,5,0,0"
                                                 FontSize="10"
-                                                Foreground="#BBBBBB"
+                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                 Text="{Binding SendTime, StringFormat={}{0:HH:mm}}" />
                                         </StackPanel>
                                     </Border>
@@ -76,16 +78,31 @@
                                         Margin="5,0,50,0"
                                         Padding="10"
                                         HorizontalAlignment="Left"
-                                        Background="#2C4F7B"
+                                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                                        BorderBrush="{DynamicResource SystemControlHighlightAccentBrush}"
+                                        BorderThickness="1"
                                         CornerRadius="10"
                                         IsVisible="{Binding Role, Converter={StaticResource ValueEqualsConverter}, ConverterParameter=assistant}">
                                         <StackPanel>
                                             <!--  推理过程（可折叠，默认展开）  -->
-                                            <Expander IsExpanded="True" IsVisible="{Binding ReasoningContent, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+                                            <Expander
+                                                Margin="0,0,0,10"
+                                                IsExpanded="True"
+                                                IsVisible="{Binding ReasoningContent, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                                                Background="{DynamicResource SystemControlBackgroundAltMediumLowBrush}"
+                                                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="4">
                                                 <Expander.Header>
-                                                    <TextBlock Foreground="#BBBBBB" Text="查看思考过程" />
+                                                    <TextBlock
+                                                        Margin="5,2"
+                                                        FontSize="12"
+                                                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                                        Text="查看思考过程" />
                                                 </Expander.Header>
-                                                <md:MarkdownScrollViewer Markdown="{Binding ReasoningContent}" />
+                                                <md:MarkdownScrollViewer
+                                                    Margin="5"
+                                                    Markdown="{Binding ReasoningContent}" />
                                             </Expander>
 
                                             <!--  最终答案  -->
@@ -93,7 +110,7 @@
                                             <TextBlock
                                                 Margin="0,5,0,0"
                                                 FontSize="10"
-                                                Foreground="#BBBBBB"
+                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                 Text="{Binding SendTime, StringFormat={}{0:HH:mm}}" />
                                         </StackPanel>
                                     </Border>
@@ -122,7 +139,7 @@
                 <Button
                     Padding="8,3"
                     Background="Transparent"
-                    BorderBrush="#BBDEFB"
+                    BorderBrush="{DynamicResource SystemAccentColorLight3}"
                     BorderThickness="1"
                     Command="{Binding QuickMessageCommand}"
                     CommandParameter="感到焦虑"
@@ -139,7 +156,7 @@
                 <Button
                     Padding="8,3"
                     Background="Transparent"
-                    BorderBrush="#BBDEFB"
+                    BorderBrush="{DynamicResource SystemAccentColorLight3}"
                     BorderThickness="1"
                     Command="{Binding QuickMessageCommand}"
                     CommandParameter="需要放松"
@@ -156,7 +173,7 @@
                 <Button
                     Padding="8,3"
                     Background="Transparent"
-                    BorderBrush="#BBDEFB"
+                    BorderBrush="{DynamicResource SystemAccentColorLight3}"
                     BorderThickness="1"
                     Command="{Binding QuickMessageCommand}"
                     CommandParameter="睡眠问题"
@@ -182,7 +199,7 @@
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
                     Background="Transparent"
-                    BorderBrush="#BBDEFB"
+                    BorderBrush="{DynamicResource SystemAccentColorLight3}"
                     BorderThickness="1.5"
                     CornerRadius="20"
                     DockPanel.Dock="Left">
@@ -199,8 +216,8 @@
                     Margin="5"
                     HorizontalAlignment="Center"
                     VerticalAlignment="Center"
-                    Background="DodgerBlue"
-                    BorderBrush="White"
+                    Background="{DynamicResource SystemAccentColor}"
+                    BorderBrush="{DynamicResource SystemControlBackgroundAltHighBrush}"
                     BorderThickness="1.5"
                     Command="{Binding SendCommand}"
                     CornerRadius="20"
@@ -218,6 +235,7 @@
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"
                     Background="Transparent"
+                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                     CornerRadius="10"
                     DockPanel.Dock="Left"
                     Text="{Binding InputText}"

@@ -121,11 +121,40 @@
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 Text="模型选择" />
+                            <ComboBox
+                                HorizontalAlignment="Right"
+                                Width="160"
+                                ItemsSource="{Binding AvailableModels}"
+                                SelectedItem="{Binding SelectedModel}"
+                                SelectionChanged="ComboBox_SelectionChanged">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </Grid>
+                    </Button>
+
+                    <Button
+                        Padding="12"
+                        HorizontalAlignment="Stretch"
+                        VerticalAlignment="Center"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource SystemBaseLowColor}"
+                        BorderThickness="1"
+                        Command="{Binding SetApiKeyCommand}"
+                        CornerRadius="4">
+                        <Grid>
+                            <TextBlock
+                                HorizontalAlignment="Left"
+                                VerticalAlignment="Center"
+                                Text="API Key设置" />
                             <TextBlock
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Foreground="{DynamicResource SystemBaseMediumColor}"
-                                Text="Model" />
+                                Text="{Binding ApiKey, Converter={StaticResource ApiKeyMaskConverter}}" />
                         </Grid>
                     </Button>
 

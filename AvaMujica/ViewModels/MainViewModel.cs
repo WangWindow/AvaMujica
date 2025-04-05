@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using AvaMujica.Models;
 using AvaMujica.Services;
+using AvaMujica.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
@@ -218,6 +221,8 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void ShowSettings()
     {
+        // 初始化设置视图模型
+        SettingsViewModel?.Initialize();
         IsSettingsViewVisible = true;
         // 显示设置视图时关闭侧边栏
         IsSiderOpen = false;
@@ -252,5 +257,76 @@ public partial class MainViewModel : ViewModelBase
     {
         _chatViewModelMap.TryGetValue(sessionId, out var chatViewModel);
         return chatViewModel;
+    }
+
+    /// <summary>
+    /// 显示输入对话框
+    /// </summary>
+    /// <param name="title">标题</param>
+    /// <param name="message">消息内容</param>
+    /// <param name="inputControl">输入控件</param>
+    /// <returns>如果用户点击确认返回true，否则返回false</returns>
+    public async Task<bool> ShowInputDialog(string title, string message, Control inputControl)
+    {
+        var okButton = new Button
+        {
+            Content = "确认",
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+        };
+        var cancelButton = new Button
+        {
+            Content = "取消",
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
+        };
+
+        var buttonPanel = new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
+            Spacing = 10,
+            Children = { cancelButton, okButton },
+        };
+
+        var dialog = new Window
+        {
+            Width = 400,
+            Height = 200,
+            Title = title,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Content = new StackPanel
+            {
+                Margin = new Avalonia.Thickness(20),
+                Spacing = 20,
+                Children =
+                {
+                    new TextBlock { Text = message },
+                    inputControl,
+                    buttonPanel,
+                },
+            },
+        };
+
+        var tcs = new TaskCompletionSource<bool>();
+
+        okButton.Click += (s, e) =>
+        {
+            tcs.TrySetResult(true);
+            dialog.Close();
+        };
+
+        cancelButton.Click += (s, e) =>
+        {
+            tcs.TrySetResult(false);
+            dialog.Close();
+        };
+
+        dialog.Closed += (s, e) =>
+        {
+            if (!tcs.Task.IsCompleted)
+                tcs.TrySetResult(false);
+        };
+
+        await dialog.ShowDialog(App.MainWindow);
+        return await tcs.Task;
     }
 }
