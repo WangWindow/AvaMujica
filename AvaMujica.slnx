@@ -5,6 +5,7 @@
     <Platform Name="x86" />
   </Configurations>
   <Project Path="AvaMujica.Android/AvaMujica.Android.csproj" />
+  <Project Path="AvaMujica.Browser/AvaMujica.Browser.csproj" />
   <Project Path="AvaMujica.Desktop/AvaMujica.Desktop.csproj" />
   <Project Path="AvaMujica.Test/AvaMujica.Test.csproj" />
   <Project Path="AvaMujica/AvaMujica.csproj" />

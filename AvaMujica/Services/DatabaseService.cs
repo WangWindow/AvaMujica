@@ -58,36 +58,69 @@ public class DatabaseService : IDisposable
     {
         string dbFolder;
 
-        // 判断当前运行平台
-        if (OperatingSystem.IsAndroid())
+        try
         {
-            // 在安卓系统上，数据库文件存放在应用程序的私有目录中
-            // 通常是 /data/data/{package_name}/files 或 /data/user/0/{package_name}/files
-            dbFolder = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "AvaMujica"
-            );
+            // 判断当前运行平台
+            if (OperatingSystem.IsAndroid())
+            {
+                // 在安卓系统上，使用应用程序的内部存储空间
+                // 此路径不需要特殊权限且对应用程序是私有的
+                dbFolder = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.Personal),
+                    "databases"
+                );
+
+                Console.WriteLine($"Android数据库路径: {dbFolder}");
+            }
+            else
+            {
+                // 在其他平台（如Windows）上使用原来的路径
+                dbFolder = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "AvaMujica"
+                );
+
+                Console.WriteLine($"其他平台数据库路径: {dbFolder}");
+            }
+
+            if (!Directory.Exists(dbFolder))
+            {
+                try
+                {
+                    Directory.CreateDirectory(dbFolder);
+                    Console.WriteLine($"成功创建数据库目录: {dbFolder}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"创建数据库目录失败: {ex.Message}");
+                    // 如果无法创建目录，尝试使用应用内部存储
+                    if (OperatingSystem.IsAndroid())
+                    {
+                        dbFolder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+                        Console.WriteLine($"切换到备用路径: {dbFolder}");
+                    }
+                }
+            }
+
+            _dbPath = Path.Combine(dbFolder, "data.db");
+            _connectionString = $"Data Source={_dbPath}";
+            _connection = new SqliteConnection(_connectionString);
+
+            Console.WriteLine($"数据库文件路径: {_dbPath}");
+
+            // 确保数据库和表已创建
+            EnsureDatabaseCreated();
         }
-        else
+        catch (Exception ex)
         {
-            // 在其他平台（如Windows）上使用原来的路径
-            dbFolder = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "AvaMujica"
-            );
+            Console.WriteLine($"数据库初始化失败: {ex.Message}");
+            // 创建一个内存数据库作为备用方案
+            _dbPath = ":memory:";
+            _connectionString = "Data Source=:memory:";
+            _connection = new SqliteConnection(_connectionString);
+            EnsureDatabaseCreated();
+            Console.WriteLine("已切换到内存数据库作为备用");
         }
-
-        if (!Directory.Exists(dbFolder))
-        {
-            Directory.CreateDirectory(dbFolder);
-        }
-
-        _dbPath = Path.Combine(dbFolder, "data.db");
-        _connectionString = $"Data Source={_dbPath}";
-        _connection = new SqliteConnection(_connectionString);
-
-        // 确保数据库和表已创建
-        EnsureDatabaseCreated();
     }
 
     /// <summary>
@@ -95,13 +128,15 @@ public class DatabaseService : IDisposable
     /// </summary>
     private void EnsureDatabaseCreated()
     {
-        _connection.Open();
-
-        // 创建会话表
-        using (var command = _connection.CreateCommand())
+        try
         {
-            command.CommandText =
-                @"
+            _connection.Open();
+
+            // 创建会话表
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText =
+                    @"
                     CREATE TABLE IF NOT EXISTS ChatSessions (
                         Id TEXT PRIMARY KEY,
                         Title TEXT NOT NULL,
@@ -109,14 +144,14 @@ public class DatabaseService : IDisposable
                         CreatedTime TEXT NOT NULL,
                         UpdatedTime TEXT NOT NULL
                     );";
-            command.ExecuteNonQuery();
-        }
+                command.ExecuteNonQuery();
+            }
 
-        // 创建消息表
-        using (var command = _connection.CreateCommand())
-        {
-            command.CommandText =
-                @"
+            // 创建消息表
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText =
+                    @"
                     CREATE TABLE IF NOT EXISTS ChatMessages (
                         Id TEXT PRIMARY KEY,
                         SessionId TEXT NOT NULL,
@@ -126,29 +161,36 @@ public class DatabaseService : IDisposable
                         SendTime TEXT NOT NULL,
                         FOREIGN KEY(SessionId) REFERENCES ChatSessions(Id) ON DELETE CASCADE
                     );";
-            command.ExecuteNonQuery();
-        }
+                command.ExecuteNonQuery();
+            }
 
-        // 创建配置表
-        using (var command = _connection.CreateCommand())
-        {
-            command.CommandText =
-                @"
+            // 创建配置表
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText =
+                    @"
                     CREATE TABLE IF NOT EXISTS Configs (
                         Key TEXT PRIMARY KEY,
                         Value TEXT NOT NULL
                     );";
-            command.ExecuteNonQuery();
-        }
+                command.ExecuteNonQuery();
+            }
 
-        // 启用外键约束
-        using (var command = _connection.CreateCommand())
+            // 启用外键约束
+            using (var command = _connection.CreateCommand())
+            {
+                command.CommandText = "PRAGMA foreign_keys = ON;";
+                command.ExecuteNonQuery();
+            }
+
+            _connection.Close();
+            Console.WriteLine("数据库表创建成功");
+        }
+        catch (Exception ex)
         {
-            command.CommandText = "PRAGMA foreign_keys = ON;";
-            command.ExecuteNonQuery();
+            Console.WriteLine($"创建数据库表失败: {ex.Message}");
+            throw;
         }
-
-        _connection.Close();
     }
 
     /// <summary>
