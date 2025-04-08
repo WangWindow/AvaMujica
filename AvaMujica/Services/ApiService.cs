@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -82,7 +83,7 @@ public class ApiService()
             {
                 string reasoning = choice.Delta.ReasoningContent;
                 await onReceiveContent(ResponseType.ReasoningContent, reasoning);
-                Console.Write($"{reasoning}");
+                Debug.Write($"{reasoning}");
 
                 // 表明还在接收推理内容
                 isReasoningComplete = false;
@@ -91,8 +92,7 @@ public class ApiService()
             {
                 // 如果开始接收Content但没有明确标记推理完成，说明推理已结束
                 isReasoningComplete = true;
-                Console.WriteLine();
-                Console.WriteLine("==== ↑ Reasoning ====");
+                Debug.WriteLine("\n==== ↑ Reasoning ====");
             }
 
             // 处理正常内容
@@ -100,7 +100,7 @@ public class ApiService()
             {
                 string content = choice.Delta.Content;
                 await onReceiveContent(ResponseType.Content, content);
-                Console.Write($"{content}");
+                Debug.Write($"{content}");
 
                 // 表明还在接收正常内容
                 isContentComplete = false;
@@ -111,8 +111,7 @@ public class ApiService()
             {
                 if (!isContentComplete)
                 {
-                    Console.WriteLine();
-                    Console.WriteLine("==== ↑ Content ====");
+                    Debug.WriteLine("\n==== ↑ Content ====");
                     isContentComplete = true;
                 }
             }
@@ -121,14 +120,12 @@ public class ApiService()
         // 确保在所有内容结束后，如果还没有打印过结束标记，则打印
         if (!isReasoningComplete)
         {
-            Console.WriteLine();
-            Console.WriteLine("==== ↑ Reasoning ====");
+            Debug.WriteLine("\n==== ↑ Reasoning ====");
         }
 
         if (!isContentComplete)
         {
-            Console.WriteLine();
-            Console.WriteLine("==== ↑ Content ====");
+            Debug.WriteLine("\n==== ↑ Content ====");
         }
     }
 }

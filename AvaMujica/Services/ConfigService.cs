@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -200,7 +201,7 @@ public class ConfigService
                     if (currentConfig == null || currentConfig.Value != defaultValue.ToString())
                     {
                         SetConfig(property.Name, defaultValue.ToString());
-                        Console.WriteLine($"写入默认配置: {property.Name}={defaultValue}");
+                        Debug.WriteLine($"写入默认配置: {property.Name}={defaultValue}");
                     }
                 }
             }
@@ -243,7 +244,7 @@ public class ConfigService
                 if (value != null)
                 {
                     SetConfig(propertyName, value.ToString());
-                    Console.WriteLine($"初始化默认配置: {propertyName}={value}");
+                    Debug.WriteLine($"初始化默认配置: {propertyName}={value}");
                 }
             }
         }
