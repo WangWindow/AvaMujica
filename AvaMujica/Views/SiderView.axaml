@@ -18,7 +18,6 @@
         <vm:SiderViewModel />
     </Design.DataContext>
 
-
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -62,7 +61,7 @@
                         SelectedIndex="0"
                         SelectedItem="{Binding SelectedSessionType}">
                         <ComboBoxItem Content="{x:Static models:ChatSessionType.PsychologicalConsultation}" />
-                        <ComboBoxItem Content="{x:Static models:ChatSessionType.PsychologicalConsultation}" />
+                        <ComboBoxItem Content="{x:Static models:ChatSessionType.PsychologicalAssessment}" />
                         <ComboBoxItem Content="{x:Static models:ChatSessionType.InterventionPlan}" />
                     </ComboBox>
 
@@ -90,7 +89,9 @@
                                                     HorizontalAlignment="Stretch"
                                                     VerticalAlignment="Center"
                                                     HorizontalContentAlignment="Stretch"
-                                                    Background="Transparent">
+                                                    Background="Transparent"
+                                                    Command="{Binding $parent[UserControl].((vm:SiderViewModel)DataContext).SelectChatSessionCommand}"
+                                                    CommandParameter="{Binding}">
                                                     <Grid>
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="Auto" />

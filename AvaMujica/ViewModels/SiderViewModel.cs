@@ -35,18 +35,6 @@ public partial class SiderViewModel : ViewModelBase
     private string selectedSessionType = ChatSessionType.PsychologicalConsultation;
 
     /// <summary>
-    /// 是否正在加载
-    /// </summary>
-    [ObservableProperty]
-    private bool isLoading = false;
-
-    /// <summary>
-    /// 是否有错误
-    /// </summary>
-    [ObservableProperty]
-    private bool hasError = false;
-
-    /// <summary>
     /// 错误信息
     /// </summary>
     [ObservableProperty]
@@ -92,9 +80,6 @@ public partial class SiderViewModel : ViewModelBase
     /// </summary>
     private async Task FilterHistoryByTypeAsync(string sessionType)
     {
-        IsLoading = true;
-        HasError = false;
-
         List<ChatSessionGroup> historyGroups = sessionType switch
         {
             ChatSessionType.PsychologicalConsultation =>
@@ -138,8 +123,6 @@ public partial class SiderViewModel : ViewModelBase
     [RelayCommand]
     private async Task CreateNewChatAsync()
     {
-        IsLoading = true;
-        HasError = false;
         await _mainViewModel.CreateNewChatAsync();
     }
 
@@ -156,11 +139,9 @@ public partial class SiderViewModel : ViewModelBase
     /// 选择历史会话命令
     /// </summary>
     [RelayCommand]
-    private void SelectHistoryItem(ChatSession chatSession)
+    private void SelectChatSession(ChatSession chatSession)
     {
-        if (chatSession != null)
-        {
-            _mainViewModel.SwitchToChat(chatSession.Id);
-        }
+        _mainViewModel.SwitchToChat(chatSession.Id);
+        _mainViewModel.IsSiderOpen = false;
     }
 }

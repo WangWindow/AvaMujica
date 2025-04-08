@@ -111,13 +111,14 @@ public class HistoryService
         return await Task.Run(() =>
         {
             return _databaseService.Query<ChatSession>(
-                "SELECT Id, Title, Type, CreatedTime FROM ChatSessions WHERE Type = $type ORDER BY UpdatedTime DESC",
+                "SELECT Id, Title, Type, CreatedTime, UpdatedTime FROM ChatSessions WHERE Type = $type ORDER BY UpdatedTime DESC",
                 reader => new ChatSession
                 {
                     Id = reader.GetString(0),
                     Title = reader.GetString(1),
                     Type = reader.GetString(2),
                     CreatedTime = reader.GetDateTime(3),
+                    UpdatedTime = reader.GetDateTime(4),
                 },
                 new Dictionary<string, object> { { "$type", type } }
             );
@@ -239,6 +240,25 @@ public class HistoryService
                 new Dictionary<string, object>
                 {
                     { "$sessionId", message.SessionId },
+                    { "$updatedTime", DateTime.Now.ToString("o") },
+                }
+            );
+        });
+    }
+
+    /// <summary>
+    /// 更新会话标题
+    /// </summary>
+    public async Task UpdateSessionTitleAsync(string sessionId, string newTitle)
+    {
+        await Task.Run(() =>
+        {
+            _databaseService.ExecuteNonQuery(
+                "UPDATE ChatSessions SET Title = $title, UpdatedTime = $updatedTime WHERE Id = $sessionId",
+                new Dictionary<string, object>
+                {
+                    { "$sessionId", sessionId },
+                    { "$title", newTitle },
                     { "$updatedTime", DateTime.Now.ToString("o") },
                 }
             );

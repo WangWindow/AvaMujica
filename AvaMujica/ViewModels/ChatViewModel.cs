@@ -29,6 +29,33 @@ public partial class ChatViewModel : ViewModelBase
     private string chatTitle = "新对话";
 
     /// <summary>
+    /// 聊天标题变化时更新数据库
+    /// </summary>
+    partial void OnChatTitleChanged(string value)
+    {
+        if (!string.IsNullOrEmpty(ChatId) && !string.IsNullOrEmpty(value))
+        {
+            _ = UpdateChatTitleAsync(ChatId, value);
+        }
+    }
+
+    /// <summary>
+    /// 更新聊天标题到数据库
+    /// </summary>
+    private async Task UpdateChatTitleAsync(string sessionId, string newTitle)
+    {
+        // 获取当前会话
+        var session = await _historyService.GetSessionAsync(sessionId);
+        if (session != null)
+        {
+            // 更新标题
+            session.Title = newTitle;
+            // 保存到数据库
+            await _historyService.UpdateSessionTitleAsync(sessionId, newTitle);
+        }
+    }
+
+    /// <summary>
     /// 聊天ID
     /// </summary>
     public string ChatId { get; set; } = Guid.NewGuid().ToString();
