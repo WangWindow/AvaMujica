@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using AvaMujica.Models;
@@ -51,6 +52,48 @@ public partial class SettingsViewModel(MainViewModel mainViewModel) : ViewModelB
     private int _maxTokens = 2000;
 
     /// <summary>
+    /// API Key编辑状态
+    /// </summary>
+    [ObservableProperty]
+    private bool _isApiKeyEditing = false;
+
+    /// <summary>
+    /// API设置编辑状态
+    /// </summary>
+    [ObservableProperty]
+    private bool _isApiSettingsEditing = false;
+
+    /// <summary>
+    /// 临时API Key值
+    /// </summary>
+    [ObservableProperty]
+    private string _tempApiKey = string.Empty;
+
+    /// <summary>
+    /// 临时系统提示词
+    /// </summary>
+    [ObservableProperty]
+    private string _tempSystemPrompt = string.Empty;
+
+    /// <summary>
+    /// 临时API基础URL
+    /// </summary>
+    [ObservableProperty]
+    private string _tempApiBase = string.Empty;
+
+    /// <summary>
+    /// 临时温度参数
+    /// </summary>
+    [ObservableProperty]
+    private string _tempTemperature = string.Empty;
+
+    /// <summary>
+    /// 临时最大Token数
+    /// </summary>
+    [ObservableProperty]
+    private string _tempMaxTokens = string.Empty;
+
+    /// <summary>
     /// 可用模型列表
     /// </summary>
     public ObservableCollection<string> AvailableModels { get; } =
@@ -81,170 +124,136 @@ public partial class SettingsViewModel(MainViewModel mainViewModel) : ViewModelB
     }
 
     /// <summary>
+    /// 打开API Key编辑
+    /// </summary>
+    [RelayCommand]
+    private void SetApiKey()
+    {
+        // 使用内联编辑方式
+        IsApiKeyEditing = true;
+    }
+
+    /// <summary>
+    /// 打开API设置编辑
+    /// </summary>
+    [RelayCommand]
+    private void SetApiSettings()
+    {
+        // 使用内联编辑方式
+        IsApiSettingsEditing = true;
+    }
+
+    /// <summary>
     /// 保存API Key
     /// </summary>
     [RelayCommand]
-    private async Task SetApiKey()
+    private void SaveApiKey()
     {
-        // 创建输入对话框
-        var dialog = new TextBox
+        if (!string.IsNullOrEmpty(TempApiKey))
         {
-            Width = 300,
-            Watermark = "请输入API Key",
-            Text = ApiKey,
-        };
+            _configService.SetConfig("ApiKey", TempApiKey);
+            ApiKey = TempApiKey;
+        }
+        IsApiKeyEditing = false;
+    }
 
-        // 创建对话框
-        var result = await ShowInputDialog("API Key 设置", "请输入您的API Key:", dialog);
+    /// <summary>
+    /// 取消API Key编辑
+    /// </summary>
+    [RelayCommand]
+    private void CancelApiKeyEdit()
+    {
+        IsApiKeyEditing = false;
+    }
 
-        if (result)
+    /// <summary>
+    /// 保存API设置
+    /// </summary>
+    [RelayCommand]
+    private void SaveApiSettings()
+    {
+        // 保存系统提示词
+        if (!string.IsNullOrEmpty(TempSystemPrompt))
         {
-            var newApiKey = dialog.Text?.Trim() ?? string.Empty;
-            if (!string.IsNullOrEmpty(newApiKey))
-            {
-                // 保存到配置
-                _configService.SetConfig("ApiKey", newApiKey);
-                ApiKey = newApiKey;
-            }
+            _configService.SetConfig("SystemPrompt", TempSystemPrompt);
+            SystemPrompt = TempSystemPrompt;
+        }
+
+        // 保存API基础URL
+        var newApiBase = string.IsNullOrEmpty(TempApiBase)
+            ? "https://api.deepseek.com"
+            : TempApiBase;
+        _configService.SetConfig("ApiBase", newApiBase);
+        ApiBase = newApiBase;
+
+        // 保存温度参数
+        if (float.TryParse(TempTemperature, out float newTemperature))
+        {
+            // 限制温度范围
+            newTemperature = Math.Clamp(newTemperature, 0.0f, 2.0f);
+            _configService.SetConfig("Temperature", newTemperature.ToString());
+            Temperature = newTemperature;
+        }
+
+        // 保存最大token数
+        if (int.TryParse(TempMaxTokens, out int newMaxTokens))
+        {
+            // 确保最大token数合理
+            newMaxTokens = Math.Max(1, newMaxTokens);
+            _configService.SetConfig("MaxTokens", newMaxTokens.ToString());
+            MaxTokens = newMaxTokens;
+        }
+
+        IsApiSettingsEditing = false;
+    }
+
+    /// <summary>
+    /// 取消API设置编辑
+    /// </summary>
+    [RelayCommand]
+    private void CancelApiSettingsEdit()
+    {
+        IsApiSettingsEditing = false;
+    }
+
+    /// <summary>
+    /// 准备API Key编辑
+    /// </summary>
+    private void PrepareApiKeyEdit()
+    {
+        TempApiKey = ApiKey;
+    }
+
+    /// <summary>
+    /// 准备API设置编辑
+    /// </summary>
+    private void PrepareApiSettingsEdit()
+    {
+        TempSystemPrompt = SystemPrompt;
+        TempApiBase = ApiBase;
+        TempTemperature = Temperature.ToString();
+        TempMaxTokens = MaxTokens.ToString();
+    }
+
+    /// <summary>
+    /// API Key编辑状态改变
+    /// </summary>
+    partial void OnIsApiKeyEditingChanged(bool value)
+    {
+        if (value)
+        {
+            PrepareApiKeyEdit();
         }
     }
 
     /// <summary>
-    /// 打开API设置对话框
+    /// API设置编辑状态改变
     /// </summary>
-    [RelayCommand]
-    private async Task SetApiSettings()
+    partial void OnIsApiSettingsEditingChanged(bool value)
     {
-        // 创建系统提示词输入框
-        var systemPromptTextBox = new TextBox
+        if (value)
         {
-            AcceptsReturn = true,
-            TextWrapping = Avalonia.Media.TextWrapping.Wrap,
-            MinHeight = 100,
-            MaxHeight = 200,
-            Watermark = "请输入系统提示词",
-            Text = SystemPrompt,
-        };
-
-        // 创建API基础URL输入框
-        var apiBaseTextBox = new TextBox { Watermark = "请输入API基础URL", Text = ApiBase };
-
-        // 创建温度参数输入框
-        var temperatureTextBox = new TextBox
-        {
-            Watermark = "请输入温度参数 (0.0-2.0)",
-            Text = Temperature.ToString(),
-        };
-
-        // 创建最大Token输入框
-        var maxTokensTextBox = new TextBox
-        {
-            Watermark = "请输入最大生成token数",
-            Text = MaxTokens.ToString(),
-        };
-
-        // 创建确认和取消按钮
-        var okButton = new Button { Content = "确认" };
-        var cancelButton = new Button { Content = "取消" };
-
-        var buttonPanel = new StackPanel
-        {
-            Orientation = Orientation.Horizontal,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            Spacing = 10,
-            Children = { cancelButton, okButton },
-        };
-
-        // 创建标签
-        var systemPromptLabel = new TextBlock { Text = "系统提示词:" };
-        var apiBaseLabel = new TextBlock { Text = "API基础URL:" };
-        var temperatureLabel = new TextBlock { Text = "温度参数:" };
-        var maxTokensLabel = new TextBlock { Text = "最大Token数:" };
-
-        // 创建设置内容面板
-        var settingsPanel = new StackPanel
-        {
-            Margin = new Avalonia.Thickness(20),
-            Spacing = 10,
-            Children =
-            {
-                systemPromptLabel,
-                systemPromptTextBox,
-                apiBaseLabel,
-                apiBaseTextBox,
-                temperatureLabel,
-                temperatureTextBox,
-                maxTokensLabel,
-                maxTokensTextBox,
-                buttonPanel,
-            },
-        };
-
-        // 创建对话框窗口
-        var dialog = new Window
-        {
-            Width = 500,
-            Height = 500,
-            Title = "API设置",
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            Content = settingsPanel,
-        };
-
-        var tcs = new TaskCompletionSource<bool>();
-
-        okButton.Click += (s, e) =>
-        {
-            tcs.TrySetResult(true);
-            dialog.Close();
-        };
-
-        cancelButton.Click += (s, e) =>
-        {
-            tcs.TrySetResult(false);
-            dialog.Close();
-        };
-
-        dialog.Closed += (s, e) =>
-        {
-            if (!tcs.Task.IsCompleted)
-                tcs.TrySetResult(false);
-        };
-
-        await dialog.ShowDialog(App.MainWindow);
-        bool result = await tcs.Task;
-
-        if (result)
-        {
-            // 保存系统提示词
-            var newSystemPrompt = systemPromptTextBox.Text?.Trim() ?? string.Empty;
-            if (!string.IsNullOrEmpty(newSystemPrompt))
-            {
-                _configService.SetConfig("SystemPrompt", newSystemPrompt);
-                SystemPrompt = newSystemPrompt;
-            }
-
-            // 保存API基础URL
-            var newApiBase = apiBaseTextBox.Text?.Trim() ?? "https://api.deepseek.com";
-            _configService.SetConfig("ApiBase", newApiBase);
-            ApiBase = newApiBase;
-
-            // 保存温度参数
-            if (float.TryParse(temperatureTextBox.Text, out float newTemperature))
-            {
-                // 限制温度范围
-                newTemperature = Math.Clamp(newTemperature, 0.0f, 2.0f);
-                _configService.SetConfig("Temperature", newTemperature.ToString());
-                Temperature = newTemperature;
-            }
-
-            // 保存最大token数
-            if (int.TryParse(maxTokensTextBox.Text, out int newMaxTokens))
-            {
-                // 确保最大token数合理
-                newMaxTokens = Math.Max(1, newMaxTokens);
-                _configService.SetConfig("MaxTokens", newMaxTokens.ToString());
-                MaxTokens = newMaxTokens;
-            }
+            PrepareApiSettingsEdit();
         }
     }
 
@@ -255,75 +264,7 @@ public partial class SettingsViewModel(MainViewModel mainViewModel) : ViewModelB
     private void SelectModel(string model)
     {
         SelectedModel = model;
-
         // 保存到数据库
         _configService.SetConfig("Model", model);
-    }
-
-    /// <summary>
-    /// 显示输入对话框
-    /// </summary>
-    public async Task<bool> ShowInputDialog(string title, string message, Control inputControl)
-    {
-        var okButton = new Button
-        {
-            Content = "确认",
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
-        };
-        var cancelButton = new Button
-        {
-            Content = "取消",
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left,
-        };
-
-        var buttonPanel = new StackPanel
-        {
-            Orientation = Avalonia.Layout.Orientation.Horizontal,
-            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Center,
-            Spacing = 10,
-            Children = { cancelButton, okButton },
-        };
-
-        var dialog = new Window
-        {
-            Width = 400,
-            Height = 200,
-            Title = title,
-            WindowStartupLocation = WindowStartupLocation.CenterOwner,
-            Content = new StackPanel
-            {
-                Margin = new Avalonia.Thickness(20),
-                Spacing = 20,
-                Children =
-                {
-                    new TextBlock { Text = message },
-                    inputControl,
-                    buttonPanel,
-                },
-            },
-        };
-
-        var tcs = new TaskCompletionSource<bool>();
-
-        okButton.Click += (s, e) =>
-        {
-            tcs.TrySetResult(true);
-            dialog.Close();
-        };
-
-        cancelButton.Click += (s, e) =>
-        {
-            tcs.TrySetResult(false);
-            dialog.Close();
-        };
-
-        dialog.Closed += (s, e) =>
-        {
-            if (!tcs.Task.IsCompleted)
-                tcs.TrySetResult(false);
-        };
-
-        await dialog.ShowDialog(App.MainWindow);
-        return await tcs.Task;
     }
 }

@@ -122,8 +122,8 @@
                                 VerticalAlignment="Center"
                                 Text="模型选择" />
                             <ComboBox
-                                HorizontalAlignment="Right"
                                 Width="160"
+                                HorizontalAlignment="Right"
                                 ItemsSource="{Binding AvailableModels}"
                                 SelectedItem="{Binding SelectedModel}"
                                 SelectionChanged="ComboBox_SelectionChanged">
@@ -144,7 +144,8 @@
                         BorderBrush="{DynamicResource SystemBaseLowColor}"
                         BorderThickness="1"
                         Command="{Binding SetApiKeyCommand}"
-                        CornerRadius="4">
+                        CornerRadius="4"
+                        IsVisible="{Binding !IsApiKeyEditing}">
                         <Grid>
                             <TextBlock
                                 HorizontalAlignment="Left"
@@ -158,6 +159,38 @@
                         </Grid>
                     </Button>
 
+                    <!--  API Key内联编辑面板  -->
+                    <Border
+                        Padding="12"
+                        BorderBrush="{DynamicResource SystemBaseLowColor}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        IsVisible="{Binding IsApiKeyEditing}">
+                        <StackPanel Spacing="8">
+                            <TextBlock FontWeight="SemiBold" Text="API Key设置" />
+                            <TextBox
+                                PasswordChar="*"
+                                Text="{Binding TempApiKey}"
+                                Watermark="请输入API Key" />
+                            <StackPanel
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal"
+                                Spacing="8">
+                                <Button
+                                    Background="Transparent"
+                                    BorderBrush="{DynamicResource SystemBaseLowColor}"
+                                    BorderThickness="1"
+                                    Command="{Binding CancelApiKeyEditCommand}"
+                                    Content="取消" />
+                                <Button
+                                    Background="{DynamicResource SystemAccentColor}"
+                                    Command="{Binding SaveApiKeyCommand}"
+                                    Content="保存"
+                                    Foreground="White" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
                     <Button
                         Padding="12"
                         HorizontalAlignment="Stretch"
@@ -166,7 +199,8 @@
                         BorderBrush="{DynamicResource SystemBaseLowColor}"
                         BorderThickness="1"
                         Command="{Binding SetApiSettingsCommand}"
-                        CornerRadius="4">
+                        CornerRadius="4"
+                        IsVisible="{Binding !IsApiSettingsEditing}">
                         <Grid>
                             <TextBlock
                                 HorizontalAlignment="Left"
@@ -178,6 +212,52 @@
                                 Text="→" />
                         </Grid>
                     </Button>
+
+                    <!--  API设置内联编辑面板  -->
+                    <Border
+                        Padding="12"
+                        BorderBrush="{DynamicResource SystemBaseLowColor}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        IsVisible="{Binding IsApiSettingsEditing}">
+                        <StackPanel Spacing="8">
+                            <TextBlock FontWeight="SemiBold" Text="API设置" />
+
+                            <TextBlock Text="系统提示词:" />
+                            <TextBox
+                                MinHeight="80"
+                                AcceptsReturn="True"
+                                Text="{Binding TempSystemPrompt}"
+                                TextWrapping="Wrap"
+                                Watermark="请输入系统提示词" />
+
+                            <TextBlock Text="API基础URL:" />
+                            <TextBox Text="{Binding TempApiBase}" Watermark="请输入API基础URL" />
+
+                            <TextBlock Text="温度参数:" />
+                            <TextBox Text="{Binding TempTemperature}" Watermark="请输入温度参数 (0.0-2.0)" />
+
+                            <TextBlock Text="最大Token数:" />
+                            <TextBox Text="{Binding TempMaxTokens}" Watermark="请输入最大生成token数" />
+
+                            <StackPanel
+                                HorizontalAlignment="Right"
+                                Orientation="Horizontal"
+                                Spacing="8">
+                                <Button
+                                    Background="Transparent"
+                                    BorderBrush="{DynamicResource SystemBaseLowColor}"
+                                    BorderThickness="1"
+                                    Command="{Binding CancelApiSettingsEditCommand}"
+                                    Content="取消" />
+                                <Button
+                                    Background="{DynamicResource SystemAccentColor}"
+                                    Command="{Binding SaveApiSettingsCommand}"
+                                    Content="保存"
+                                    Foreground="White" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
 
                     <!--  隐私与安全  -->
                     <TextBlock

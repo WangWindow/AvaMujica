@@ -13,11 +13,6 @@ namespace AvaMujica;
 
 public partial class App : Application
 {
-    /// <summary>
-    /// 主窗口实例
-    /// </summary>
-    public static Window? MainWindow { get; private set; }
-
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -33,7 +28,6 @@ public partial class App : Application
 
             // 创建主窗口并保存引用
             desktop.MainWindow = new MainWindow { DataContext = new MainViewModel() };
-            MainWindow = desktop.MainWindow;
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         {

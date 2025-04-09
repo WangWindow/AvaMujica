@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Avalonia.Threading;
 using DeepSeek.Core;
 using DeepSeek.Core.Models;
 
@@ -46,87 +47,98 @@ public class ApiService()
         // 加载配置
         var settings = _configService.LoadFullConfig();
 
-        // 创建 DeepSeek 客户端
-        using var httpClient = new HttpClient
+        // 创建 DeepSeek 客户端并在后台线程执行网络请求
+        await Task.Run(async () =>
         {
-            BaseAddress = new Uri(settings.ApiBase),
-            Timeout = TimeSpan.FromSeconds(300),
-        };
-
-        var client = new DeepSeekClient(httpClient, settings.ApiKey);
-
-        var request = new ChatRequest
-        {
-            Messages =
-            [
-                Message.NewSystemMessage(settings.SystemPrompt),
-                Message.NewUserMessage(userPrompt),
-            ],
-            Model = settings.Model,
-            Temperature = settings.Temperature,
-            MaxTokens = settings.MaxTokens,
-        };
-
-        var choices = client.ChatStreamAsync(request, new CancellationToken());
-        if (choices == null)
-        {
-            return;
-        }
-
-        bool isReasoningComplete = false;
-        bool isContentComplete = false;
-
-        await foreach (var choice in choices)
-        {
-            // 处理推理内容
-            if (choice.Delta?.ReasoningContent != null)
+            using var httpClient = new HttpClient
             {
-                string reasoning = choice.Delta.ReasoningContent;
-                await onReceiveContent(ResponseType.ReasoningContent, reasoning);
-                Debug.Write($"{reasoning}");
+                BaseAddress = new Uri(settings.ApiBase),
+                Timeout = TimeSpan.FromSeconds(300),
+            };
 
-                // 表明还在接收推理内容
-                isReasoningComplete = false;
+            var client = new DeepSeekClient(httpClient, settings.ApiKey);
+
+            var request = new ChatRequest
+            {
+                Messages =
+                [
+                    Message.NewSystemMessage(settings.SystemPrompt),
+                    Message.NewUserMessage(userPrompt),
+                ],
+                Model = settings.Model,
+                Temperature = settings.Temperature,
+                MaxTokens = settings.MaxTokens,
+            };
+
+            var choices = client.ChatStreamAsync(request, new CancellationToken());
+            if (choices == null)
+            {
+                return;
             }
-            else if (!isReasoningComplete && choice.Delta?.Content != null)
+
+            bool isReasoningComplete = false;
+            bool isContentComplete = false;
+
+            await foreach (var choice in choices)
             {
-                // 如果开始接收Content但没有明确标记推理完成，说明推理已结束
-                isReasoningComplete = true;
+                // 处理推理内容
+                if (choice.Delta?.ReasoningContent != null)
+                {
+                    string reasoning = choice.Delta.ReasoningContent;
+                    // 使用Dispatcher确保UI更新在UI线程上执行
+                    await Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        await onReceiveContent(ResponseType.ReasoningContent, reasoning);
+                    });
+                    Debug.Write($"{reasoning}");
+
+                    // 表明还在接收推理内容
+                    isReasoningComplete = false;
+                }
+                else if (!isReasoningComplete && choice.Delta?.Content != null)
+                {
+                    // 如果开始接收Content但没有明确标记推理完成，说明推理已结束
+                    isReasoningComplete = true;
+                    Debug.WriteLine("\n==== ↑ Reasoning ====");
+                }
+
+                // 处理正常内容
+                if (choice.Delta?.Content != null)
+                {
+                    string content = choice.Delta.Content;
+                    // 使用Dispatcher确保UI更新在UI线程上执行
+                    await Dispatcher.UIThread.InvokeAsync(async () =>
+                    {
+                        await onReceiveContent(ResponseType.Content, content);
+                    });
+                    Debug.Write($"{content}");
+
+                    // 表明还在接收正常内容
+                    isContentComplete = false;
+                }
+
+                // 检查是否是最后一个响应块
+                if (choice.FinishReason != null)
+                {
+                    if (!isContentComplete)
+                    {
+                        Debug.WriteLine("\n==== ↑ Content ====");
+                        isContentComplete = true;
+                    }
+                }
+            }
+
+            // 确保在所有内容结束后，如果还没有打印过结束标记，则打印
+            if (!isReasoningComplete)
+            {
                 Debug.WriteLine("\n==== ↑ Reasoning ====");
             }
 
-            // 处理正常内容
-            if (choice.Delta?.Content != null)
+            if (!isContentComplete)
             {
-                string content = choice.Delta.Content;
-                await onReceiveContent(ResponseType.Content, content);
-                Debug.Write($"{content}");
-
-                // 表明还在接收正常内容
-                isContentComplete = false;
+                Debug.WriteLine("\n==== ↑ Content ====");
             }
-
-            // 检查是否是最后一个响应块
-            if (choice.FinishReason != null)
-            {
-                if (!isContentComplete)
-                {
-                    Debug.WriteLine("\n==== ↑ Content ====");
-                    isContentComplete = true;
-                }
-            }
-        }
-
-        // 确保在所有内容结束后，如果还没有打印过结束标记，则打印
-        if (!isReasoningComplete)
-        {
-            Debug.WriteLine("\n==== ↑ Reasoning ====");
-        }
-
-        if (!isContentComplete)
-        {
-            Debug.WriteLine("\n==== ↑ Content ====");
-        }
+        });
     }
 }
 
