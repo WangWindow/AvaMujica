@@ -48,7 +48,6 @@ AvaMujica 是一个创新的心理测评与干预系统，结合了最新的人�
    ```bash
    cd AvaMujica
    dotnet restore
-   pip install -r requirements.txt
    ```
 3. 启动系统：
    ```bash
