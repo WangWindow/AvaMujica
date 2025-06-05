@@ -1,0 +1,1 @@
+dotnet run --project ./AvaMujica.Desktop/AvaMujica.Desktop.csproj
