@@ -15,6 +15,7 @@ public partial class ChatViewModel : ViewModelBase
 {
     private readonly ApiService _apiService = ApiService.Instance;
     private readonly HistoryService _historyService = HistoryService.Instance;
+    private readonly ConfigService _configService = ConfigService.Instance;
 
     /// <summary>
     /// 输入文本
@@ -27,6 +28,12 @@ public partial class ChatViewModel : ViewModelBase
     /// </summary>
     [ObservableProperty]
     private string chatTitle = "新对话";
+
+    /// <summary>
+    /// 是否显示推理过程
+    /// </summary>
+    [ObservableProperty]
+    private bool isShowReasoning = true;
 
     /// <summary>
     /// 聊天标题变化时更新数据库
@@ -53,6 +60,21 @@ public partial class ChatViewModel : ViewModelBase
             // 保存到数据库
             await _historyService.UpdateSessionTitleAsync(sessionId, newTitle);
         }
+    }
+
+    public ChatViewModel()
+    {
+        // 从配置中初始化
+        LoadConfiguration();
+    }
+
+    /// <summary>
+    /// 从配置中加载设置
+    /// </summary>
+    public void LoadConfiguration()
+    {
+        var config = _configService.LoadFullConfig();
+        IsShowReasoning = config.IsShowReasoning;
     }
 
     /// <summary>

@@ -48,6 +48,11 @@ public class Config
     /// 最大生成token数
     /// </summary>
     public int MaxTokens { get; set; } = 2000;
+
+    /// <summary>
+    /// 是否显示 Reasoning
+    /// </summary>
+    public bool IsShowReasoning { get; set; } = true;
 }
 
 /// <summary>

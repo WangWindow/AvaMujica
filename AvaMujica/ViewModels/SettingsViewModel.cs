@@ -94,6 +94,27 @@ public partial class SettingsViewModel(MainViewModel mainViewModel) : ViewModelB
     private string _tempMaxTokens = string.Empty;
 
     /// <summary>
+    /// 是否显示 Reasoning
+    /// </summary>
+    [ObservableProperty]
+    private bool _isShowReasoning = true;
+
+    /// <summary>
+    /// IsShowReasoning属性变化时触发
+    /// </summary>
+    partial void OnIsShowReasoningChanged(bool value)
+    {
+        // 保存到数据库
+        _configService.SetConfig("IsShowReasoning", value.ToString());
+
+        // 通知所有 ChatViewModel 更新设置
+        foreach (var chat in _mainViewModel.Chats)
+        {
+            chat.LoadConfiguration();
+        }
+    }
+
+    /// <summary>
     /// 可用模型列表
     /// </summary>
     public ObservableCollection<string> AvailableModels { get; } =
@@ -112,6 +133,7 @@ public partial class SettingsViewModel(MainViewModel mainViewModel) : ViewModelB
         ApiBase = config.ApiBase;
         Temperature = config.Temperature;
         MaxTokens = config.MaxTokens;
+        IsShowReasoning = config.IsShowReasoning;
     }
 
     /// <summary>
@@ -266,5 +288,14 @@ public partial class SettingsViewModel(MainViewModel mainViewModel) : ViewModelB
         SelectedModel = model;
         // 保存到数据库
         _configService.SetConfig("Model", model);
+    }
+
+    /// <summary>
+    /// 切换显示思考过程
+    /// </summary>
+    [RelayCommand]
+    private void ToggleShowReasoning()
+    {
+        IsShowReasoning = !IsShowReasoning;
     }
 }

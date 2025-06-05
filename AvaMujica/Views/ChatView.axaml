@@ -54,13 +54,13 @@
                                 <Grid Margin="10,5">
                                     <!--  用户消息  -->
                                     <Border
-                                        Margin="50,0,5,0"
+                                        Margin="10,0,5,0"
                                         Padding="10"
                                         HorizontalAlignment="Right"
                                         Background="{DynamicResource SystemAccentColorLight3}"
                                         BorderBrush="{DynamicResource SystemAccentColor}"
                                         BorderThickness="1"
-                                        CornerRadius="10"
+                                        CornerRadius="10 10 2 10"
                                         IsVisible="{Binding Role, Converter={StaticResource ValueEqualsConverter}, ConverterParameter=user}">
                                         <StackPanel>
                                             <md:MarkdownScrollViewer Markdown="{Binding Content}" />
@@ -75,24 +75,29 @@
 
                                     <!--  机器人消息  -->
                                     <Border
-                                        Margin="5,0,50,0"
+                                        Margin="5,0,10,0"
                                         Padding="10"
                                         HorizontalAlignment="Left"
                                         Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
                                         BorderBrush="{DynamicResource SystemControlHighlightAccentBrush}"
                                         BorderThickness="1"
-                                        CornerRadius="10"
+                                        CornerRadius="10 10 10 2"
                                         IsVisible="{Binding Role, Converter={StaticResource ValueEqualsConverter}, ConverterParameter=assistant}">
                                         <StackPanel>
                                             <!--  推理过程（可折叠，默认展开）  -->
                                             <Expander
                                                 Margin="0,0,0,10"
-                                                IsExpanded="True"
-                                                IsVisible="{Binding ReasoningContent, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                                                 Background="{DynamicResource SystemControlBackgroundAltMediumLowBrush}"
                                                 BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
                                                 BorderThickness="1"
-                                                CornerRadius="4">
+                                                CornerRadius="4"
+                                                IsExpanded="True">
+                                                <Expander.IsVisible>
+                                                    <MultiBinding Converter="{StaticResource ShowReasoningConverter}">
+                                                        <Binding Path="$parent[UserControl].((vm:ChatViewModel)DataContext).IsShowReasoning" />
+                                                        <Binding Path="ReasoningContent" />
+                                                    </MultiBinding>
+                                                </Expander.IsVisible>
                                                 <Expander.Header>
                                                     <TextBlock
                                                         Margin="5,2"
@@ -100,9 +105,7 @@
                                                         Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
                                                         Text="查看思考过程" />
                                                 </Expander.Header>
-                                                <md:MarkdownScrollViewer
-                                                    Margin="5"
-                                                    Markdown="{Binding ReasoningContent}" />
+                                                <md:MarkdownScrollViewer Margin="5" Markdown="{Binding ReasoningContent}" />
                                             </Expander>
 
                                             <!--  最终答案  -->

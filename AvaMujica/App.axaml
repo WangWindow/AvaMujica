@@ -16,6 +16,7 @@
     <Application.Resources>
         <local:ApiKeyMaskConverter x:Key="ApiKeyMaskConverter" />
         <local:ValueEqualsConverter x:Key="ValueEqualsConverter" />
+        <local:ShowReasoningConverter x:Key="ShowReasoningConverter" />
     </Application.Resources>
 
     <Application.Styles>
