@@ -57,8 +57,8 @@
                                         Margin="10,0,5,0"
                                         Padding="10"
                                         HorizontalAlignment="Right"
-                                        Background="{DynamicResource SystemAccentColorLight3}"
-                                        BorderBrush="{DynamicResource SystemAccentColor}"
+                                        Background="{DynamicResource SystemControlBackgroundAltMediumLowBrush}"
+                                        BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
                                         BorderThickness="1"
                                         CornerRadius="10 10 2 10"
                                         IsVisible="{Binding Role, Converter={StaticResource ValueEqualsConverter}, ConverterParameter=user}">
