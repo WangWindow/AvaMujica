@@ -148,7 +148,7 @@
                                 Width="160"
                                 HorizontalAlignment="Right"
                                 ItemsSource="{Binding AvailableModels}"
-                                SelectedItem="{Binding SelectedModel}"
+                                SelectedItem="{Binding SelectedDisplayModel}"
                                 SelectionChanged="ComboBox_SelectionChanged">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>

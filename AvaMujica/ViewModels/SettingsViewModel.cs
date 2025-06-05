@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Avalonia;
@@ -115,10 +116,34 @@ public partial class SettingsViewModel(MainViewModel mainViewModel) : ViewModelB
     }
 
     /// <summary>
-    /// 可用模型列表
+    /// 模型显示名称映射
+    /// </summary>
+    private readonly Dictionary<string, string> _modelDisplayMapping = new()
+    {
+        { ChatModels.Chat, "Chat" },
+        { ChatModels.Reasoner, "Reasoner" }
+    };
+
+    /// <summary>
+    /// 显示名称到实际模型的反向映射
+    /// </summary>
+    private readonly Dictionary<string, string> _displayToModelMapping = new()
+    {
+        { "Chat", ChatModels.Chat },
+        { "Reasoner", ChatModels.Reasoner }
+    };
+
+    /// <summary>
+    /// 可用模型显示列表
     /// </summary>
     public ObservableCollection<string> AvailableModels { get; } =
-        new() { ChatModels.Chat, ChatModels.Reasoner };
+        new() { "Chat", "Reasoner" };
+
+    /// <summary>
+    /// 显示用的选中模型
+    /// </summary>
+    [ObservableProperty]
+    private string _selectedDisplayModel = string.Empty;
 
     /// <summary>
     /// 初始化
@@ -129,6 +154,17 @@ public partial class SettingsViewModel(MainViewModel mainViewModel) : ViewModelB
         var config = _configService.LoadFullConfig();
         ApiKey = config.ApiKey;
         SelectedModel = config.Model;
+
+        // 设置显示模型
+        if (_modelDisplayMapping.TryGetValue(config.Model, out var displayName))
+        {
+            SelectedDisplayModel = displayName;
+        }
+        else
+        {
+            SelectedDisplayModel = "Chat"; // 默认值
+        }
+
         SystemPrompt = config.SystemPrompt;
         ApiBase = config.ApiBase;
         Temperature = config.Temperature;
@@ -280,14 +316,18 @@ public partial class SettingsViewModel(MainViewModel mainViewModel) : ViewModelB
     }
 
     /// <summary>
-    /// 选择模型改变时触发
+    /// 选择模型改变时触发（接收显示名称）
     /// </summary>
     [RelayCommand]
-    private void SelectModel(string model)
+    private void SelectModel(string displayModel)
     {
-        SelectedModel = model;
-        // 保存到数据库
-        _configService.SetConfig("Model", model);
+        if (_displayToModelMapping.TryGetValue(displayModel, out var actualModel))
+        {
+            SelectedModel = actualModel;
+            SelectedDisplayModel = displayModel;
+            // 保存到数据库
+            _configService.SetConfig("Model", actualModel);
+        }
     }
 
     /// <summary>
