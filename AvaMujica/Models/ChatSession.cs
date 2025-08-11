@@ -21,7 +21,7 @@ public class ChatSession
     /// <summary>
     /// 会话类型
     /// </summary>
-    public string Type { get; set; } = ChatSessionType.PsychologicalConsultation;
+    public string Type { get; set; } = SessionType.PsychologicalConsultation;
 
     /// <summary>
     /// 会话创建时间
@@ -37,17 +37,4 @@ public class ChatSession
     /// 会话消息列表
     /// </summary>
     public List<ChatMessage> Messages { get; set; } = [];
-
-    /// <summary>
-    /// 构造函数
-    /// </summary>
-    /// <param name="title">会话标题</param>
-    /// <param name="type">会话类型</param>
-    public ChatSession(string? title = null, string? type = null)
-    {
-        if (title != null)
-            Title = title;
-        if (type != null)
-            Type = type;
-    }
 }

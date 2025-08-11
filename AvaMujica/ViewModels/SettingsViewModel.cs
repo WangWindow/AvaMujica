@@ -1,10 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Layout;
 using AvaMujica.Models;
 using AvaMujica.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -12,27 +8,40 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AvaMujica.ViewModels;
 
-#pragma warning disable CS8604 // 引用类型参数可能为 null。
-
 /// <summary>
 /// 设置视图模型
 /// </summary>
-public partial class SettingsViewModel(MainViewModel mainViewModel) : ViewModelBase
+public partial class SettingsViewModel : ViewModelBase
 {
     /// <summary>
     /// 主视图模型
     /// </summary>
-    private readonly MainViewModel _mainViewModel = mainViewModel;
+    private readonly MainViewModel? _mainViewModel;
 
     /// <summary>
     /// 配置服务
     /// </summary>
-    private readonly ConfigService _configService = ConfigService.Instance;
+    private readonly IConfigService _configService;
 
     /// <summary>
     /// API服务
     /// </summary>
-    private readonly ApiService _apiService = ApiService.Instance;
+    private readonly IApiService _apiService;
+
+    // 设计时构造（仅用于预览）
+    public SettingsViewModel()
+    {
+        _mainViewModel = null;
+        _configService = new ConfigService(new DatabaseService());
+        _apiService = new ApiService(_configService);
+    }
+
+    public SettingsViewModel(MainViewModel mainViewModel, IConfigService configService, IApiService apiService)
+    {
+        _mainViewModel = mainViewModel;
+        _configService = configService;
+        _apiService = apiService;
+    }
 
     [ObservableProperty]
     private string _apiKey = string.Empty;
@@ -101,6 +110,22 @@ public partial class SettingsViewModel(MainViewModel mainViewModel) : ViewModelB
     private bool _isShowReasoning = true;
 
     /// <summary>
+    /// 掩码后的 API Key（显示用）
+    /// </summary>
+    public string MaskedApiKey => MaskApiKey(ApiKey);
+
+    /// <summary>
+    /// 主题（Auto/Light/Dark）
+    /// </summary>
+    [ObservableProperty]
+    private string _theme = "Auto";
+
+    /// <summary>
+    /// 可选主题列表
+    /// </summary>
+    public ObservableCollection<string> AvailableThemes { get; } = new() { "Auto", "Light", "Dark" };
+
+    /// <summary>
     /// IsShowReasoning属性变化时触发
     /// </summary>
     partial void OnIsShowReasoningChanged(bool value)
@@ -109,10 +134,21 @@ public partial class SettingsViewModel(MainViewModel mainViewModel) : ViewModelB
         _configService.SetConfig("IsShowReasoning", value.ToString());
 
         // 通知所有 ChatViewModel 更新设置
-        foreach (var chat in _mainViewModel.Chats)
+        if (_mainViewModel != null)
         {
-            chat.LoadConfiguration();
+            foreach (var chat in _mainViewModel.Chats)
+            {
+                chat.LoadConfiguration();
+            }
         }
+    }
+
+    /// <summary>
+    /// ApiKey 变化时，通知 MaskedApiKey 变更
+    /// </summary>
+    partial void OnApiKeyChanged(string value)
+    {
+        OnPropertyChanged(nameof(MaskedApiKey));
     }
 
     /// <summary>
@@ -145,6 +181,20 @@ public partial class SettingsViewModel(MainViewModel mainViewModel) : ViewModelB
     [ObservableProperty]
     private string _selectedDisplayModel = string.Empty;
 
+    partial void OnThemeChanged(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return;
+        _configService.SetConfig("Theme", value);
+        App.ApplyTheme(value);
+    }
+
+    partial void OnSelectedDisplayModelChanged(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return;
+        // 使用现有命令以复用保存逻辑
+        SelectModelCommand.Execute(value);
+    }
+
     /// <summary>
     /// 初始化
     /// </summary>
@@ -154,6 +204,7 @@ public partial class SettingsViewModel(MainViewModel mainViewModel) : ViewModelB
         var config = _configService.LoadFullConfig();
         ApiKey = config.ApiKey;
         SelectedModel = config.Model;
+        Theme = config.Theme;
 
         // 设置显示模型
         if (_modelDisplayMapping.TryGetValue(config.Model, out var displayName))
@@ -170,6 +221,7 @@ public partial class SettingsViewModel(MainViewModel mainViewModel) : ViewModelB
         Temperature = config.Temperature;
         MaxTokens = config.MaxTokens;
         IsShowReasoning = config.IsShowReasoning;
+        OnPropertyChanged(nameof(MaskedApiKey));
     }
 
     /// <summary>
@@ -213,6 +265,7 @@ public partial class SettingsViewModel(MainViewModel mainViewModel) : ViewModelB
             ApiKey = TempApiKey;
         }
         IsApiKeyEditing = false;
+        OnPropertyChanged(nameof(MaskedApiKey));
     }
 
     /// <summary>
@@ -263,6 +316,25 @@ public partial class SettingsViewModel(MainViewModel mainViewModel) : ViewModelB
         }
 
         IsApiSettingsEditing = false;
+    }
+
+    /// <summary>
+    /// 切换主题（Auto/Light/Dark）
+    /// </summary>
+    [RelayCommand]
+    private void SelectTheme(string theme)
+    {
+        if (string.IsNullOrWhiteSpace(theme)) return;
+        Theme = theme;
+        _configService.SetConfig("Theme", theme);
+        App.ApplyTheme(theme);
+    }
+
+    private static string MaskApiKey(string apiKey)
+    {
+        if (string.IsNullOrEmpty(apiKey)) return "未设置";
+        if (apiKey.Length <= 8) return new string('*', apiKey.Length);
+        return $"{apiKey[..4]}****{apiKey[^4..]}";
     }
 
     /// <summary>

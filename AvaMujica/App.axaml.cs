@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
@@ -5,14 +6,18 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using Avalonia.Styling;
 using AvaMujica.Services;
 using AvaMujica.ViewModels;
 using AvaMujica.Views;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AvaMujica;
 
 public partial class App : Application
 {
+    public static IServiceProvider Services { get; private set; } = default!;
+
     public override void Initialize()
     {
         AvaloniaXamlLoader.Load(this);
@@ -20,21 +25,47 @@ public partial class App : Application
 
     public override void OnFrameworkInitializationCompleted()
     {
+        // 配置 DI
+        ConfigureServices();
+
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            // Avoid duplicate validations from both Avalonia and the CommunityToolkit.
-            // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
             DisableAvaloniaDataAnnotationValidation();
 
-            // 创建主窗口并保存引用
-            desktop.MainWindow = new MainWindow { DataContext = new MainViewModel() };
+            desktop.MainWindow = new MainWindow
+            {
+                DataContext = Services.GetRequiredService<MainWindowViewModel>()
+            };
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         {
-            singleViewPlatform.MainView = new MainView { DataContext = new MainViewModel() };
+            singleViewPlatform.MainView = new MainView
+            {
+                DataContext = Services.GetRequiredService<MainWindowViewModel>()
+            };
         }
 
+        var theme = Services.GetRequiredService<IConfigService>().LoadFullConfig().Theme;
+        ApplyTheme(theme);
+
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private static void ConfigureServices()
+    {
+        var services = new ServiceCollection();
+
+        // Services
+        services.AddSingleton<IDatabaseService, DatabaseService>();
+        services.AddSingleton<IConfigService, ConfigService>();
+        services.AddSingleton<IApiService, ApiService>();
+        services.AddSingleton<IHistoryService, HistoryService>();
+
+        // ViewModels
+        services.AddSingleton<MainViewModel>();
+        services.AddSingleton<MainWindowViewModel>();
+
+        Services = services.BuildServiceProvider();
     }
 
     private void DisableAvaloniaDataAnnotationValidation()
@@ -49,5 +80,19 @@ public partial class App : Application
         {
             BindingPlugins.DataValidators.Remove(plugin);
         }
+    }
+
+    public static void ApplyTheme(string theme)
+    {
+        if (Current is null) return;
+
+        var t = theme?.Trim()?.ToLowerInvariant();
+        Current.RequestedThemeVariant = t switch
+        {
+            "light" => ThemeVariant.Light,
+            "dark" => ThemeVariant.Dark,
+            "system" => ThemeVariant.Default,
+            _ => ThemeVariant.Default
+        };
     }
 }

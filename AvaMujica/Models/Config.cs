@@ -16,7 +16,7 @@ public class Config
     /// <summary>
     /// 主题
     /// </summary>
-    public string Theme { get; set; } = "Auto";
+    public string Theme { get; set; } = "system";
 
     /// <summary>
     /// 系统提示词

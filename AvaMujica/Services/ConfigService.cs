@@ -13,39 +13,19 @@ namespace AvaMujica.Services;
 /// <summary>
 /// 配置服务
 /// </summary>
-public class ConfigService
+public class ConfigService(IDatabaseService databaseService) : IConfigService
 {
-    private readonly DatabaseService _databaseService = DatabaseService.Instance;
-
-    /// <summary>
-    /// 单例实例
-    /// </summary>
-    private static ConfigService? _instance;
-    private static readonly Lock _lock = new();
-    public static ConfigService Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                lock (_lock)
-                {
-                    _instance ??= new ConfigService();
-                }
-            }
-            return _instance;
-        }
-    }
+    private readonly IDatabaseService _databaseService = databaseService;
 
     /// <summary>
     /// 获取指定键的配置
     /// </summary>
-    public ConfigAdapter? GetConfig(string key)
+    private ConfigAdapter? GetConfig(string key)
     {
         string sql = "SELECT Key, Value FROM Configs WHERE Key = @Key";
         var parameters = new Dictionary<string, object> { { "@Key", key } };
 
-        var configs = _databaseService.Query<ConfigAdapter>(
+        var configs = _databaseService.Query(
             sql,
             reader => new ConfigAdapter { Key = reader.GetString(0), Value = reader.GetString(1) },
             parameters
@@ -57,7 +37,7 @@ public class ConfigService
     /// <summary>
     /// 获取指定键的配置值
     /// </summary>
-    public string GetValue(string key, string defaultValue = "")
+    public string? GetValue(string key, string? defaultValue = null)
     {
         var config = GetConfig(key);
         return config?.Value ?? defaultValue;
@@ -66,10 +46,10 @@ public class ConfigService
     /// <summary>
     /// 获取所有配置
     /// </summary>
-    public List<ConfigAdapter> GetAllConfigs()
+    private List<ConfigAdapter> GetAllConfigs()
     {
         string sql = "SELECT Key, Value FROM Configs";
-        return _databaseService.Query<ConfigAdapter>(
+        return _databaseService.Query(
             sql,
             reader => new ConfigAdapter { Key = reader.GetString(0), Value = reader.GetString(1) }
         );
@@ -93,7 +73,7 @@ public class ConfigService
     /// <summary>
     /// 删除配置
     /// </summary>
-    public bool DeleteConfig(string key)
+    private bool DeleteConfig(string key)
     {
         string sql = "DELETE FROM Configs WHERE Key = @Key";
         var parameters = new Dictionary<string, object> { { "@Key", key } };
@@ -105,7 +85,7 @@ public class ConfigService
     /// <summary>
     /// 检查配置是否存在
     /// </summary>
-    public bool ConfigExists(string key)
+    private bool ConfigExists(string key)
     {
         string sql = "SELECT COUNT(*) FROM Configs WHERE Key = @Key";
         var parameters = new Dictionary<string, object> { { "@Key", key } };
@@ -117,11 +97,7 @@ public class ConfigService
     /// <summary>
     /// 尝试将配置值转换为指定类型
     /// </summary>
-    private bool TryConvertAndSetValue<T>(
-        ConfigAdapter dbConfig,
-        PropertyInfo property,
-        Config config
-    )
+    private bool TryConvertAndSetValue<T>(ConfigAdapter dbConfig, PropertyInfo property, Config config)
     {
         if (typeof(T) == typeof(string))
         {
@@ -170,23 +146,9 @@ public class ConfigService
             // 检查属性是否存在于数据库配置中
             if (configDict.TryGetValue(property.Name, out var dbConfig))
             {
-                // 根据属性类型转换并设置值
-                if (property.PropertyType == typeof(string))
-                {
-                    TryConvertAndSetValue<string>(dbConfig, property, config);
-                }
-                else if (property.PropertyType == typeof(bool))
-                {
-                    TryConvertAndSetValue<bool>(dbConfig, property, config);
-                }
-                else if (property.PropertyType == typeof(float))
-                {
-                    TryConvertAndSetValue<float>(dbConfig, property, config);
-                }
-                else if (property.PropertyType == typeof(int))
-                {
-                    TryConvertAndSetValue<int>(dbConfig, property, config);
-                }
+                var method = typeof(ConfigService).GetMethod(nameof(TryConvertAndSetValue), BindingFlags.NonPublic | BindingFlags.Instance);
+                var genericMethod = method?.MakeGenericMethod(property.PropertyType);
+                genericMethod?.Invoke(this, [dbConfig, property, config]);
             }
             else
             {

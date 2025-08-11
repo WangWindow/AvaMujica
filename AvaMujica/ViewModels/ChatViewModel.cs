@@ -1,10 +1,12 @@
 using System;
 using System.Collections.ObjectModel;
+using System.Threading;
 using System.Threading.Tasks;
 using AvaMujica.Models;
 using AvaMujica.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AvaMujica.ViewModels;
 
@@ -13,9 +15,10 @@ namespace AvaMujica.ViewModels;
 /// </summary>
 public partial class ChatViewModel : ViewModelBase
 {
-    private readonly ApiService _apiService = ApiService.Instance;
-    private readonly HistoryService _historyService = HistoryService.Instance;
-    private readonly ConfigService _configService = ConfigService.Instance;
+    private readonly IApiService _apiService;
+    private readonly IHistoryService _historyService;
+    private readonly IConfigService _configService;
+    private CancellationTokenSource? _cts = null;
 
     /// <summary>
     /// 输入文本
@@ -34,6 +37,11 @@ public partial class ChatViewModel : ViewModelBase
     /// </summary>
     [ObservableProperty]
     private bool isShowReasoning = true;
+
+    /// <summary>
+    /// 判断某条消息是否显示推理
+    /// </summary>
+    public bool ShouldShowReasoning(ChatMessage m) => IsShowReasoning && m.HasReasoning;
 
     /// <summary>
     /// 聊天标题变化时更新数据库
@@ -62,8 +70,17 @@ public partial class ChatViewModel : ViewModelBase
         }
     }
 
-    public ChatViewModel()
+    public ChatViewModel() : this(
+        App.Services.GetRequiredService<IHistoryService>(),
+        App.Services.GetRequiredService<IApiService>(),
+        App.Services.GetRequiredService<IConfigService>())
+    { }
+
+    public ChatViewModel(IHistoryService historyService, IApiService apiService, IConfigService configService)
     {
+        _historyService = historyService;
+        _apiService = apiService;
+        _configService = configService;
         // 从配置中初始化
         LoadConfiguration();
     }
@@ -75,6 +92,11 @@ public partial class ChatViewModel : ViewModelBase
     {
         var config = _configService.LoadFullConfig();
         IsShowReasoning = config.IsShowReasoning;
+        // 同步现有消息的显示标志
+        foreach (var m in ChatMessageList)
+        {
+            m.ShowReasoning = ShouldShowReasoning(m);
+        }
     }
 
     /// <summary>
@@ -98,6 +120,7 @@ public partial class ChatViewModel : ViewModelBase
 
         foreach (var message in messages)
         {
+            message.ShowReasoning = ShouldShowReasoning(message);
             ChatMessageList.Add(message);
         }
     }
@@ -182,7 +205,7 @@ public partial class ChatViewModel : ViewModelBase
             SendTime = DateTime.Now,
             SessionId = ChatId,
         };
-
+        responseMessage.ShowReasoning = ShouldShowReasoning(responseMessage);
         ChatMessageList.Add(responseMessage);
         await _historyService.AddMessageAsync(ChatId, responseMessage);
 
@@ -198,10 +221,17 @@ public partial class ChatViewModel : ViewModelBase
                 else if (type == ResponseType.ReasoningContent)
                 {
                     responseMessage.ReasoningContent += content;
+                    responseMessage.ShowReasoning = ShouldShowReasoning(responseMessage);
                 }
 
                 // 更新数据库中的消息
                 await _historyService.UpdateMessageAsync(responseMessage);
+            },
+            _cts?.Token ?? CancellationToken.None,
+            ex =>
+            {
+                // 简单记录或展示错误，这里仅将错误消息附加到内容
+                responseMessage.Content += $"\n[错误] {ex.Message}";
             }
         );
     }

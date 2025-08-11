@@ -1,6 +1,3 @@
-<!--
-    TODO: Chat 视图
--->
 <UserControl
     x:Class="AvaMujica.Views.ChatView"
     xmlns="https://github.com/avaloniaui"
@@ -8,6 +5,7 @@
     xmlns:ctxt="clr-namespace:ColorTextBlock.Avalonia;assembly=ColorTextBlock.Avalonia"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:AvaMujica"
+    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:md="https://github.com/whistyun/Markdown.Avalonia"
     xmlns:models="using:AvaMujica.Models"
@@ -20,12 +18,7 @@
         <vm:ChatViewModel />
     </Design.DataContext>
 
-    <Grid Name="RootGrid">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
+    <Grid RowDefinitions="Auto,*,Auto">
 
         <!--  TODO: 对话名称/标题区域  -->
         <Border
@@ -46,9 +39,9 @@
 
         <!--  TODO: 聊天消息区域  -->
         <Grid Grid.Row="1">
-            <ScrollViewer Name="MessageScroller">
+            <ScrollViewer>
                 <StackPanel>
-                    <ItemsControl Name="ChatMessageList" ItemsSource="{Binding ChatMessageList}">
+                    <ItemsControl ItemsSource="{Binding ChatMessageList}">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <Grid Margin="10,5">
@@ -61,7 +54,7 @@
                                         BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
                                         BorderThickness="1"
                                         CornerRadius="10 10 2 10"
-                                        IsVisible="{Binding Role, Converter={StaticResource ValueEqualsConverter}, ConverterParameter=user}">
+                                        IsVisible="{Binding IsUser}">
                                         <StackPanel>
                                             <md:MarkdownScrollViewer Markdown="{Binding Content}" />
 
@@ -82,7 +75,7 @@
                                         BorderBrush="{DynamicResource SystemControlHighlightAccentBrush}"
                                         BorderThickness="1"
                                         CornerRadius="10 10 10 2"
-                                        IsVisible="{Binding Role, Converter={StaticResource ValueEqualsConverter}, ConverterParameter=assistant}">
+                                        IsVisible="{Binding IsAssistant}">
                                         <StackPanel>
                                             <!--  推理过程（可折叠，默认展开）  -->
                                             <Expander
@@ -93,10 +86,7 @@
                                                 CornerRadius="4"
                                                 IsExpanded="True">
                                                 <Expander.IsVisible>
-                                                    <MultiBinding Converter="{StaticResource ShowReasoningConverter}">
-                                                        <Binding Path="$parent[UserControl].((vm:ChatViewModel)DataContext).IsShowReasoning" />
-                                                        <Binding Path="ReasoningContent" />
-                                                    </MultiBinding>
+                                                    <Binding Path="ShowReasoning" />
                                                 </Expander.IsVisible>
                                                 <Expander.Header>
                                                     <TextBlock
@@ -126,11 +116,7 @@
         </Grid>
 
         <!--  TODO: 输入区域  -->
-        <Grid Name="InputArea" Grid.Row="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
+        <Grid Grid.Row="2" RowDefinitions="Auto,Auto">
 
             <!--  快捷操作栏  -->
             <StackPanel
@@ -149,10 +135,10 @@
                     CornerRadius="15"
                     FontSize="11">
                     <StackPanel Orientation="Horizontal" Spacing="4">
-                        <PathIcon
+                        <materialIcons:MaterialIcon
                             Width="12"
                             Height="12"
-                            Data="{StaticResource emoji_sad_regular}" />
+                            Kind="EmoticonSadOutline" />
                         <TextBlock Text="感到焦虑" />
                     </StackPanel>
                 </Button>
@@ -166,10 +152,10 @@
                     CornerRadius="15"
                     FontSize="11">
                     <StackPanel Orientation="Horizontal" Spacing="4">
-                        <PathIcon
+                        <materialIcons:MaterialIcon
                             Width="12"
                             Height="12"
-                            Data="{StaticResource heart_pulse_regular}" />
+                            Kind="HeartPulse" />
                         <TextBlock Text="需要放松" />
                     </StackPanel>
                 </Button>
@@ -183,10 +169,10 @@
                     CornerRadius="15"
                     FontSize="11">
                     <StackPanel Orientation="Horizontal" Spacing="4">
-                        <PathIcon
+                        <materialIcons:MaterialIcon
                             Width="12"
                             Height="12"
-                            Data="{StaticResource bed_regular}" />
+                            Kind="Bed" />
                         <TextBlock Text="睡眠问题" />
                     </StackPanel>
                 </Button>
@@ -206,10 +192,10 @@
                     BorderThickness="1.5"
                     CornerRadius="20"
                     DockPanel.Dock="Left">
-                    <PathIcon
+                    <materialIcons:MaterialIcon
                         Width="15"
                         Height="15"
-                        Data="{StaticResource mic_on_regular}" />
+                        Kind="Microphone" />
                 </Button>
 
                 <!--  发送按钮  -->
@@ -225,15 +211,14 @@
                     Command="{Binding SendCommand}"
                     CornerRadius="20"
                     DockPanel.Dock="Right">
-                    <PathIcon
+                    <materialIcons:MaterialIcon
                         Width="15"
                         Height="15"
-                        Data="{StaticResource arrow_up_regular}" />
+                        Kind="Send" />
                 </Button>
 
                 <!--  输入框  -->
                 <TextBox
-                    Name="InputBox"
                     Margin="5"
                     HorizontalAlignment="Stretch"
                     VerticalAlignment="Center"

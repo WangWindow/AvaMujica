@@ -1,6 +1,3 @@
-<!--
-    TODO: 主窗口
--->
 <Window
     x:Class="AvaMujica.Views.MainWindow"
     xmlns="https://github.com/avaloniaui"
@@ -12,11 +9,12 @@
     xmlns:views="using:AvaMujica.Views"
     xmlns:vm="using:AvaMujica.ViewModels"
     Title="AvaMujica"
-    d:DesignHeight="600"
-    d:DesignWidth="270"
+    d:DesignHeight="900"
+    d:DesignWidth="400"
+    x:DataType="vm:MainWindowViewModel"
     Background="Transparent"
     ExtendClientAreaToDecorationsHint="False"
-    Icon="/Assets/avalonia-logo.ico"
+    Icon="/Assets/icon.ico"
     TransparencyLevelHint="AcrylicBlur"
     WindowStartupLocation="CenterScreen"
     mc:Ignorable="d">
@@ -33,6 +31,6 @@
         </ExperimentalAcrylicBorder>
 
         <!--  内容区域  -->
-        <views:MainView />
+        <views:MainView DataContext="{Binding MainViewModel}" />
     </Panel>
 </Window>

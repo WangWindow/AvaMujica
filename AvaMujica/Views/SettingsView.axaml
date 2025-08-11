@@ -1,28 +1,22 @@
-<!--
-    TODO: 设置视图
--->
 <UserControl
     x:Class="AvaMujica.Views.SettingsView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:AvaMujica"
+    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:AvaMujica.Models"
     xmlns:vm="using:AvaMujica.ViewModels"
-    d:DesignHeight="600"
-    d:DesignWidth="270"
+    d:DesignHeight="900"
+    d:DesignWidth="400"
     x:DataType="vm:SettingsViewModel"
     mc:Ignorable="d">
     <Design.DataContext>
         <vm:SettingsViewModel />
     </Design.DataContext>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+    <Grid RowDefinitions="Auto,*">
 
         <!--  顶部  -->
         <Grid Grid.Row="0" Margin="12,8">
@@ -33,7 +27,7 @@
                     VerticalAlignment="Center"
                     Background="Transparent"
                     Command="{Binding GoBackCommand}">
-                    <PathIcon Data="{StaticResource arrow_left_regular}" />
+                    <materialIcons:MaterialIcon Kind="ArrowLeft" />
                 </Button>
             </StackPanel>
 
@@ -93,11 +87,17 @@
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
                                 Text="主题设置" />
-                            <TextBlock
+                            <ComboBox
+                                Width="120"
                                 HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                Foreground="{DynamicResource SystemBaseMediumColor}"
-                                Text="跟随系统" />
+                                ItemsSource="{Binding AvailableThemes}"
+                                SelectedItem="{Binding Theme, Mode=TwoWay}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" />
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
                         </Grid>
                     </Button>
 
@@ -148,8 +148,7 @@
                                 Width="160"
                                 HorizontalAlignment="Right"
                                 ItemsSource="{Binding AvailableModels}"
-                                SelectedItem="{Binding SelectedDisplayModel}"
-                                SelectionChanged="ComboBox_SelectionChanged">
+                                SelectedItem="{Binding SelectedDisplayModel, Mode=TwoWay}">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding}" />
@@ -178,7 +177,7 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Foreground="{DynamicResource SystemBaseMediumColor}"
-                                Text="{Binding ApiKey, Converter={StaticResource ApiKeyMaskConverter}}" />
+                                Text="{Binding MaskedApiKey}" />
                         </Grid>
                     </Button>
 

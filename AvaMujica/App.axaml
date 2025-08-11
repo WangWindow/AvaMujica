@@ -1,26 +1,16 @@
-<!--
-    程序入口点，全局样式设置
--->
 <Application
     x:Class="AvaMujica.App"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:AvaMujica"
-    RequestedThemeVariant="Default">
-    <!--  "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options.  -->
+    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
 
     <Application.DataTemplates>
         <local:ViewLocator />
     </Application.DataTemplates>
 
-    <Application.Resources>
-        <local:ApiKeyMaskConverter x:Key="ApiKeyMaskConverter" />
-        <local:ValueEqualsConverter x:Key="ValueEqualsConverter" />
-        <local:ShowReasoningConverter x:Key="ShowReasoningConverter" />
-    </Application.Resources>
-
     <Application.Styles>
         <FluentTheme />
-        <StyleInclude Source="avares://AvaMujica/Assets/Icons.axaml" />
+        <materialIcons:MaterialIconStyles />
     </Application.Styles>
 </Application>

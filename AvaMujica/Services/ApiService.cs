@@ -12,44 +12,20 @@ namespace AvaMujica.Services;
 /// <summary>
 /// API 服务
 /// </summary>
-public class ApiService()
+public class ApiService(IConfigService configService) : IApiService
 {
-    private readonly ConfigService _configService = ConfigService.Instance;
-
-    /// <summary>
-    /// 单例实例
-    /// </summary>
-    private static ApiService? _instance;
-    private static readonly Lock _lock = new();
-    public static ApiService Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                lock (_lock)
-                {
-                    _instance ??= new ApiService();
-                }
-            }
-            return _instance;
-        }
-    }
+    private readonly IConfigService _configService = configService;
 
     /// <summary>
     /// 调用 Chat 接口进行对话
     /// </summary>
-    public async Task ChatAsync(
-        string userPrompt,
-        Func<ResponseType, string, Task> onReceiveContent
-    )
+    public async Task ChatAsync(string userPrompt, Func<ResponseType, string, Task> onReceiveContent, CancellationToken cancellationToken = default, Action<Exception>? onError = null)
     {
-        // 加载配置
-        var settings = _configService.LoadFullConfig();
-
-        // 创建 DeepSeek 客户端并在后台线程执行网络请求
-        await Task.Run(async () =>
+        try
         {
+            // 加载配置
+            var settings = _configService.LoadFullConfig();
+
             using var httpClient = new HttpClient
             {
                 BaseAddress = new Uri(settings.ApiBase),
@@ -70,7 +46,7 @@ public class ApiService()
                 MaxTokens = settings.MaxTokens,
             };
 
-            var choices = client.ChatStreamAsync(request, new CancellationToken());
+            var choices = client.ChatStreamAsync(request, cancellationToken);
             if (choices == null)
             {
                 return;
@@ -79,8 +55,10 @@ public class ApiService()
             bool isReasoningComplete = false;
             bool isContentComplete = false;
 
-            await foreach (var choice in choices)
+            await foreach (var choice in choices.WithCancellation(cancellationToken))
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 // 处理推理内容
                 if (choice.Delta?.ReasoningContent != null)
                 {
@@ -138,22 +116,14 @@ public class ApiService()
             {
                 Debug.WriteLine("\n==== ↑ Content ====");
             }
-        });
+        }
+        catch (OperationCanceledException)
+        {
+            // 取消不视为错误，静默返回
+        }
+        catch (Exception ex)
+        {
+            onError?.Invoke(ex);
+        }
     }
-}
-
-/// <summary>
-/// 流式回复内容类型
-/// </summary>
-public enum ResponseType
-{
-    /// <summary>
-    /// 推理内容
-    /// </summary>
-    ReasoningContent,
-
-    /// <summary>
-    /// 正常内容
-    /// </summary>
-    Content,
 }

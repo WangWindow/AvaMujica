@@ -10,30 +10,10 @@ namespace AvaMujica.Services;
 /// <summary>
 /// 聊天历史记录服务，负责会话和消息管理
 /// </summary>
-public class HistoryService
+public class HistoryService(IDatabaseService databaseService, IApiService apiService) : IHistoryService
 {
-    private readonly DatabaseService _databaseService = DatabaseService.Instance;
-    private readonly ApiService _apiService = ApiService.Instance;
-
-    /// <summary>
-    /// 单例实例
-    /// </summary>
-    private static HistoryService? _instance;
-    private static readonly Lock _lock = new();
-    public static HistoryService Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                lock (_lock)
-                {
-                    _instance ??= new HistoryService();
-                }
-            }
-            return _instance;
-        }
-    }
+    private readonly IDatabaseService _databaseService= databaseService;
+    private readonly IApiService _apiService= apiService;
 
     /// <summary>
     /// 获取所有会话
@@ -43,7 +23,7 @@ public class HistoryService
     {
         return await Task.Run(() =>
         {
-            var sessions = _databaseService.Query<ChatSession>(
+            var sessions = _databaseService.Query(
                 "SELECT Id, Title, Type, CreatedTime, UpdatedTime FROM ChatSessions ORDER BY UpdatedTime DESC",
                 reader => new ChatSession
                 {
@@ -67,11 +47,11 @@ public class HistoryService
     /// <summary>
     /// 获取指定会话
     /// </summary>
-    public async Task<ChatSession> GetSessionAsync(string sessionId)
+    public async Task<ChatSession?> GetSessionAsync(string sessionId)
     {
         return await Task.Run(() =>
         {
-            var sessions = _databaseService.Query<ChatSession>(
+            var sessions = _databaseService.Query(
                 "SELECT Id, Title, Type, CreatedTime, UpdatedTime FROM ChatSessions WHERE Id = $sessionId",
                 reader => new ChatSession
                 {
@@ -85,7 +65,7 @@ public class HistoryService
             );
 
             if (sessions.Count == 0)
-                throw new Exception($"找不到ID为 {sessionId} 的会话");
+                return null;
 
             var session = sessions[0];
             session.Messages = GetSessionMessages(sessionId);
@@ -110,7 +90,7 @@ public class HistoryService
     {
         return await Task.Run(() =>
         {
-            return _databaseService.Query<ChatSession>(
+            return _databaseService.Query(
                 "SELECT Id, Title, Type, CreatedTime, UpdatedTime FROM ChatSessions WHERE Type = $type ORDER BY UpdatedTime DESC",
                 reader => new ChatSession
                 {
@@ -132,7 +112,11 @@ public class HistoryService
     {
         return await Task.Run(() =>
         {
-            var session = new ChatSession(title, type);
+            var session = new ChatSession
+            {
+                Title = title ?? "新会话",
+                Type = type ?? SessionType.PsychologicalConsultation,
+            };
 
             _databaseService.ExecuteNonQuery(
                 "INSERT INTO ChatSessions (Id, Title, Type, CreatedTime, UpdatedTime) VALUES ($id, $title, $type, $createdTime, $updatedTime)",
@@ -166,7 +150,7 @@ public class HistoryService
     /// </summary>
     private List<ChatMessage> GetSessionMessages(string sessionId)
     {
-        return _databaseService.Query<ChatMessage>(
+        return _databaseService.Query(
             "SELECT Id, SessionId, Role, Content, ReasoningContent, SendTime FROM ChatMessages WHERE SessionId = $sessionId ORDER BY SendTime",
             reader => new ChatMessage
             {
@@ -215,6 +199,12 @@ public class HistoryService
 
             return message;
         });
+    }
+
+    // 显式接口实现，兼容接口返回 Task
+    Task IHistoryService.AddMessageAsync(string sessionId, ChatMessage message)
+    {
+        return AddMessageAsync(sessionId, message);
     }
 
     /// <summary>
@@ -272,7 +262,7 @@ public class HistoryService
     {
         return await Task.Run(() =>
         {
-            var messages = _databaseService.Query<ChatMessage>(
+            var messages = _databaseService.Query(
                 "SELECT * FROM ChatMessages WHERE SessionId = $sessionId AND Role = 'assistant' ORDER BY SendTime DESC LIMIT 1",
                 reader => new ChatMessage
                 {
@@ -293,11 +283,7 @@ public class HistoryService
     /// <summary>
     /// 发送消息并获取AI回复
     /// </summary>
-    public async Task<ChatMessage> SendMessageAsync(
-        string sessionId,
-        string userContent,
-        Action<string>? onReceiveToken = null,
-        Action<string>? onReceiveReasoning = null
+    public async Task<ChatMessage> SendMessageAsync(string sessionId, string userContent, Action<string>? onReceiveToken = null, Action<string>? onReceiveReasoning = null
     )
     {
         if (string.IsNullOrWhiteSpace(userContent))
@@ -336,13 +322,7 @@ public class HistoryService
     /// <summary>
     /// 处理API响应，更新消息内容并保存到数据库
     /// </summary>
-    private async Task HandleApiResponse(
-        ChatMessage assistantMessage,
-        ResponseType type,
-        string message,
-        Action<string>? onReceiveToken = null,
-        Action<string>? onReceiveReasoning = null
-    )
+    private async Task HandleApiResponse(ChatMessage assistantMessage, ResponseType type, string message, Action<string>? onReceiveToken = null, Action<string>? onReceiveReasoning = null)
     {
         if (type == ResponseType.Content)
         {

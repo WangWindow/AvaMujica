@@ -2,13 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
-using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
 using AvaMujica.Models;
 using AvaMujica.Services;
-using AvaMujica.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AvaMujica.ViewModels;
 
@@ -17,7 +15,7 @@ namespace AvaMujica.ViewModels;
 /// </summary>
 public partial class MainViewModel : ViewModelBase
 {
-    private readonly HistoryService _historyService = HistoryService.Instance;
+    private readonly IHistoryService _historyService;
 
     /// <summary>
     /// SessionID 到 ChatViewModel 的映射字典，用于快速查找
@@ -58,7 +56,21 @@ public partial class MainViewModel : ViewModelBase
     /// 当前选中的模块
     /// </summary>
     [ObservableProperty]
-    private string currentModule = ChatSessionType.PsychologicalConsultation;
+    private string currentModule = SessionType.PsychologicalConsultation;
+
+    /// <summary>
+    /// 便捷布尔属性，供 XAML 直接绑定
+    /// </summary>
+    public bool IsConsultationSelected => CurrentModule == SessionType.PsychologicalConsultation;
+    public bool IsAssessmentSelected => CurrentModule == SessionType.PsychologicalAssessment;
+    public bool IsInterventionSelected => CurrentModule == SessionType.InterventionPlan;
+
+    partial void OnCurrentModuleChanged(string value)
+    {
+        OnPropertyChanged(nameof(IsConsultationSelected));
+        OnPropertyChanged(nameof(IsAssessmentSelected));
+        OnPropertyChanged(nameof(IsInterventionSelected));
+    }
 
     /// <summary>
     /// 所有对话列表
@@ -70,11 +82,16 @@ public partial class MainViewModel : ViewModelBase
     /// </summary>
     public ObservableCollection<ChatSessionGroup> ChatSessionGroups { get; } = [];
 
-    public MainViewModel()
+    public MainViewModel(IHistoryService historyService)
     {
+        _historyService = historyService;
         // 初始化视图模型
-        SiderViewModel = new SiderViewModel(this);
-        SettingsViewModel = new SettingsViewModel(this);
+        SiderViewModel = new SiderViewModel(this, historyService);
+    SettingsViewModel = new SettingsViewModel(
+            this,
+            App.Services.GetRequiredService<IConfigService>(),
+            App.Services.GetRequiredService<IApiService>()
+        );
 
         // 异步初始化数据
         _ = InitializeAsync();
@@ -101,7 +118,7 @@ public partial class MainViewModel : ViewModelBase
 
         foreach (var session in sessions)
         {
-            var chatViewModel = new ChatViewModel()
+            var chatViewModel = new ChatViewModel(_historyService, App.Services.GetRequiredService<IApiService>(), App.Services.GetRequiredService<IConfigService>())
             {
                 ChatId = session.Id,
                 ChatTitle = session.Title,
@@ -129,7 +146,7 @@ public partial class MainViewModel : ViewModelBase
     private async Task LoadHistoryGroupsAsync()
     {
         var historyGroups = await _historyService.GetChatSessionHistorysByTypeAsync(
-            ChatSessionType.PsychologicalConsultation
+            SessionType.PsychologicalConsultation
         );
 
         ChatSessionGroups.Clear();
@@ -155,7 +172,7 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void SwitchToConsultationModule()
     {
-        CurrentModule = ChatSessionType.PsychologicalConsultation;
+        CurrentModule = SessionType.PsychologicalConsultation;
     }
 
     /// <summary>
@@ -164,7 +181,7 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void SwitchToAssessmentModule()
     {
-        CurrentModule = ChatSessionType.PsychologicalAssessment;
+        CurrentModule = SessionType.PsychologicalAssessment;
     }
 
     /// <summary>
@@ -173,7 +190,7 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void SwitchToInterventionModule()
     {
-        CurrentModule = ChatSessionType.InterventionPlan;
+        CurrentModule = SessionType.InterventionPlan;
     }
 
     /// <summary>

@@ -1,30 +1,21 @@
-<!--
-    TODO: 主视图
--->
 <UserControl
     x:Class="AvaMujica.Views.MainView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:AvaMujica"
+    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:AvaMujica.Models"
     xmlns:views="using:AvaMujica.Views"
     xmlns:vm="using:AvaMujica.ViewModels"
     d:DesignHeight="900"
-    d:DesignWidth="405"
+    d:DesignWidth="400"
     x:DataType="vm:MainViewModel"
     mc:Ignorable="d">
     <Design.DataContext>
         <vm:MainViewModel />
     </Design.DataContext>
-
-    <UserControl.Resources>
-        <Thickness x:Key="SiderBorderThickness">1.5</Thickness>
-        <x:Double x:Key="ButtonSize">30</x:Double>
-        <x:Double x:Key="IconSize">15</x:Double>
-        <Thickness x:Key="ButtonBorderThickness">1.5</Thickness>
-    </UserControl.Resources>
 
     <UserControl.Styles>
         <!--  导航标签样式  -->
@@ -47,20 +38,20 @@
             </Setter>
             <Setter Property="Foreground" Value="{DynamicResource SystemBaseHighColor}" />
             <Setter Property="Cursor" Value="Hand" />
-        </Style>
 
-        <!--  鼠标悬停效果  -->
-        <Style Selector="RadioButton.NavTab:pointerover /template/ Border">
-            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorLight2}" />
-        </Style>
+            <!--  鼠标悬停效果  -->
+            <Style Selector="^:pointerover /template/ Border">
+                <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorLight2}" />
+            </Style>
 
-        <!--  选中效果  -->
-        <Style Selector="RadioButton.NavTab:checked /template/ Border">
-            <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
-        </Style>
+            <!--  选中效果  -->
+            <Style Selector="^:checked /template/ Border">
+                <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+            </Style>
 
-        <Style Selector="RadioButton.NavTab:checked">
-            <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}" />
+            <Style Selector="^:checked">
+                <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}" />
+            </Style>
         </Style>
     </UserControl.Styles>
 
@@ -75,7 +66,7 @@
             <SplitView
                 Name="Sider"
                 BorderBrush="White"
-                BorderThickness="{StaticResource SiderBorderThickness}"
+                BorderThickness="1.5"
                 CompactPaneLength="0"
                 DisplayMode="Overlay"
                 IsPaneOpen="{Binding IsSiderOpen}"
@@ -97,11 +88,7 @@
                 </SplitView.Pane>
 
                 <!--  TODO: 主交互  -->
-                <Grid>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
+                <Grid RowDefinitions="Auto,*">
 
                     <!--  TODO: 顶部区域 - 包含菜单按钮、模块导航和新建对话按钮  -->
                     <Grid Grid.Row="0">
@@ -120,7 +107,7 @@
                                         VerticalAlignment="Center"
                                         Background="Transparent"
                                         Command="{Binding ToggleSiderCommand}">
-                                        <PathIcon Data="{StaticResource text_align_left_regular}" />
+                                        <materialIcons:MaterialIcon Kind="FormatAlignLeft" />
                                     </Button>
 
                                     <!--  顶部.右侧 新建对话按钮  -->
@@ -131,8 +118,8 @@
                                         VerticalAlignment="Center"
                                         Background="Transparent"
                                         Command="{Binding CreateNewChatCommand}"
-                                        IsVisible="{Binding CurrentModule, Converter={StaticResource ValueEqualsConverter}, ConverterParameter={x:Static models:ChatSessionType.PsychologicalConsultation}, Mode=OneWay}">
-                                        <PathIcon Data="{StaticResource add_square_regular}" />
+                                        IsVisible="{Binding IsConsultationSelected}">
+                                        <materialIcons:MaterialIcon Kind="PlusBoxOutline" />
                                     </Button>
                                 </Panel>
 
@@ -146,13 +133,13 @@
                                             Classes="NavTab"
                                             Command="{Binding SwitchToConsultationModuleCommand}"
                                             GroupName="ModuleNav"
-                                            IsChecked="{Binding CurrentModule, Converter={StaticResource ValueEqualsConverter}, ConverterParameter={x:Static models:ChatSessionType.PsychologicalConsultation}, Mode=OneWay}">
+                                            IsChecked="{Binding IsConsultationSelected}">
                                             <StackPanel Orientation="Horizontal" Spacing="4">
-                                                <PathIcon
+                                                <materialIcons:MaterialIcon
                                                     Width="16"
                                                     Height="16"
-                                                    Data="{StaticResource chat_regular}" />
-                                                <TextBlock FontSize="12" Text="{x:Static models:ChatSessionType.PsychologicalConsultation}" />
+                                                    Kind="ChatOutline" />
+                                                <TextBlock FontSize="12" Text="{x:Static models:SessionType.PsychologicalConsultation}" />
                                             </StackPanel>
                                         </RadioButton>
 
@@ -163,13 +150,13 @@
                                             Classes="NavTab"
                                             Command="{Binding SwitchToAssessmentModuleCommand}"
                                             GroupName="ModuleNav"
-                                            IsChecked="{Binding CurrentModule, Converter={StaticResource ValueEqualsConverter}, ConverterParameter={x:Static models:ChatSessionType.PsychologicalAssessment}, Mode=OneWay}">
+                                            IsChecked="{Binding IsAssessmentSelected}">
                                             <StackPanel Orientation="Horizontal" Spacing="4">
-                                                <PathIcon
+                                                <materialIcons:MaterialIcon
                                                     Width="16"
                                                     Height="16"
-                                                    Data="{StaticResource clipboard_text_regular}" />
-                                                <TextBlock FontSize="12" Text="{x:Static models:ChatSessionType.PsychologicalAssessment}" />
+                                                    Kind="ClipboardTextOutline" />
+                                                <TextBlock FontSize="12" Text="{x:Static models:SessionType.PsychologicalAssessment}" />
                                             </StackPanel>
                                         </RadioButton>
 
@@ -180,13 +167,13 @@
                                             Classes="NavTab"
                                             Command="{Binding SwitchToInterventionModuleCommand}"
                                             GroupName="ModuleNav"
-                                            IsChecked="{Binding CurrentModule, Converter={StaticResource ValueEqualsConverter}, ConverterParameter={x:Static models:ChatSessionType.InterventionPlan}, Mode=OneWay}">
+                                            IsChecked="{Binding IsInterventionSelected}">
                                             <StackPanel Orientation="Horizontal" Spacing="4">
-                                                <PathIcon
+                                                <materialIcons:MaterialIcon
                                                     Width="16"
                                                     Height="16"
-                                                    Data="{StaticResource book_regular}" />
-                                                <TextBlock FontSize="12" Text="{x:Static models:ChatSessionType.InterventionPlan}" />
+                                                    Kind="BookOutline" />
+                                                <TextBlock FontSize="12" Text="{x:Static models:SessionType.InterventionPlan}" />
                                             </StackPanel>
                                         </RadioButton>
                                     </StackPanel>
@@ -198,12 +185,12 @@
                     <!--  TODO: 主内容区域 - 包含功能模块  -->
                     <Grid Grid.Row="1">
                         <!--  心理咨询模块  -->
-                        <Grid IsVisible="{Binding CurrentModule, Converter={StaticResource ValueEqualsConverter}, ConverterParameter={x:Static models:ChatSessionType.PsychologicalConsultation}, Mode=OneWay}">
+                        <Grid IsVisible="{Binding IsConsultationSelected}">
                             <views:ChatView DataContext="{Binding CurrentChat}" />
                         </Grid>
 
                         <!--  心理评估模块  -->
-                        <Grid IsVisible="{Binding CurrentModule, Converter={StaticResource ValueEqualsConverter}, ConverterParameter={x:Static models:ChatSessionType.PsychologicalAssessment}, Mode=OneWay}">
+                        <Grid IsVisible="{Binding IsAssessmentSelected}">
                             <TextBlock
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"
@@ -212,7 +199,7 @@
                         </Grid>
 
                         <!--  干预方案模块  -->
-                        <Grid IsVisible="{Binding CurrentModule, Converter={StaticResource ValueEqualsConverter}, ConverterParameter={x:Static models:ChatSessionType.InterventionPlan}, Mode=OneWay}">
+                        <Grid IsVisible="{Binding IsInterventionSelected}">
                             <TextBlock
                                 HorizontalAlignment="Center"
                                 VerticalAlignment="Center"

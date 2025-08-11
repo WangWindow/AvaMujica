@@ -15,7 +15,7 @@ namespace AvaMujica.ViewModels;
 /// </summary>
 public partial class SiderViewModel : ViewModelBase
 {
-    private readonly HistoryService _historyService = HistoryService.Instance;
+    private readonly IHistoryService _historyService;
 
     /// <summary>
     /// 主视图模型引用
@@ -32,7 +32,7 @@ public partial class SiderViewModel : ViewModelBase
     /// 当前选中的会话类型
     /// </summary>
     [ObservableProperty]
-    private string selectedSessionType = ChatSessionType.PsychologicalConsultation;
+    private string selectedSessionType = SessionType.PsychologicalConsultation;
 
     /// <summary>
     /// 错误信息
@@ -50,9 +50,10 @@ public partial class SiderViewModel : ViewModelBase
     /// 构造函数
     /// </summary>
     /// <param name="mainViewModel">主视图模型</param>
-    public SiderViewModel(MainViewModel mainViewModel)
+    public SiderViewModel(MainViewModel mainViewModel, IHistoryService historyService)
     {
         _mainViewModel = mainViewModel;
+        _historyService = historyService;
 
         // 设置属性更改通知
         PropertyChanged += (sender, args) =>
@@ -64,7 +65,7 @@ public partial class SiderViewModel : ViewModelBase
         };
 
         // 初始加载会话
-        _ = RefreshHistoryAsync();
+    _ = RefreshHistoryAsync();
     }
 
     /// <summary>
@@ -82,20 +83,20 @@ public partial class SiderViewModel : ViewModelBase
     {
         List<ChatSessionGroup> historyGroups = sessionType switch
         {
-            ChatSessionType.PsychologicalConsultation =>
+            SessionType.PsychologicalConsultation =>
                 await _historyService.GetChatSessionHistorysByTypeAsync(
-                    ChatSessionType.PsychologicalConsultation
+                    SessionType.PsychologicalConsultation
                 ),
-            ChatSessionType.PsychologicalAssessment =>
+            SessionType.PsychologicalAssessment =>
                 await _historyService.GetChatSessionHistorysByTypeAsync(
-                    ChatSessionType.PsychologicalAssessment
+                    SessionType.PsychologicalAssessment
                 ),
-            ChatSessionType.InterventionPlan =>
+            SessionType.InterventionPlan =>
                 await _historyService.GetChatSessionHistorysByTypeAsync(
-                    ChatSessionType.InterventionPlan
+                    SessionType.InterventionPlan
                 ),
             _ => await _historyService.GetChatSessionHistorysByTypeAsync(
-                ChatSessionType.PsychologicalConsultation
+                SessionType.PsychologicalConsultation
             ),
         };
 

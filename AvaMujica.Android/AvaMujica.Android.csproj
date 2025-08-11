@@ -26,6 +26,14 @@
     <AndroidManagedSymbols>true</AndroidManagedSymbols>
     <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
     <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
+    <!-- 仅构建 arm64，避免同时包含 x64，显著减小包体积 -->
+    <RuntimeIdentifiers>android-arm64</RuntimeIdentifiers>
+    <!-- 剥离未用到的本地符号，减小 .so 文件体积 -->
+    <AndroidStripNativeLibraries>true</AndroidStripNativeLibraries>
+    <!-- 使用不变全球化以去除 ICU 数据（若需要本地化排序/格式，请关闭） -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- 基于性能剖面的 AOT，提升启动与热路径性能（需与链接/依赖清理配合） -->
+    <AndroidEnableProfiledAot>true</AndroidEnableProfiledAot>
   </PropertyGroup>
 
   <ItemGroup>

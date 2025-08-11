@@ -7,14 +7,12 @@ using Avalonia.Android;
 namespace AvaMujica.Android;
 
 [Activity(
-    Label = "AvaMujica.Android",
+    Label = "AvaMujica",
     Theme = "@style/MyTheme.NoActionBar",
     Icon = "@drawable/icon",
     MainLauncher = true,
     WindowSoftInputMode = SoftInput.AdjustResize,
-    ConfigurationChanges = ConfigChanges.Orientation
-        | ConfigChanges.ScreenSize
-        | ConfigChanges.UiMode
+    ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode
 )]
 public class MainActivity : AvaloniaMainActivity<App>
 {

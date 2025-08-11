@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -10,28 +11,8 @@ namespace AvaMujica.Services;
 /// <summary>
 /// 数据库操作服务
 /// </summary>
-public class DatabaseService : IDisposable
+public class DatabaseService : IDatabaseService, IDisposable
 {
-    /// <summary>
-    /// 单例实例
-    /// </summary>
-    private static DatabaseService? _instance;
-    private static readonly Lock _lock = new();
-    public static DatabaseService Instance
-    {
-        get
-        {
-            if (_instance == null)
-            {
-                lock (_lock)
-                {
-                    _instance ??= new DatabaseService();
-                }
-            }
-            return _instance;
-        }
-    }
-
     /// <summary>
     /// SQLite连接对象
     /// </summary>
@@ -55,7 +36,7 @@ public class DatabaseService : IDisposable
     /// <summary>
     /// 构造函数
     /// </summary>
-    private DatabaseService()
+    public DatabaseService()
     {
         string dbFolder;
 
@@ -223,11 +204,7 @@ public class DatabaseService : IDisposable
     /// <summary>
     /// 使用委托处理查询结果
     /// </summary>
-    public void ExecuteReader(
-        string sql,
-        Action<SqliteDataReader> handleReader,
-        Dictionary<string, object>? parameters = null
-    )
+    public void ExecuteReader(string sql, Action<DbDataReader> handleReader, Dictionary<string, object>? parameters = null)
     {
         lock (_dbLock)
         {
@@ -253,11 +230,7 @@ public class DatabaseService : IDisposable
     /// <summary>
     /// 通用的查询方法
     /// </summary>
-    private List<T> QueryInternal<T>(
-        string sql,
-        Func<SqliteDataReader, T> mapper,
-        Dictionary<string, object>? parameters = null
-    )
+    public List<T> Query<T>(string sql, Func<DbDataReader, T> mapper, Dictionary<string, object>? parameters = null)
     {
         var result = new List<T>();
 
@@ -285,18 +258,6 @@ public class DatabaseService : IDisposable
         }
 
         return result;
-    }
-
-    /// <summary>
-    /// 获取多行查询结果
-    /// </summary>
-    public List<T> Query<T>(
-        string sql,
-        Func<SqliteDataReader, T> mapper,
-        Dictionary<string, object>? parameters = null
-    )
-    {
-        return QueryInternal(sql, mapper, parameters);
     }
 
     public void Dispose() => _connection.Dispose();
