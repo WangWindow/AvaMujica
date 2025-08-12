@@ -41,7 +41,7 @@ public partial class App : Application
         {
             singleViewPlatform.MainView = new MainView
             {
-                DataContext = Services.GetRequiredService<MainWindowViewModel>()
+                DataContext = Services.GetRequiredService<MainViewModel>()
             };
         }
 

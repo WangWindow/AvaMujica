@@ -10,9 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AvaMujica.ViewModels;
 
-/// <summary>
-/// 主视图模型
-/// </summary>
 public partial class MainViewModel : ViewModelBase
 {
     private readonly IHistoryService _historyService;

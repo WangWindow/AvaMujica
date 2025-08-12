@@ -10,9 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AvaMujica.ViewModels;
 
-/// <summary>
-/// 聊天视图模型
-/// </summary>
 public partial class ChatViewModel : ViewModelBase
 {
     private readonly IApiService _apiService;

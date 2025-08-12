@@ -10,9 +10,6 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AvaMujica.ViewModels;
 
-/// <summary>
-/// 侧边栏视图模型
-/// </summary>
 public partial class SiderViewModel : ViewModelBase
 {
     private readonly IHistoryService _historyService;

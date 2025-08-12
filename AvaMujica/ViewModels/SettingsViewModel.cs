@@ -8,9 +8,6 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AvaMujica.ViewModels;
 
-/// <summary>
-/// 设置视图模型
-/// </summary>
 public partial class SettingsViewModel : ViewModelBase
 {
     /// <summary>
