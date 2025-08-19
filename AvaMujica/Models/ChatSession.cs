@@ -21,7 +21,7 @@ public class ChatSession
     /// <summary>
     /// 会话类型
     /// </summary>
-    public string Type { get; set; } = SessionType.PsychologicalConsultation;
+    public string Type { get; set; } = SessionType.Chat;
 
     /// <summary>
     /// 会话创建时间

@@ -8,7 +8,7 @@ namespace AvaMujica.Models;
 /// </summary>
 public static class SessionType
 {
-    public const string PsychologicalConsultation = "心理咨询";
-    public const string PsychologicalAssessment = "心理评估";
-    public const string InterventionPlan = "干预方案";
+    public const string Chat = "心理咨询";
+    public const string Measure = "心理评估";
+    public const string Plan = "干预方案";
 }

@@ -115,7 +115,7 @@ public class HistoryService(IDatabaseService databaseService, IApiService apiSer
             var session = new ChatSession
             {
                 Title = title ?? "新会话",
-                Type = type ?? SessionType.PsychologicalConsultation,
+                Type = type ?? SessionType.Chat,
             };
 
             _databaseService.ExecuteNonQuery(

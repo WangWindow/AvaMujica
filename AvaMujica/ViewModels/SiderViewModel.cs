@@ -29,7 +29,7 @@ public partial class SiderViewModel : ViewModelBase
     /// 当前选中的会话类型
     /// </summary>
     [ObservableProperty]
-    private string selectedSessionType = SessionType.PsychologicalConsultation;
+    private string selectedSessionType = SessionType.Chat;
 
     /// <summary>
     /// 错误信息
@@ -80,20 +80,20 @@ public partial class SiderViewModel : ViewModelBase
     {
         List<ChatSessionGroup> historyGroups = sessionType switch
         {
-            SessionType.PsychologicalConsultation =>
+            SessionType.Chat =>
                 await _historyService.GetChatSessionHistorysByTypeAsync(
-                    SessionType.PsychologicalConsultation
+                    SessionType.Chat
                 ),
-            SessionType.PsychologicalAssessment =>
+            SessionType.Measure =>
                 await _historyService.GetChatSessionHistorysByTypeAsync(
-                    SessionType.PsychologicalAssessment
+                    SessionType.Measure
                 ),
-            SessionType.InterventionPlan =>
+            SessionType.Plan =>
                 await _historyService.GetChatSessionHistorysByTypeAsync(
-                    SessionType.InterventionPlan
+                    SessionType.Plan
                 ),
             _ => await _historyService.GetChatSessionHistorysByTypeAsync(
-                SessionType.PsychologicalConsultation
+                SessionType.Chat
             ),
         };
 

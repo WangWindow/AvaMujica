@@ -53,14 +53,14 @@ public partial class MainViewModel : ViewModelBase
     /// 当前选中的模块
     /// </summary>
     [ObservableProperty]
-    private string currentModule = SessionType.PsychologicalConsultation;
+    private string currentModule = SessionType.Chat;
 
     /// <summary>
     /// 便捷布尔属性，供 XAML 直接绑定
     /// </summary>
-    public bool IsConsultationSelected => CurrentModule == SessionType.PsychologicalConsultation;
-    public bool IsAssessmentSelected => CurrentModule == SessionType.PsychologicalAssessment;
-    public bool IsInterventionSelected => CurrentModule == SessionType.InterventionPlan;
+    public bool IsConsultationSelected => CurrentModule == SessionType.Chat;
+    public bool IsAssessmentSelected => CurrentModule == SessionType.Measure;
+    public bool IsInterventionSelected => CurrentModule == SessionType.Plan;
 
     partial void OnCurrentModuleChanged(string value)
     {
@@ -143,7 +143,7 @@ public partial class MainViewModel : ViewModelBase
     private async Task LoadHistoryGroupsAsync()
     {
         var historyGroups = await _historyService.GetChatSessionHistorysByTypeAsync(
-            SessionType.PsychologicalConsultation
+            SessionType.Chat
         );
 
         ChatSessionGroups.Clear();
@@ -169,7 +169,7 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void SwitchToConsultationModule()
     {
-        CurrentModule = SessionType.PsychologicalConsultation;
+        CurrentModule = SessionType.Chat;
     }
 
     /// <summary>
@@ -178,7 +178,7 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void SwitchToAssessmentModule()
     {
-        CurrentModule = SessionType.PsychologicalAssessment;
+        CurrentModule = SessionType.Measure;
     }
 
     /// <summary>
@@ -187,7 +187,7 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void SwitchToInterventionModule()
     {
-        CurrentModule = SessionType.InterventionPlan;
+        CurrentModule = SessionType.Plan;
     }
 
     /// <summary>

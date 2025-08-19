@@ -1,17 +1,17 @@
 <UserControl
+    d:DesignHeight="900"
+    d:DesignWidth="400"
+    mc:Ignorable="d"
     x:Class="AvaMujica.Views.SiderView"
+    x:DataType="vm:SiderViewModel"
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:AvaMujica"
     xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:AvaMujica.Models"
     xmlns:vm="using:AvaMujica.ViewModels"
-    d:DesignHeight="900"
-    d:DesignWidth="400"
-    x:DataType="vm:SiderViewModel"
-    mc:Ignorable="d">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Design.DataContext>
         <vm:SiderViewModel />
     </Design.DataContext>
@@ -23,10 +23,10 @@
             <Panel>
                 <!--  顶部.右侧  -->
                 <Button
-                    Margin="0,0,5,0"
+                    Background="Transparent"
                     HorizontalAlignment="Right"
-                    VerticalAlignment="Center"
-                    Background="Transparent">
+                    Margin="0,0,5,0"
+                    VerticalAlignment="Center">
                     <materialIcons:MaterialIcon Kind="FormatAlignRight" />
                 </Button>
             </Panel>
@@ -34,12 +34,12 @@
             <Panel>
                 <!--  顶部.中间  -->
                 <TextBlock
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
                     Background="Transparent"
                     FontSize="16"
                     FontWeight="SemiBold"
-                    Text="我的对话" />
+                    HorizontalAlignment="Center"
+                    Text="我的对话"
+                    VerticalAlignment="Center" />
             </Panel>
         </Grid>
 
@@ -49,26 +49,26 @@
                 <StackPanel Margin="10,0">
                     <!--  会话类型选择  -->
                     <ComboBox
-                        Margin="5,10"
                         HorizontalAlignment="Stretch"
+                        Margin="5,10"
                         SelectedIndex="0"
                         SelectedItem="{Binding SelectedSessionType}">
-                        <ComboBoxItem Content="{x:Static models:SessionType.PsychologicalConsultation}" />
-                        <ComboBoxItem Content="{x:Static models:SessionType.PsychologicalAssessment}" />
-                        <ComboBoxItem Content="{x:Static models:SessionType.InterventionPlan}" />
+                        <ComboBoxItem Content="{x:Static models:SessionType.Chat}" />
+                        <ComboBoxItem Content="{x:Static models:SessionType.Measure}" />
+                        <ComboBoxItem Content="{x:Static models:SessionType.Plan}" />
                     </ComboBox>
 
                     <!--  分组历史记录  -->
-                    <ItemsControl Name="HistoryItems" ItemsSource="{Binding ChatSessionGroups}">
+                    <ItemsControl ItemsSource="{Binding ChatSessionGroups}" Name="HistoryItems">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
                                 <!--  时间分组标题  -->
                                 <StackPanel Margin="0,5,0,10">
                                     <TextBlock
-                                        Margin="5,0,0,5"
                                         FontSize="14"
                                         FontWeight="Medium"
                                         Foreground="{DynamicResource SystemAccentColor}"
+                                        Margin="5,0,0,5"
                                         Text="{Binding Key}" />
 
                                     <!--  分组内的历史记录项  -->
@@ -77,14 +77,14 @@
                                             <DataTemplate>
                                                 <!--  历史记录项  -->
                                                 <Button
-                                                    Margin="0,2"
-                                                    Padding="8,6"
-                                                    HorizontalAlignment="Stretch"
-                                                    VerticalAlignment="Center"
-                                                    HorizontalContentAlignment="Stretch"
                                                     Background="Transparent"
                                                     Command="{Binding $parent[UserControl].((vm:SiderViewModel)DataContext).SelectChatSessionCommand}"
-                                                    CommandParameter="{Binding}">
+                                                    CommandParameter="{Binding}"
+                                                    HorizontalAlignment="Stretch"
+                                                    HorizontalContentAlignment="Stretch"
+                                                    Margin="0,2"
+                                                    Padding="8,6"
+                                                    VerticalAlignment="Center">
                                                     <Grid>
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="Auto" />
@@ -94,24 +94,24 @@
 
                                                         <materialIcons:MaterialIcon
                                                             Grid.Column="0"
-                                                            Width="14"
                                                             Height="14"
+                                                            Kind="ChatOutline"
                                                             Margin="0,0,8,0"
-                                                            Kind="ChatOutline" />
+                                                            Width="14" />
 
                                                         <TextBlock
                                                             Grid.Column="1"
                                                             HorizontalAlignment="Left"
-                                                            VerticalAlignment="Center"
                                                             Text="{Binding Title}"
-                                                            TextTrimming="CharacterEllipsis" />
+                                                            TextTrimming="CharacterEllipsis"
+                                                            VerticalAlignment="Center" />
 
                                                         <TextBlock
+                                                            Foreground="{DynamicResource SystemBaseMediumColor}"
                                                             Grid.Column="2"
                                                             HorizontalAlignment="Right"
-                                                            VerticalAlignment="Center"
-                                                            Foreground="{DynamicResource SystemBaseMediumColor}"
-                                                            Text="{Binding UpdatedTime}" />
+                                                            Text="{Binding UpdatedTime}"
+                                                            VerticalAlignment="Center" />
                                                     </Grid>
                                                 </Button>
                                             </DataTemplate>
@@ -124,16 +124,16 @@
 
                     <!--  新建会话按钮  -->
                     <Button
-                        Margin="5,10"
-                        HorizontalAlignment="Center"
                         Background="Transparent"
                         Command="{Binding CreateNewChatCommand}"
-                        Foreground="{DynamicResource SystemAccentColor}">
+                        Foreground="{DynamicResource SystemAccentColor}"
+                        HorizontalAlignment="Center"
+                        Margin="5,10">
                         <StackPanel Orientation="Horizontal" Spacing="5">
                             <materialIcons:MaterialIcon
-                                Width="14"
                                 Height="14"
-                                Kind="Plus" />
+                                Kind="Plus"
+                                Width="14" />
                             <TextBlock Text="新建会话" />
                         </StackPanel>
                     </Button>
@@ -144,43 +144,43 @@
         <!--  底部  -->
         <Grid Grid.Row="2" Margin="10,5,10,10">
             <Button
-                Padding="10,8"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Center"
                 Background="Transparent"
                 BorderThickness="0"
                 Command="{Binding OpenSettingsCommand}"
-                CornerRadius="4">
+                CornerRadius="4"
+                HorizontalAlignment="Stretch"
+                Padding="10,8"
+                VerticalAlignment="Center">
                 <DockPanel HorizontalAlignment="Stretch" LastChildFill="False">
                     <StackPanel
                         DockPanel.Dock="Left"
                         Orientation="Horizontal"
                         Spacing="8">
                         <materialIcons:MaterialIcon
-                            Width="16"
                             Height="16"
+                            Kind="AccountOutline"
                             VerticalAlignment="Center"
-                            Kind="AccountOutline" />
+                            Width="16" />
                         <TextBlock
-                            VerticalAlignment="Center"
                             FontSize="14"
-                            Text="用户" />
+                            Text="用户"
+                            VerticalAlignment="Center" />
                     </StackPanel>
                     <StackPanel
                         DockPanel.Dock="Right"
                         Orientation="Horizontal"
                         Spacing="4">
                         <TextBlock
-                            VerticalAlignment="Center"
                             FontSize="13"
                             Foreground="{DynamicResource SystemBaseMediumColor}"
-                            Text="设置" />
+                            Text="设置"
+                            VerticalAlignment="Center" />
                         <materialIcons:MaterialIcon
-                            Width="14"
-                            Height="14"
-                            VerticalAlignment="Center"
                             Foreground="{DynamicResource SystemBaseMediumColor}"
-                            Kind="CogOutline" />
+                            Height="14"
+                            Kind="CogOutline"
+                            VerticalAlignment="Center"
+                            Width="14" />
                     </StackPanel>
                 </DockPanel>
             </Button>
