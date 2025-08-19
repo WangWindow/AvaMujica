@@ -1,0 +1,57 @@
+<UserControl
+    x:Class="AvaMujica.Views.PlanView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:vm="using:AvaMujica.ViewModels"
+    d:DesignHeight="600"
+    d:DesignWidth="900"
+    x:DataType="vm:PlanViewModel">
+    <Design.DataContext>
+        <vm:PlanViewModel />
+    </Design.DataContext>
+
+    <Grid Margin="10" RowDefinitions="Auto,*,Auto">
+        <!--  顶部输入与生成  -->
+        <StackPanel
+            Margin="0,0,0,8"
+            Orientation="Horizontal"
+            Spacing="8">
+            <TextBox
+                Width="400"
+                Text="{Binding NewItemTitle, Mode=TwoWay}"
+                Watermark="添加一条待办..." />
+            <Button Command="{Binding AddItemCommand}" Content="添加" />
+            <Button Command="{Binding GenerateByAiCommand}" Content="AI 生成方案" />
+        </StackPanel>
+
+        <!--  列表  -->
+        <Border
+            Grid.Row="1"
+            Padding="8"
+            BorderBrush="{DynamicResource SystemBaseLowColor}"
+            BorderThickness="1"
+            CornerRadius="8">
+            <ItemsControl ItemsSource="{Binding Items}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <DockPanel Margin="0,4">
+                            <CheckBox Margin="0,0,8,0" IsChecked="{Binding IsDone}" />
+                            <TextBlock VerticalAlignment="Center" Text="{Binding Title}" />
+                            <Button
+                                Command="{Binding $parent[UserControl].((vm:PlanViewModel)DataContext).RemoveItemCommand}"
+                                CommandParameter="{Binding}"
+                                Content="删除"
+                                DockPanel.Dock="Right" />
+                        </DockPanel>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Border>
+
+        <TextBlock
+            Grid.Row="2"
+            Foreground="{DynamicResource SystemBaseMediumColor}"
+            Text="提示：勾选已完成，点击 AI 生成可快速获得一套建议" />
+    </Grid>
+</UserControl>

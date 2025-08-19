@@ -84,9 +84,9 @@ public partial class SiderViewModel : ViewModelBase
                 await _historyService.GetChatSessionHistorysByTypeAsync(
                     SessionType.Chat
                 ),
-            SessionType.Measure =>
+            SessionType.Assessment =>
                 await _historyService.GetChatSessionHistorysByTypeAsync(
-                    SessionType.Measure
+                    SessionType.Assessment
                 ),
             SessionType.Plan =>
                 await _historyService.GetChatSessionHistorysByTypeAsync(

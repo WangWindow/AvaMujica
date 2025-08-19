@@ -55,11 +55,18 @@ public partial class MainViewModel : ViewModelBase
     [ObservableProperty]
     private string currentModule = SessionType.Chat;
 
+    // 新增：心理评估与干预方案的 VM
+    [ObservableProperty]
+    private AssessmentViewModel? assessmentViewModel;
+
+    [ObservableProperty]
+    private PlanViewModel? planViewModel;
+
     /// <summary>
     /// 便捷布尔属性，供 XAML 直接绑定
     /// </summary>
     public bool IsConsultationSelected => CurrentModule == SessionType.Chat;
-    public bool IsAssessmentSelected => CurrentModule == SessionType.Measure;
+    public bool IsAssessmentSelected => CurrentModule == SessionType.Assessment;
     public bool IsInterventionSelected => CurrentModule == SessionType.Plan;
 
     partial void OnCurrentModuleChanged(string value)
@@ -84,11 +91,15 @@ public partial class MainViewModel : ViewModelBase
         _historyService = historyService;
         // 初始化视图模型
         SiderViewModel = new SiderViewModel(this, historyService);
-    SettingsViewModel = new SettingsViewModel(
+        SettingsViewModel = new SettingsViewModel(
             this,
             App.Services.GetRequiredService<IConfigService>(),
             App.Services.GetRequiredService<IApiService>()
         );
+
+        // 其他模块 VM
+        AssessmentViewModel = new AssessmentViewModel(App.Services.GetRequiredService<IApiService>());
+        PlanViewModel = new PlanViewModel(App.Services.GetRequiredService<IApiService>());
 
         // 异步初始化数据
         _ = InitializeAsync();
@@ -178,7 +189,7 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public void SwitchToAssessmentModule()
     {
-        CurrentModule = SessionType.Measure;
+        CurrentModule = SessionType.Assessment;
     }
 
     /// <summary>

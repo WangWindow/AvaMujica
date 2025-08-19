@@ -54,7 +54,7 @@
                         SelectedIndex="0"
                         SelectedItem="{Binding SelectedSessionType}">
                         <ComboBoxItem Content="{x:Static models:SessionType.Chat}" />
-                        <ComboBoxItem Content="{x:Static models:SessionType.Measure}" />
+                        <ComboBoxItem Content="{x:Static models:SessionType.Assessment}" />
                         <ComboBoxItem Content="{x:Static models:SessionType.Plan}" />
                     </ComboBox>
 

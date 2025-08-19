@@ -156,7 +156,7 @@
                                                     Height="16"
                                                     Kind="ClipboardTextOutline"
                                                     Width="16" />
-                                                <TextBlock FontSize="12" Text="{x:Static models:SessionType.Measure}" />
+                                                <TextBlock FontSize="12" Text="{x:Static models:SessionType.Assessment}" />
                                             </StackPanel>
                                         </RadioButton>
 
@@ -191,20 +191,12 @@
 
                         <!--  心理评估模块  -->
                         <Grid IsVisible="{Binding IsAssessmentSelected}">
-                            <TextBlock
-                                FontSize="16"
-                                HorizontalAlignment="Center"
-                                Text="心理评估模块 (开发中...)"
-                                VerticalAlignment="Center" />
+                            <views:AssessmentView DataContext="{Binding AssessmentViewModel}" />
                         </Grid>
 
                         <!--  干预方案模块  -->
                         <Grid IsVisible="{Binding IsInterventionSelected}">
-                            <TextBlock
-                                FontSize="16"
-                                HorizontalAlignment="Center"
-                                Text="干预方案模块 (开发中...)"
-                                VerticalAlignment="Center" />
+                            <views:PlanView DataContext="{Binding PlanViewModel}" />
                         </Grid>
                     </Grid>
                 </Grid>

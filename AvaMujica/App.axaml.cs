@@ -64,6 +64,8 @@ public partial class App : Application
         // ViewModels
         services.AddSingleton<MainViewModel>();
         services.AddSingleton<MainWindowViewModel>();
+        services.AddTransient<AssessmentViewModel>();
+        services.AddTransient<PlanViewModel>();
 
         Services = services.BuildServiceProvider();
     }
