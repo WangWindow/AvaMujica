@@ -82,13 +82,13 @@ public partial class AssessmentViewModel : ViewModelBase
             {
                 Id = (i + 1).ToString(),
                 Text = q,
-                Options = new List<ScaleOption>
-                {
+                Options =
+                [
                     new() { Text = "完全没有", Score = 0 },
                     new() { Text = "好几天", Score = 1 },
                     new() { Text = "一半以上天数", Score = 2 },
                     new() { Text = "几乎每天", Score = 3 }
-                }
+                ]
             });
         }
 
@@ -158,6 +158,10 @@ public partial class AssessmentViewModel : ViewModelBase
     // 1 基页码，便于 UI 显示 n / total 能到达最后一页
     public int CurrentPage => Math.Min(CurrentIndex + 1, TotalQuestions);
 
+    // 是否首题/末题，便于 UI 控制按钮显示
+    public bool IsFirstQuestion => CurrentIndex <= 0;
+    public bool IsLastQuestion => TotalQuestions <= 0 || CurrentIndex >= TotalQuestions - 1;
+
     partial void OnCurrentIndexChanged(int value)
     {
         // 当切题时，恢复之前选择
@@ -173,15 +177,23 @@ public partial class AssessmentViewModel : ViewModelBase
         // 通知当前题目与页码变更，避免 UI 只显示第一题
         OnPropertyChanged(nameof(CurrentQuestion));
         OnPropertyChanged(nameof(CurrentPage));
+        OnPropertyChanged(nameof(IsFirstQuestion));
+        OnPropertyChanged(nameof(IsLastQuestion));
 
         // 刷新命令可用性
         PrevCommand.NotifyCanExecuteChanged();
         NextCommand.NotifyCanExecuteChanged();
         SubmitCommand.NotifyCanExecuteChanged();
+        ExplainByAiCommand.NotifyCanExecuteChanged();
     }
 
     partial void OnSelectedOptionIndexChanged(int value)
     {
+        // 实时保存当前题目的选择，确保最后一题选择后可立即提交
+        if (CurrentQuestion != null && value >= 0)
+        {
+            _answers[CurrentQuestion.Id] = value;
+        }
         NextCommand.NotifyCanExecuteChanged();
         SubmitCommand.NotifyCanExecuteChanged();
     }
@@ -205,7 +217,7 @@ public partial class AssessmentViewModel : ViewModelBase
         if (CurrentIndex < TotalQuestions - 1) CurrentIndex++;
     }
 
-    private bool CanNext() => SelectedOptionIndex >= 0;
+    private bool CanNext() => SelectedOptionIndex >= 0 && !IsLastQuestion;
 
     [RelayCommand(CanExecute = nameof(CanSubmit))]
     private void Submit()
@@ -226,13 +238,19 @@ public partial class AssessmentViewModel : ViewModelBase
             }
         }
 
-        var (Min, Max, Level, Advice) = SelectedScale.Interpretations.FirstOrDefault(it => total >= it.Min && total <= it.Max);
-        Result.ScaleId = SelectedScale.Id;
-        Result.ScaleName = SelectedScale.Name;
-        Result.TotalScore = total;
-        Result.Level = Level;
-        Result.Advice = Advice;
-        OnPropertyChanged(nameof(Result));
+        var match = SelectedScale.Interpretations.FirstOrDefault(it => total >= it.Min && total <= it.Max);
+        // 兜底：若未匹配到任何区间，则按接近规则给出提示
+        var level = string.IsNullOrWhiteSpace(match.Level) ? "未分级" : match.Level;
+        var advice = string.IsNullOrWhiteSpace(match.Advice) ? "建议：请核对各题作答是否完整，或联系开发者补全解释区间。" : match.Advice;
+
+        Result = new AssessmentResult
+        {
+            ScaleId = SelectedScale.Id,
+            ScaleName = SelectedScale.Name,
+            TotalScore = total,
+            Level = level,
+            Advice = advice
+        };
         IsCompleted = true;
     }
 
@@ -245,6 +263,7 @@ public partial class AssessmentViewModel : ViewModelBase
         AiExplanation = string.Empty;
         IsExplaining = false;
         IsCompleted = false;
+        Result = new AssessmentResult();
         CurrentIndex = 0;
         TotalQuestions = value?.Questions.Count ?? 0;
         SelectedOptionIndex = -1;
@@ -252,6 +271,8 @@ public partial class AssessmentViewModel : ViewModelBase
         // 通知与当前题目/页码相关的属性，确保首题能正确显示
         OnPropertyChanged(nameof(CurrentQuestion));
         OnPropertyChanged(nameof(CurrentPage));
+        OnPropertyChanged(nameof(IsFirstQuestion));
+        OnPropertyChanged(nameof(IsLastQuestion));
 
         PrevCommand.NotifyCanExecuteChanged();
         NextCommand.NotifyCanExecuteChanged();
@@ -267,19 +288,21 @@ public partial class AssessmentViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanExplain))]
     private async Task ExplainByAiAsync()
     {
-        if (SelectedScale is null || Result is null) return;
+        // 额外防护，避免极端并发触发
+        if (!CanExplain()) return;
+        var scale = SelectedScale; var result = Result;
+        if (scale is null || result is null) return;
 
         IsExplaining = true;
         AiExplanation = string.Empty;
 
         // 根据答案拼装简要描述
-        var answerSummary = string.Join("\n", SelectedScale.Questions.Select(q =>
-        {
-            var picked = _answers.TryGetValue(q.Id, out var idx) ? q.Options[idx].Text : "未作答";
-            return $"- {q.Text}：{picked}";
-        }));
-
-        string prompt = $"你是一名心理咨询师。基于以下量表结果提供温和、务实、非医疗诊断的解释与建议（300字内，中文）：\n量表：{Result.ScaleName}\n总分：{Result.TotalScore}（{Result.Level}）\n答案概览：\n{answerSummary}";
+        var answerSummary = BuildAnswerSummary(scale);
+        var prompt =
+            $"你是一名心理咨询师。基于以下量表结果提供温和、务实、非医疗诊断的解释与建议（300字内，中文）：{Environment.NewLine}" +
+            $"量表：{result.ScaleName}{Environment.NewLine}" +
+            $"总分：{result.TotalScore}（{result.Level}）{Environment.NewLine}" +
+            $"答案概览：{Environment.NewLine}{answerSummary}";
 
         try
         {
@@ -295,16 +318,39 @@ public partial class AssessmentViewModel : ViewModelBase
                 }
             );
         }
+        catch (Exception)
+        {
+            AiExplanation = "生成解释失败，请稍后重试。";
+        }
         finally
         {
             IsExplaining = false;
         }
     }
 
-    private bool CanExplain() => IsCompleted && SelectedScale is not null && Result is not null;
+    private string BuildAnswerSummary(Scale scale)
+    {
+        return string.Join(Environment.NewLine, scale.Questions.Select(q =>
+        {
+            var picked = _answers.TryGetValue(q.Id, out var idx) ? q.Options[idx].Text : "未作答";
+            return $"- {q.Text}：{picked}";
+        }));
+    }
+
+    private bool CanExplain() => IsCompleted && !IsExplaining && SelectedScale is not null && Result is not null;
 
     partial void OnAiExplanationChanged(string value)
     {
         OnPropertyChanged(nameof(HasAiExplanation));
+    }
+
+    partial void OnIsCompletedChanged(bool value)
+    {
+        ExplainByAiCommand.NotifyCanExecuteChanged();
+    }
+
+    partial void OnIsExplainingChanged(bool value)
+    {
+        ExplainByAiCommand.NotifyCanExecuteChanged();
     }
 }

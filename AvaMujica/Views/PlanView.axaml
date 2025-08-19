@@ -16,32 +16,37 @@
         HorizontalAlignment="Stretch"
         RowDefinitions="Auto,*,Auto">
         <!--  顶部输入与生成  -->
-        <StackPanel
-            Margin="0,0,0,8"
-            Orientation="Horizontal"
-            Spacing="8">
+        <WrapPanel
+            Margin="0,0,8,8"
+            HorizontalAlignment="Center"
+            Orientation="Horizontal">
             <TextBox
-                MinWidth="200"
+                MinWidth="240"
+                Margin="0,0,8,0"
                 Text="{Binding NewItemTitle, Mode=TwoWay}"
                 Watermark="添加一条待办..." />
-            <Button
-                Command="{Binding AddItemCommand}"
-                Content="添加"
-                IsEnabled="{Binding NewItemTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-            <Button
-                Command="{Binding GenerateByAiCommand}"
-                Content="AI 生成方案"
-                IsEnabled="{Binding !IsGenerating}" />
-            <Button
-                Command="{Binding CancelGenerateCommand}"
-                Content="取消"
-                IsEnabled="{Binding IsGenerating}" />
+            <StackPanel
+                Margin="0,8,0,8"
+                Orientation="Horizontal"
+                Spacing="16">
+                <Button
+                    Command="{Binding AddItemCommand}"
+                    Content="添加"
+                    IsEnabled="{Binding NewItemTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                <Button
+                    Command="{Binding GenerateByAiCommand}"
+                    Content="AI 生成方案"
+                    IsEnabled="{Binding !IsGenerating}" />
+                <Button
+                    Command="{Binding CancelGenerateCommand}"
+                    Content="取消"
+                    IsEnabled="{Binding IsGenerating}" />
+            </StackPanel>
             <ProgressBar
                 Width="120"
                 IsIndeterminate="True"
                 IsVisible="{Binding IsGenerating}" />
-        </StackPanel>
-
+        </WrapPanel>
         <!--  列表  -->
         <Border
             Grid.Row="1"
@@ -59,9 +64,10 @@
                                 IsChecked="{Binding IsDone}" />
                             <TextBlock
                                 Grid.Column="1"
-                                HorizontalAlignment="Left"
+                                Margin="0,8,8,8"
                                 VerticalAlignment="Center"
-                                Text="{Binding Title}" />
+                                Text="{Binding Title}"
+                                TextWrapping="Wrap" />
                             <Button
                                 Grid.Column="2"
                                 Command="{Binding $parent[UserControl].((vm:PlanViewModel)DataContext).RemoveItemCommand}"
@@ -75,7 +81,8 @@
 
         <TextBlock
             Grid.Row="2"
+            Margin="0,8,0,8"
             Foreground="{DynamicResource SystemBaseMediumColor}"
-            Text="提示：勾选已完成，点击 AI 生成可快速获得一套建议" />
+            Text="提示：点击 AI 生成可快速获得一套建议" />
     </Grid>
 </UserControl>

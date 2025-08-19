@@ -23,6 +23,8 @@
             <StackPanel>
                 <!--  顶部.左侧  -->
                 <Button
+                    Width="40"
+                    Height="40"
                     HorizontalAlignment="Left"
                     VerticalAlignment="Center"
                     Background="Transparent"
