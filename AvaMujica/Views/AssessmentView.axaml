@@ -1,64 +1,135 @@
 <UserControl
+    d:DesignHeight="600"
+    d:DesignWidth="900"
+    mc:Ignorable="d"
     x:Class="AvaMujica.Views.AssessmentView"
+    x:DataType="vm:AssessmentViewModel"
     xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:vm="using:AvaMujica.ViewModels"
-    d:DesignHeight="600"
-    d:DesignWidth="900"
-    x:DataType="vm:AssessmentViewModel"
-    mc:Ignorable="d">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Design.DataContext>
         <vm:AssessmentViewModel />
     </Design.DataContext>
 
-    <Grid Margin="10" RowDefinitions="Auto,*,Auto">
+    <Grid Margin="16" RowDefinitions="Auto,*,Auto">
         <!--  顶部选择量表  -->
-        <StackPanel
-            Margin="0,0,0,8"
-            Orientation="Horizontal"
-            Spacing="8">
-            <ComboBox
-                Width="260"
-                DisplayMemberBinding="{Binding Name}"
-                ItemsSource="{Binding Scales}"
-                SelectedItem="{Binding SelectedScale}" />
-            <TextBlock VerticalAlignment="Center" Text="{Binding SelectedScale.Description}" />
-        </StackPanel>
+        <Border
+            Background="{DynamicResource SystemChromeMediumLowColor}"
+            BorderBrush="{DynamicResource SystemBaseLowColor}"
+            BorderThickness="1"
+            CornerRadius="10"
+            Padding="12">
+            <DockPanel LastChildFill="True">
+                <StackPanel
+                    DockPanel.Dock="Left"
+                    Orientation="Horizontal"
+                    Spacing="8">
+                    <ComboBox
+                        DisplayMemberBinding="{Binding Name}"
+                        ItemsSource="{Binding Scales}"
+                        SelectedItem="{Binding SelectedScale}"
+                        Width="280" />
+                </StackPanel>
+                <TextBlock
+                    Margin="12,0,0,0"
+                    Text="{Binding SelectedScale.Description}"
+                    TextWrapping="Wrap"
+                    VerticalAlignment="Center" />
+            </DockPanel>
+        </Border>
 
         <!--  问卷主体  -->
         <Border
-            Grid.Row="1"
-            Padding="16"
+            Background="{DynamicResource SystemChromeLowColor}"
             BorderBrush="{DynamicResource SystemBaseLowColor}"
             BorderThickness="1"
-            CornerRadius="8">
+            CornerRadius="12"
+            Grid.Row="1"
+            Padding="20">
             <Grid>
                 <!--  正在答题  -->
-                <Grid IsVisible="{Binding !IsCompleted}">
-                    <StackPanel Spacing="16">
-                        <TextBlock
-                            FontSize="18"
-                            FontWeight="SemiBold"
-                            Text="{Binding CurrentQuestion.Text}" />
-                        <ListBox ItemsSource="{Binding CurrentQuestion.Options}" SelectedIndex="{Binding SelectedOptionIndex, Mode=TwoWay}">
+                <Grid Grid.RowDefinitions="Auto,*,Auto" IsVisible="{Binding !IsCompleted}">
+                    <!--  顶部：页码 + 进度 + 题干  -->
+                    <StackPanel Grid.Row="0" Spacing="12">
+                        <StackPanel
+                            Orientation="Horizontal"
+                            Spacing="8"
+                            VerticalAlignment="Center">
+                            <TextBlock FontSize="16" Text="题目" />
+                            <TextBlock FontSize="16" Text="{Binding CurrentPage}" />
+                            <TextBlock FontSize="16" Text="/" />
+                            <TextBlock FontSize="16" Text="{Binding TotalQuestions}" />
+                        </StackPanel>
+                        <ProgressBar
+                            CornerRadius="3"
+                            Height="6"
+                            Maximum="{Binding TotalQuestions}"
+                            Minimum="0"
+                            Value="{Binding CurrentPage}" />
+                        <Border
+                            Background="{DynamicResource SystemControlAcrylicWindowBrush}"
+                            CornerRadius="8"
+                            Padding="12">
+                            <TextBlock
+                                FontSize="20"
+                                FontWeight="SemiBold"
+                                Text="{Binding CurrentQuestion.Text}"
+                                TextWrapping="Wrap" />
+                        </Border>
+                    </StackPanel>
+
+                    <!--  中间：选项列表（占据剩余空间，内部滚动）  -->
+                    <Border
+                        Background="{DynamicResource SystemChromeMediumLowColor}"
+                        BorderBrush="{DynamicResource SystemBaseLowColor}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Grid.Row="1"
+                        Margin="0,8,0,8"
+                        Padding="8">
+                        <ListBox
+                            ItemsSource="{Binding CurrentQuestion.Options}"
+                            ScrollViewer.VerticalScrollBarVisibility="Auto"
+                            SelectedIndex="{Binding SelectedOptionIndex, Mode=TwoWay}">
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                    <TextBlock Text="{Binding Text}" />
+                                    <Border
+                                        Background="{DynamicResource SystemChromeLowColor}"
+                                        BorderBrush="{DynamicResource SystemBaseLowColor}"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        Margin="0,6"
+                                        Padding="10">
+                                        <TextBlock Text="{Binding Text}" TextWrapping="Wrap" />
+                                    </Border>
                                 </DataTemplate>
                             </ListBox.ItemTemplate>
                         </ListBox>
+                    </Border>
 
-                        <StackPanel Orientation="Horizontal" Spacing="8">
-                            <Button Command="{Binding PrevCommand}" Content="上一题" />
-                            <Button Command="{Binding NextCommand}" Content="下一题" />
-                            <Button Command="{Binding SubmitCommand}" Content="提交" />
-                            <TextBlock Text="{Binding CurrentIndex}" />
-                            <TextBlock Text="/" />
-                            <TextBlock Text="{Binding TotalQuestions}" />
-                        </StackPanel>
-                    </StackPanel>
+                    <!--  底部：操作按钮  -->
+                    <Grid
+                        ColumnDefinitions="*,*,*"
+                        Grid.Row="2"
+                        Margin="0,4,0,0">
+                        <Button
+                            Command="{Binding PrevCommand}"
+                            Content="上一题"
+                            Grid.Column="0"
+                            HorizontalAlignment="Center" />
+                        <Button
+                            Command="{Binding NextCommand}"
+                            Content="下一题"
+                            Grid.Column="1"
+                            HorizontalAlignment="Center" />
+                        <Button
+                            Command="{Binding SubmitCommand}"
+                            Content="提交"
+                            Grid.Column="2"
+                            HorizontalAlignment="Center" />
+                    </Grid>
                 </Grid>
 
                 <!--  完成后显示结果  -->
@@ -72,22 +143,49 @@
                         <TextBlock Text="{Binding Result.TotalScore, StringFormat=总分：{0}}" />
                         <TextBlock Text="{Binding Result.Level, StringFormat=等级：{0}}" />
                         <TextBlock Text="{Binding Result.Advice, StringFormat=建议：{0}}" TextWrapping="Wrap" />
+
+                        <StackPanel
+                            Margin="0,8,0,0"
+                            Orientation="Horizontal"
+                            Spacing="8">
+                            <Button Command="{Binding RestartCommand}" Content="重新开始" />
+                            <Button Command="{Binding ExplainByAiCommand}" Content="AI 解释结果" />
+                            <ProgressBar
+                                IsIndeterminate="True"
+                                IsVisible="{Binding IsExplaining}"
+                                Width="120" />
+                        </StackPanel>
+                        <Border
+                            BorderBrush="{DynamicResource SystemBaseLowColor}"
+                            BorderThickness="1"
+                            CornerRadius="6"
+                            IsVisible="{Binding HasAiExplanation}"
+                            Padding="8">
+                            <Grid>
+                                <Grid ColumnDefinitions="*,*,*">
+                                    <Button
+                                        Command="{Binding RestartCommand}"
+                                        Content="重新开始"
+                                        Grid.Column="0"
+                                        HorizontalAlignment="Center" />
+                                    <Button
+                                        Command="{Binding ExplainByAiCommand}"
+                                        Content="AI 解释结果"
+                                        Grid.Column="1"
+                                        HorizontalAlignment="Center" />
+                                    <ProgressBar
+                                        Grid.Column="2"
+                                        HorizontalAlignment="Center"
+                                        IsIndeterminate="True"
+                                        IsVisible="{Binding IsExplaining}"
+                                        Width="120" />
+                                </Grid>
+                                <TextBlock Text="{Binding AiExplanation}" TextWrapping="Wrap" />
+                            </Grid>
+                        </Border>
                     </StackPanel>
                 </Grid>
             </Grid>
         </Border>
-
-        <!--  题目切换  -->
-        <StackPanel
-            Grid.Row="2"
-            Margin="0,8,0,0"
-            HorizontalAlignment="Center"
-            Orientation="Horizontal"
-            Spacing="8">
-            <TextBlock Text="题目" />
-            <TextBlock Text="{Binding CurrentIndex}" />
-            <TextBlock Text="/" />
-            <TextBlock Text="{Binding TotalQuestions}" />
-        </StackPanel>
     </Grid>
 </UserControl>

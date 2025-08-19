@@ -1,6 +1,7 @@
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using AvaMujica.Models;
 using AvaMujica.Services;
@@ -9,9 +10,9 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AvaMujica.ViewModels;
 
-public partial class PlanViewModel : ViewModelBase
+public partial class PlanViewModel(IApiService apiService) : ViewModelBase
 {
-    private readonly IApiService _apiService;
+    private readonly IApiService _apiService = apiService;
 
     public ObservableCollection<PlanItem> Items { get; } = new();
 
@@ -21,10 +22,10 @@ public partial class PlanViewModel : ViewModelBase
     [ObservableProperty]
     private string? selectedItemId;
 
-    public PlanViewModel(IApiService apiService)
-    {
-        _apiService = apiService;
-    }
+    [ObservableProperty]
+    private bool isGenerating = false;
+
+    private CancellationTokenSource? _cts;
 
     [RelayCommand]
     private void AddItem()
@@ -49,49 +50,80 @@ public partial class PlanViewModel : ViewModelBase
         OnPropertyChanged(nameof(Items));
     }
 
-    [RelayCommand]
+    [RelayCommand(CanExecute = nameof(CanGenerate))]
     private async Task GenerateByAi()
     {
-        // 基于当前项生成完善建议，或生成一个初始方案
-        string prompt = "请根据用户的心理健康改善目标，给出一个包含5-7条可执行、可度量且温和的日常干预建议（中文、短句、编号省略）。";
-        var buffer = string.Empty;
-        await _apiService.ChatAsync(
-            prompt,
-            async (t, s) =>
-            {
-                if (t == ResponseType.Content)
+        if (IsGenerating) return;
+        _cts?.Dispose();
+        _cts = new CancellationTokenSource();
+        IsGenerating = true;
+
+        try
+        {
+            // 基于当前项生成完善建议，或生成一个初始方案
+            string prompt = "请根据用户的心理健康改善目标，给出一个包含5-7条可执行、可度量且温和的日常干预建议（中文、短句、编号省略）。";
+            var buffer = string.Empty;
+            await _apiService.ChatAsync(
+                prompt,
+                async (t, s) =>
                 {
-                    buffer += s;
-                }
-                await Task.CompletedTask;
-            }
-        );
+                    if (t == ResponseType.Content)
+                    {
+                        buffer += s;
+                    }
+                    await Task.CompletedTask;
+                },
+                _cts.Token
+            );
 
-        // 简单解析为多行待办
-        var lines = buffer
-            .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
-            .Select(l => l.TrimStart('-', '*', ' ', '\t'))
-            .Where(l => l.Length > 0)
-            .Take(10)
-            .ToList();
+            // 简单解析为多行待办
+            var lines = buffer
+                .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(l => l.TrimStart('-', '*', ' ', '\t'))
+                .Where(l => l.Length > 0)
+                .Take(10)
+                .ToList();
 
-        if (lines.Count == 0)
-        {
-            lines = new()
+            if (lines.Count == 0)
             {
-                "保证规律作息，固定上床与起床时间",
-                "每日进行10-20分钟的轻度运动，如散步",
-                "安排 10 分钟呼吸放松或正念练习",
-                "减少睡前 1 小时电子设备使用",
-                "与家人朋友保持沟通，分享感受",
-                "记录每天一件小确幸，培养积极情绪"
-            };
-        }
+                lines =
+                [
+                    "保证规律作息，固定上床与起床时间",
+                    "每日进行10-20分钟的轻度运动，如散步",
+                    "安排 10 分钟呼吸放松或正念练习",
+                    "减少睡前 1 小时电子设备使用",
+                    "与家人朋友保持沟通，分享感受",
+                    "记录每天一件小确幸，培养积极情绪"
+                ];
+            }
 
-        Items.Clear();
-        foreach (var l in lines)
+            Items.Clear();
+            foreach (var l in lines)
+            {
+                Items.Add(new PlanItem { Title = l });
+            }
+        }
+        finally
         {
-            Items.Add(new PlanItem { Title = l });
+            IsGenerating = false;
+            GenerateByAiCommand.NotifyCanExecuteChanged();
+            CancelGenerateCommand.NotifyCanExecuteChanged();
         }
     }
+
+    private bool CanGenerate() => !IsGenerating;
+
+    [RelayCommand(CanExecute = nameof(CanCancel))]
+    private void CancelGenerate()
+    {
+        if (_cts is { IsCancellationRequested: false })
+        {
+            _cts.Cancel();
+        }
+        IsGenerating = false;
+        GenerateByAiCommand.NotifyCanExecuteChanged();
+        CancelGenerateCommand.NotifyCanExecuteChanged();
+    }
+
+    private bool CanCancel() => IsGenerating;
 }

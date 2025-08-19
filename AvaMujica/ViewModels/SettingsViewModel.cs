@@ -8,37 +8,22 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace AvaMujica.ViewModels;
 
-public partial class SettingsViewModel : ViewModelBase
+public partial class SettingsViewModel(MainViewModel mainViewModel, IConfigService configService, IApiService apiService) : ViewModelBase
 {
     /// <summary>
     /// 主视图模型
     /// </summary>
-    private readonly MainViewModel? _mainViewModel;
+    private readonly MainViewModel? _mainViewModel = mainViewModel;
 
     /// <summary>
     /// 配置服务
     /// </summary>
-    private readonly IConfigService _configService;
+    private readonly IConfigService _configService = configService;
 
     /// <summary>
     /// API服务
     /// </summary>
-    private readonly IApiService _apiService;
-
-    // 设计时构造（仅用于预览）
-    public SettingsViewModel()
-    {
-        _mainViewModel = null;
-        _configService = new ConfigService(new DatabaseService());
-        _apiService = new ApiService(_configService);
-    }
-
-    public SettingsViewModel(MainViewModel mainViewModel, IConfigService configService, IApiService apiService)
-    {
-        _mainViewModel = mainViewModel;
-        _configService = configService;
-        _apiService = apiService;
-    }
+    private readonly IApiService _apiService = apiService;
 
     [ObservableProperty]
     private string _apiKey = string.Empty;
