@@ -14,7 +14,7 @@ public partial class PlanViewModel(IApiService apiService) : ViewModelBase
 {
     private readonly IApiService _apiService = apiService;
 
-    public ObservableCollection<PlanItem> Items { get; } = new();
+    public ObservableCollection<PlanItem> Items { get; } = [];
 
     [ObservableProperty]
     private string newItemTitle = string.Empty;

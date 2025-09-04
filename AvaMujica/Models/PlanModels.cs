@@ -16,5 +16,5 @@ public class Plan
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();
     public string Name { get; set; } = "我的干预方案";
-    public ObservableCollection<PlanItem> Items { get; set; } = new();
+    public ObservableCollection<PlanItem> Items { get; set; } = [];
 }

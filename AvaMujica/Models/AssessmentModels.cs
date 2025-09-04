@@ -12,7 +12,7 @@ public class ScaleQuestion
 {
     public string Id { get; set; } = string.Empty;
     public string Text { get; set; } = string.Empty;
-    public List<ScaleOption> Options { get; set; } = new();
+    public List<ScaleOption> Options { get; set; } = [];
 }
 
 public class Scale
@@ -20,9 +20,8 @@ public class Scale
     public string Id { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public List<ScaleQuestion> Questions { get; set; } = new();
-    // 可选：评分解释（按分数区间）
-    public List<(int Min, int Max, string Level, string Advice)> Interpretations { get; set; } = new();
+    public List<ScaleQuestion> Questions { get; set; } = [];
+    public List<(int Min, int Max, string Level, string Advice)> Interpretations { get; set; } = [];
 }
 
 public class AssessmentResult

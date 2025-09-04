@@ -15,7 +15,7 @@ public partial class ChatViewModel : ViewModelBase
     private readonly IApiService _apiService;
     private readonly IHistoryService _historyService;
     private readonly IConfigService _configService;
-    private CancellationTokenSource? _cts = null;
+    private readonly CancellationTokenSource? _cts = null;
 
     /// <summary>
     /// 输入文本

@@ -12,6 +12,21 @@
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
 
+  <!-- 基础 Release：框架依赖 (使用系统运行时)，不开启裁剪以避免 NETSDK1102 -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>false</SelfContained>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <!-- 仅当显式指定 SelfContained=true 时启用裁剪/高级优化 -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Release' and '$(SelfContained)' == 'true'">
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>link</TrimMode>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <!-- 可按需重新开启 ReadyToRun：<PublishReadyToRun>true</PublishReadyToRun> -->
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Avalonia.Desktop" />
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
