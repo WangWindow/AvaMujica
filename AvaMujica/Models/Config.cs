@@ -37,7 +37,7 @@ public class Config
     /// <summary>
     /// API模型名称
     /// </summary>
-    public string Model { get; set; } = ChatModels.Chat;
+    public string Model { get; set; } = string.Empty;
 
     /// <summary>
     /// 温度参数

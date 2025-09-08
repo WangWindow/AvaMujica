@@ -145,18 +145,12 @@
                             <TextBlock
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Center"
-                                Text="模型选择" />
-                            <ComboBox
-                                Width="160"
+                                Text="模型名称" />
+                            <TextBox
+                                Width="200"
                                 HorizontalAlignment="Right"
-                                ItemsSource="{Binding AvailableModels}"
-                                SelectedItem="{Binding SelectedDisplayModel, Mode=TwoWay}">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding}" />
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
+                                Text="{Binding SelectedModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                Watermark="model-name" />
                         </Grid>
                     </Button>
 
