@@ -1,11 +1,13 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Threading;
-using DeepSeek.Core;
-using DeepSeek.Core.Models;
 
 namespace AvaMujica.Services;
 
@@ -31,80 +33,132 @@ public class ApiService(IConfigService configService) : IApiService
                 // 加载配置（本地 DB 读取，快速）
                 var settings = _configService.LoadFullConfig();
 
-                using var httpClient = new HttpClient
+                // 构建 OpenAI 兼容的 endpoint
+                var baseUrl = (settings.ApiBase ?? string.Empty).TrimEnd('/');
+                string endpoint;
+                if (baseUrl.Contains("/chat/completions", StringComparison.OrdinalIgnoreCase))
                 {
-                    BaseAddress = new Uri(settings.ApiBase),
-                    Timeout = TimeSpan.FromSeconds(300),
-                };
-
-                var client = new DeepSeekClient(httpClient, settings.ApiKey);
-
-                var request = new ChatRequest
-                {
-                    Messages =
-                    [
-                        Message.NewSystemMessage(settings.SystemPrompt),
-                        Message.NewUserMessage(userPrompt),
-                    ],
-                    Model = settings.Model,
-                    Temperature = settings.Temperature,
-                    MaxTokens = settings.MaxTokens,
-                };
-
-                var choices = client.ChatStreamAsync(request, cancellationToken);
-                if (choices == null)
-                {
-                    return;
+                    // 用户已提供完整 path
+                    endpoint = baseUrl;
                 }
+                else
+                {
+                    // 默认 OpenAI v1
+                    if (baseUrl.EndsWith("/v1", StringComparison.OrdinalIgnoreCase))
+                        endpoint = baseUrl + "/chat/completions";
+                    else if (baseUrl.EndsWith("/v1/", StringComparison.OrdinalIgnoreCase))
+                        endpoint = baseUrl + "chat/completions";
+                    else
+                        endpoint = baseUrl + "/v1/chat/completions";
+                }
+
+                using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(300) };
+                using var req = new HttpRequestMessage(HttpMethod.Post, endpoint);
+                req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", settings.ApiKey);
+                req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
+
+                // 组装请求体
+                var json = BuildOpenAIChatRequest(settings.Model, settings.SystemPrompt, userPrompt, settings.Temperature, settings.MaxTokens);
+                req.Content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                // 发送并以流式读取
+                using var response = await httpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+                if (!response.IsSuccessStatusCode)
+                {
+                    var err = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                    throw new HttpRequestException($"OpenAI API error {(int)response.StatusCode}: {err}");
+                }
+
+                await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+                using var reader = new StreamReader(stream, Encoding.UTF8);
 
                 bool isReasoningComplete = false;
                 bool isContentComplete = false;
 
-                await foreach (var choice in choices.WithCancellation(cancellationToken).ConfigureAwait(false))
+                while (!reader.EndOfStream)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-
-                    // 处理推理内容
-                    if (choice.Delta?.ReasoningContent != null)
+                    var line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
+                    if (string.IsNullOrWhiteSpace(line))
                     {
-                        string reasoning = choice.Delta.ReasoningContent;
-                        // 回到 UI 线程更新
-                        await Dispatcher.UIThread.InvokeAsync(async () =>
-                        {
-                            await onReceiveContent(ResponseType.ReasoningContent, reasoning).ConfigureAwait(false);
-                        });
-                        Debug.Write($"{reasoning}");
-
-                        isReasoningComplete = false;
-                    }
-                    else if (!isReasoningComplete && choice.Delta?.Content != null)
-                    {
-                        // 如果开始接收Content但没有明确标记推理完成，说明推理已结束
-                        isReasoningComplete = true;
-                        Debug.WriteLine("\n==== ↑ Reasoning ====");
+                        continue; // SSE 事件间的空行
                     }
 
-                    // 处理正常内容
-                    if (choice.Delta?.Content != null)
-                    {
-                        string content = choice.Delta.Content;
-                        await Dispatcher.UIThread.InvokeAsync(async () =>
-                        {
-                            await onReceiveContent(ResponseType.Content, content).ConfigureAwait(false);
-                        });
-                        Debug.Write($"{content}");
+                    // 忽略注释/keep-alive
+                    if (line.StartsWith(':'))
+                        continue;
 
-                        isContentComplete = false;
-                    }
+                    if (!line.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                        continue;
 
-                    // 检查是否是最后一个响应块
-                    if (choice.FinishReason != null)
+                    var payload = line[5..].Trim(); // after 'data:'
+                    if (payload == "[DONE]")
+                        break;
+
+                    try
                     {
-                        if (!isContentComplete)
+                        using var doc = JsonDocument.Parse(payload);
+                        if (!doc.RootElement.TryGetProperty("choices", out var choicesEl) || choicesEl.ValueKind != JsonValueKind.Array)
+                            continue;
+
+                        foreach (var choiceEl in choicesEl.EnumerateArray())
                         {
-                            Debug.WriteLine("\n==== ↑ Content ====");
-                            isContentComplete = true;
+                            // finish_reason
+                            string? finishReason = null;
+                            if (choiceEl.TryGetProperty("finish_reason", out var frEl) && frEl.ValueKind != JsonValueKind.Null)
+                            {
+                                finishReason = frEl.GetString();
+                            }
+
+                            // delta
+                            if (choiceEl.TryGetProperty("delta", out var deltaEl) && deltaEl.ValueKind == JsonValueKind.Object)
+                            {
+                                // reasoning_content (部分提供商/模型支持)
+                                if (deltaEl.TryGetProperty("reasoning_content", out var rcEl) && rcEl.ValueKind == JsonValueKind.String)
+                                {
+                                    var reasoning = rcEl.GetString() ?? string.Empty;
+                                    await Dispatcher.UIThread.InvokeAsync(async () =>
+                                    {
+                                        await onReceiveContent(ResponseType.ReasoningContent, reasoning).ConfigureAwait(false);
+                                    });
+                                    Debug.Write(reasoning);
+                                    isReasoningComplete = false;
+                                }
+
+                                // content
+                                if (deltaEl.TryGetProperty("content", out var cEl) && cEl.ValueKind == JsonValueKind.String)
+                                {
+                                    var content = cEl.GetString() ?? string.Empty;
+                                    // 如果开始接收content且此前未明确结束推理，则标记推理完成
+                                    if (!isReasoningComplete)
+                                    {
+                                        isReasoningComplete = true;
+                                        Debug.WriteLine("\n==== ↑ Reasoning ====");
+                                    }
+
+                                    await Dispatcher.UIThread.InvokeAsync(async () =>
+                                    {
+                                        await onReceiveContent(ResponseType.Content, content).ConfigureAwait(false);
+                                    });
+                                    Debug.Write(content);
+                                    isContentComplete = false;
+                                }
+                            }
+
+                            // 处理结束
+                            if (!string.IsNullOrEmpty(finishReason))
+                            {
+                                if (!isContentComplete)
+                                {
+                                    Debug.WriteLine("\n==== ↑ Content ====");
+                                    isContentComplete = true;
+                                }
+                            }
                         }
+                    }
+                    catch (JsonException)
+                    {
+                        // 非 JSON 行或提供商扩展格式，忽略该行
                     }
                 }
 
@@ -128,5 +182,40 @@ public class ApiService(IConfigService configService) : IApiService
         {
             onError?.Invoke(ex);
         }
+    }
+
+    private static string BuildOpenAIChatRequest(string model, string systemPrompt, string userPrompt, double temperature, int maxTokens)
+    {
+        using var ms = new MemoryStream();
+        using var writer = new Utf8JsonWriter(ms, new JsonWriterOptions { SkipValidation = true });
+        writer.WriteStartObject();
+        writer.WriteString("model", model);
+        writer.WriteBoolean("stream", true);
+
+        writer.WriteStartArray("messages");
+        // system
+        writer.WriteStartObject();
+        writer.WriteString("role", "system");
+        writer.WriteString("content", systemPrompt ?? string.Empty);
+        writer.WriteEndObject();
+        // user
+        writer.WriteStartObject();
+        writer.WriteString("role", "user");
+        writer.WriteString("content", userPrompt ?? string.Empty);
+        writer.WriteEndObject();
+        writer.WriteEndArray();
+
+        if (temperature > 0)
+        {
+            writer.WriteNumber("temperature", temperature);
+        }
+        if (maxTokens > 0)
+        {
+            writer.WriteNumber("max_tokens", maxTokens);
+        }
+
+        writer.WriteEndObject();
+        writer.Flush();
+        return Encoding.UTF8.GetString(ms.ToArray());
     }
 }

@@ -146,9 +146,13 @@ public class ConfigService(IDatabaseService databaseService) : IConfigService
             // 检查属性是否存在于数据库配置中
             if (configDict.TryGetValue(property.Name, out var dbConfig))
             {
-                var method = typeof(ConfigService).GetMethod(nameof(TryConvertAndSetValue), BindingFlags.NonPublic | BindingFlags.Instance);
+                // 修复：TryConvertAndSetValue 是 static 方法，应使用 Static 标志并以 null 作为实例调用
+                var method = typeof(ConfigService).GetMethod(
+                    nameof(TryConvertAndSetValue),
+                    BindingFlags.NonPublic | BindingFlags.Static
+                );
                 var genericMethod = method?.MakeGenericMethod(property.PropertyType);
-                genericMethod?.Invoke(this, [dbConfig, property, config]);
+                genericMethod?.Invoke(null, [dbConfig, property, config]);
             }
             else
             {

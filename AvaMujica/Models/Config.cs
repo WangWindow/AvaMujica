@@ -16,7 +16,7 @@ public class Config
     /// <summary>
     /// 主题
     /// </summary>
-    public string Theme { get; set; } = "system";
+    public string Theme { get; set; } = "Auto";
 
     /// <summary>
     /// 系统提示词
@@ -32,12 +32,12 @@ public class Config
     /// <summary>
     /// API基础URL
     /// </summary>
-    public string ApiBase { get; set; } = "https://api.deepseek.com";
+    public string ApiBase { get; set; } = "https://api.openai.com";
 
     /// <summary>
     /// API模型名称
     /// </summary>
-    public string Model { get; set; } = ChatModels.Chat;
+    public string Model { get; set; } = string.Empty;
 
     /// <summary>
     /// 温度参数

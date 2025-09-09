@@ -105,7 +105,7 @@ public partial class SettingsViewModel(MainViewModel mainViewModel, IConfigServi
     /// <summary>
     /// 可选主题列表
     /// </summary>
-    public ObservableCollection<string> AvailableThemes { get; } = new() { "Auto", "Light", "Dark" };
+    public ObservableCollection<string> AvailableThemes { get; } = ["Auto", "Light", "Dark"];
 
     /// <summary>
     /// IsShowReasoning属性变化时触发
@@ -133,36 +133,6 @@ public partial class SettingsViewModel(MainViewModel mainViewModel, IConfigServi
         OnPropertyChanged(nameof(MaskedApiKey));
     }
 
-    /// <summary>
-    /// 模型显示名称映射
-    /// </summary>
-    private readonly Dictionary<string, string> _modelDisplayMapping = new()
-    {
-        { ChatModels.Chat, "Chat" },
-        { ChatModels.Reasoner, "Reasoner" }
-    };
-
-    /// <summary>
-    /// 显示名称到实际模型的反向映射
-    /// </summary>
-    private readonly Dictionary<string, string> _displayToModelMapping = new()
-    {
-        { "Chat", ChatModels.Chat },
-        { "Reasoner", ChatModels.Reasoner }
-    };
-
-    /// <summary>
-    /// 可用模型显示列表
-    /// </summary>
-    public ObservableCollection<string> AvailableModels { get; } =
-        new() { "Chat", "Reasoner" };
-
-    /// <summary>
-    /// 显示用的选中模型
-    /// </summary>
-    [ObservableProperty]
-    private string _selectedDisplayModel = string.Empty;
-
     partial void OnThemeChanged(string value)
     {
         if (string.IsNullOrWhiteSpace(value)) return;
@@ -170,11 +140,13 @@ public partial class SettingsViewModel(MainViewModel mainViewModel, IConfigServi
         App.ApplyTheme(value);
     }
 
-    partial void OnSelectedDisplayModelChanged(string value)
+    /// <summary>
+    /// 当用户手动修改 SelectedModel 时，立即持久化
+    /// </summary>
+    partial void OnSelectedModelChanged(string value)
     {
         if (string.IsNullOrWhiteSpace(value)) return;
-        // 使用现有命令以复用保存逻辑
-        SelectModelCommand.Execute(value);
+        _configService.SetConfig("Model", value);
     }
 
     /// <summary>
@@ -187,16 +159,6 @@ public partial class SettingsViewModel(MainViewModel mainViewModel, IConfigServi
         ApiKey = config.ApiKey;
         SelectedModel = config.Model;
         Theme = config.Theme;
-
-        // 设置显示模型
-        if (_modelDisplayMapping.TryGetValue(config.Model, out var displayName))
-        {
-            SelectedDisplayModel = displayName;
-        }
-        else
-        {
-            SelectedDisplayModel = "Chat"; // 默认值
-        }
 
         SystemPrompt = config.SystemPrompt;
         ApiBase = config.ApiBase;
@@ -274,7 +236,7 @@ public partial class SettingsViewModel(MainViewModel mainViewModel, IConfigServi
 
         // 保存API基础URL
         var newApiBase = string.IsNullOrEmpty(TempApiBase)
-            ? "https://api.deepseek.com"
+            ? "https://api.openai.com"
             : TempApiBase;
         _configService.SetConfig("ApiBase", newApiBase);
         ApiBase = newApiBase;
@@ -369,20 +331,7 @@ public partial class SettingsViewModel(MainViewModel mainViewModel, IConfigServi
         }
     }
 
-    /// <summary>
-    /// 选择模型改变时触发（接收显示名称）
-    /// </summary>
-    [RelayCommand]
-    private void SelectModel(string displayModel)
-    {
-        if (_displayToModelMapping.TryGetValue(displayModel, out var actualModel))
-        {
-            SelectedModel = actualModel;
-            SelectedDisplayModel = displayModel;
-            // 保存到数据库
-            _configService.SetConfig("Model", actualModel);
-        }
-    }
+    // 说明：模型选择已改为用户手动输入 SelectedModel，并在 OnSelectedModelChanged 中持久化
 
     /// <summary>
     /// 切换显示思考过程
