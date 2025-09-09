@@ -236,7 +236,7 @@ public partial class SettingsViewModel(MainViewModel mainViewModel, IConfigServi
 
         // 保存API基础URL
         var newApiBase = string.IsNullOrEmpty(TempApiBase)
-            ? "https://api.deepseek.com"
+            ? "https://api.openai.com"
             : TempApiBase;
         _configService.SetConfig("ApiBase", newApiBase);
         ApiBase = newApiBase;
