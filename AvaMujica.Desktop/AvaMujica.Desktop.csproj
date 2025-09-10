@@ -1,9 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <OutputType>WinExe</OutputType>
-    <!--If you are willing to use Windows/MacOS native APIs you will need to create 3 projects.
-    One for Windows with net9.0-windows TFM, one for MacOS with net9.0-macos and one with net9.0 TFM for Linux.-->
-    <TargetFramework>net9.0</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
   </PropertyGroup>
@@ -11,20 +9,10 @@
   <PropertyGroup>
     <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
-
-  <!-- 基础 Release：框架依赖 (使用系统运行时)，不开启裁剪以避免 NETSDK1102 -->
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <PublishSingleFile>true</PublishSingleFile>
-    <SelfContained>false</SelfContained>
     <DebugType>none</DebugType>
-  </PropertyGroup>
-
-  <!-- 仅当显式指定 SelfContained=true 时启用裁剪/高级优化 -->
-  <PropertyGroup Condition="'$(Configuration)' == 'Release' and '$(SelfContained)' == 'true'">
-    <PublishTrimmed>true</PublishTrimmed>
-    <TrimMode>link</TrimMode>
-    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-    <!-- 可按需重新开启 ReadyToRun：<PublishReadyToRun>true</PublishReadyToRun> -->
+    <DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
 
   <ItemGroup>

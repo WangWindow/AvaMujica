@@ -75,10 +75,10 @@ public class ApiService(IConfigService configService) : IApiService
                 bool isReasoningComplete = false;
                 bool isContentComplete = false;
 
-                while (!reader.EndOfStream)
+                string? line;
+                while ((line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false)) != null)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    var line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false);
                     if (string.IsNullOrWhiteSpace(line))
                     {
                         continue; // SSE 事件间的空行
