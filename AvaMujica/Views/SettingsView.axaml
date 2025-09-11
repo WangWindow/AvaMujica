@@ -348,7 +348,7 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Foreground="{DynamicResource SystemBaseMediumColor}"
-                                Text="v1.0.0" />
+                                Text="v0.4.0" />
                         </Grid>
                     </Button>
 

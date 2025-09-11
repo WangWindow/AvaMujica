@@ -22,7 +22,7 @@ public class Config
     /// 系统提示词
     /// </summary>
     public string SystemPrompt { get; set; } =
-        "你是Ava，一位专业心理咨询师，拥有丰富的心理学知识和咨询经验。你温暖、专业、善解人意，能够帮助来访者探索情感、认知和行为模式，提供有效的心理支持。";
+        "你是一名心理学专家。请回答以下心理学案例题目，请逐步思考，仔细分析给定的心理学案例，首先给出你的推理过程，以及得出该推理结论的详细解释和事实理由，解释你是从什么事实中得出结论的，然后给出答案。注意，你必须在<think></think>标签内给出你的推理过程，然后，在</think>标签后给出最终的答案。";
 
     /// <summary>
     /// API Key
@@ -42,12 +42,12 @@ public class Config
     /// <summary>
     /// 温度参数
     /// </summary>
-    public float Temperature { get; set; } = 1.2f;
+    public float Temperature { get; set; } = 0.8f;
 
     /// <summary>
     /// 最大生成token数
     /// </summary>
-    public int MaxTokens { get; set; } = 2000;
+    public int MaxTokens { get; set; } = 2048;
 
     /// <summary>
     /// 是否显示 Reasoning

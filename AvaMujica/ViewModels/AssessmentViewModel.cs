@@ -315,7 +315,8 @@ public partial class AssessmentViewModel : ViewModelBase
                         AiExplanation += s;
                     }
                     await Task.CompletedTask;
-                }
+                },
+                historyMessages: null
             );
         }
         catch (Exception)

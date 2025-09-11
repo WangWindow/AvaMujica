@@ -73,7 +73,8 @@ public partial class PlanViewModel(IApiService apiService) : ViewModelBase
                     }
                     await Task.CompletedTask;
                 },
-                _cts.Token
+                historyMessages: null,
+                cancellationToken: _cts.Token
             );
 
             // 简单解析为多行待办
