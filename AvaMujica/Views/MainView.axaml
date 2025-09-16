@@ -1,10 +1,7 @@
 <UserControl
-    d:DesignHeight="900"
-    d:DesignWidth="400"
-    mc:Ignorable="d"
     x:Class="AvaMujica.Views.MainView"
-    x:DataType="vm:MainViewModel"
     xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:AvaMujica"
     xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
@@ -12,193 +9,109 @@
     xmlns:models="using:AvaMujica.Models"
     xmlns:views="using:AvaMujica.Views"
     xmlns:vm="using:AvaMujica.ViewModels"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    d:DesignHeight="900"
+    d:DesignWidth="400"
+    x:DataType="vm:MainViewModel"
+    mc:Ignorable="d">
     <Design.DataContext>
         <vm:MainViewModel />
     </Design.DataContext>
 
-    <UserControl.Styles>
-        <!--  导航标签样式  -->
-        <Style Selector="RadioButton.NavTab">
-            <!--  基本样式  -->
-            <Setter Property="Template">
-                <ControlTemplate>
-                    <Border
-                        Background="Transparent"
-                        BorderBrush="Transparent"
-                        BorderThickness="0,0,0,2"
-                        Padding="{TemplateBinding Padding}">
-                        <ContentPresenter
-                            Content="{TemplateBinding Content}"
-                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center" />
-                    </Border>
-                </ControlTemplate>
-            </Setter>
-            <Setter Property="Foreground" Value="{DynamicResource SystemBaseHighColor}" />
-            <Setter Property="Cursor" Value="Hand" />
-
-            <!--  鼠标悬停效果  -->
-            <Style Selector="^:pointerover /template/ Border">
-                <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorLight2}" />
-            </Style>
-
-            <!--  选中效果  -->
-            <Style Selector="^:checked /template/ Border">
-                <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
-            </Style>
-
-            <Style Selector="^:checked">
-                <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}" />
-            </Style>
-        </Style>
-    </UserControl.Styles>
-
     <Grid>
-        <!--  TODO: 设置视图  -->
+        <!--  设置视图  -->
         <Grid IsVisible="{Binding IsSettingsViewVisible}">
             <views:SettingsView DataContext="{Binding SettingsViewModel}" />
         </Grid>
 
-        <!--  TODO: 主视图  -->
+        <!--  主视图  -->
         <Grid IsVisible="{Binding !IsSettingsViewVisible}">
             <SplitView
+                Name="Sider"
                 BorderBrush="White"
                 BorderThickness="1.5"
                 CompactPaneLength="0"
                 DisplayMode="Overlay"
                 IsPaneOpen="{Binding IsSiderOpen}"
-                Name="Sider"
                 OpenPaneLength="270">
-                <!--  TODO: 侧边栏  -->
+                <!--  侧边栏  -->
                 <SplitView.Pane>
-                    <Panel>
-                        <ExperimentalAcrylicBorder IsHitTestVisible="False">
-                            <ExperimentalAcrylicBorder.Material>
-                                <ExperimentalAcrylicMaterial
-                                    BackgroundSource="Digger"
-                                    MaterialOpacity="0.6"
-                                    TintColor="{DynamicResource SystemAltHighColor}"
-                                    TintOpacity="0.8" />
-                            </ExperimentalAcrylicBorder.Material>
-                        </ExperimentalAcrylicBorder>
-                        <views:SiderView DataContext="{Binding SiderViewModel}" />
-                    </Panel>
+                    <views:SiderView DataContext="{Binding SiderViewModel}" />
                 </SplitView.Pane>
 
-                <!--  TODO: 主交互  -->
+                <!--  顶栏 + 内容区域  -->
                 <Grid RowDefinitions="Auto,*">
+                    <!--  顶栏  -->
+                    <Border
+                        Grid.Row="0"
+                        Padding="5"
+                        Background="{DynamicResource SystemChromeLowColor}"
+                        BorderBrush="{DynamicResource SystemBaseLowColor}"
+                        BorderThickness="0,0,0,1">
+                        <Grid VerticalAlignment="Center" ColumnDefinitions="Auto,*,Auto">
+                            <!--  左：侧边栏按钮  -->
+                            <Button
+                                Grid.Column="0"
+                                Width="40"
+                                Height="40"
+                                Background="Transparent"
+                                Command="{Binding ToggleSiderCommand}">
+                                <materialIcons:MaterialIcon Kind="FormatAlignLeft" />
+                            </Button>
 
-                    <!--  TODO: 顶部区域 - 包含菜单按钮、模块导航和新建对话按钮  -->
-                    <Grid Grid.Row="0">
-                        <Border
-                            Background="{DynamicResource SystemChromeLowColor}"
-                            BorderBrush="{DynamicResource SystemBaseLowColor}"
-                            BorderThickness="0,0,0,1"
-                            Padding="5">
-                            <Panel Background="Transparent">
-                                <Panel Background="Transparent">
-                                    <!--  顶部.左侧 菜单按钮  -->
-                                    <Button
-                                        Background="Transparent"
-                                        Command="{Binding ToggleSiderCommand}"
-                                        Height="40"
-                                        HorizontalAlignment="Left"
-                                        VerticalAlignment="Center"
-                                        Width="40">
-                                        <materialIcons:MaterialIcon Kind="FormatAlignLeft" />
-                                    </Button>
-
-                                    <!--  顶部.右侧 新建对话按钮  -->
-                                    <Button
-                                        Background="Transparent"
-                                        Command="{Binding CreateNewChatCommand}"
-                                        Height="40"
-                                        HorizontalAlignment="Right"
-                                        IsVisible="{Binding IsConsultationSelected}"
-                                        VerticalAlignment="Center"
-                                        Width="40">
-                                        <materialIcons:MaterialIcon Kind="PlusBoxOutline" />
-                                    </Button>
-                                </Panel>
-
-                                <!--  顶部.中间 导航选项卡  -->
-                                <Grid HorizontalAlignment="Center">
-                                    <StackPanel Orientation="Horizontal" Spacing="10">
-                                        <!--  心理咨询按钮  -->
-                                        <RadioButton
-                                            Classes="NavTab"
-                                            Command="{Binding SwitchToConsultationModuleCommand}"
-                                            GroupName="ModuleNav"
-                                            IsChecked="{Binding IsConsultationSelected}"
-                                            Padding="8,2"
-                                            VerticalAlignment="Center">
-                                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                                <materialIcons:MaterialIcon
-                                                    Height="16"
-                                                    Kind="ChatOutline"
-                                                    Width="16" />
-                                                <TextBlock FontSize="12" Text="{x:Static models:SessionType.Chat}" />
-                                            </StackPanel>
-                                        </RadioButton>
-
-                                        <!--  心理评估按钮  -->
-                                        <RadioButton
-                                            Classes="NavTab"
-                                            Command="{Binding SwitchToAssessmentModuleCommand}"
-                                            GroupName="ModuleNav"
-                                            IsChecked="{Binding IsAssessmentSelected}"
-                                            Padding="8,2"
-                                            VerticalAlignment="Center">
-                                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                                <materialIcons:MaterialIcon
-                                                    Height="16"
-                                                    Kind="ClipboardTextOutline"
-                                                    Width="16" />
-                                                <TextBlock FontSize="12" Text="{x:Static models:SessionType.Assessment}" />
-                                            </StackPanel>
-                                        </RadioButton>
-
-                                        <!--  干预方案按钮  -->
-                                        <RadioButton
-                                            Classes="NavTab"
-                                            Command="{Binding SwitchToInterventionModuleCommand}"
-                                            GroupName="ModuleNav"
-                                            IsChecked="{Binding IsInterventionSelected}"
-                                            Padding="8,2"
-                                            VerticalAlignment="Center">
-                                            <StackPanel Orientation="Horizontal" Spacing="4">
-                                                <materialIcons:MaterialIcon
-                                                    Height="16"
-                                                    Kind="BookOutline"
-                                                    Width="16" />
-                                                <TextBlock FontSize="12" Text="{x:Static models:SessionType.Plan}" />
-                                            </StackPanel>
-                                        </RadioButton>
+                            <!--  中：标签切换（按钮样式模拟 TabStrip）  -->
+                            <StackPanel
+                                Grid.Column="1"
+                                HorizontalAlignment="Center"
+                                Orientation="Horizontal"
+                                Spacing="16">
+                                <Button Background="Transparent" Command="{Binding SelectChatTabCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <materialIcons:MaterialIcon Kind="AccountTieOutline" />
+                                        <TextBlock
+                                            FontSize="15"
+                                            FontWeight="SemiBold"
+                                            Text="{x:Static models:SessionType.Chat}" />
                                     </StackPanel>
-                                </Grid>
-                            </Panel>
-                        </Border>
-                    </Grid>
+                                </Button>
+                                <Button Background="Transparent" Command="{Binding SelectAssessmentTabCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <materialIcons:MaterialIcon Kind="ClipboardTextOutline" />
+                                        <TextBlock
+                                            FontSize="15"
+                                            FontWeight="SemiBold"
+                                            Text="{x:Static models:SessionType.Assessment}" />
+                                    </StackPanel>
+                                </Button>
+                                <Button Background="Transparent" Command="{Binding SelectPlanTabCommand}">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <materialIcons:MaterialIcon Kind="LightbulbOnOutline" />
+                                        <TextBlock
+                                            FontSize="15"
+                                            FontWeight="SemiBold"
+                                            Text="{x:Static models:SessionType.Plan}" />
+                                    </StackPanel>
+                                </Button>
+                            </StackPanel>
 
-                    <!--  TODO: 主内容区域 - 包含功能模块  -->
-                    <Grid Grid.Row="1">
-                        <!--  心理咨询模块  -->
-                        <Grid IsVisible="{Binding IsConsultationSelected}">
-                            <views:ChatView DataContext="{Binding CurrentChat}" />
+                            <!--  右：新建会话  -->
+                            <Button
+                                Grid.Column="2"
+                                Width="40"
+                                Height="40"
+                                HorizontalAlignment="Right"
+                                Background="Transparent"
+                                Command="{Binding CreateNewChatCommand}">
+                                <materialIcons:MaterialIcon Kind="PlusBoxOutline" />
+                            </Button>
                         </Grid>
+                    </Border>
 
-                        <!--  心理评估模块  -->
-                        <Grid IsVisible="{Binding IsAssessmentSelected}">
-                            <views:AssessmentView DataContext="{Binding AssessmentViewModel}" />
-                        </Grid>
-
-                        <!--  干预方案模块  -->
-                        <Grid IsVisible="{Binding IsInterventionSelected}">
-                            <views:PlanView DataContext="{Binding PlanViewModel}" />
-                        </Grid>
-                    </Grid>
+                    <!--  内容：Carousel 支持左右滑动  -->
+                    <Carousel Grid.Row="1" SelectedIndex="{Binding SelectedTabIndex}">
+                        <views:ChatView DataContext="{Binding CurrentChat}" />
+                        <views:AssessmentView DataContext="{Binding AssessmentViewModel}" />
+                        <views:PlanView DataContext="{Binding PlanViewModel}" />
+                    </Carousel>
                 </Grid>
             </SplitView>
         </Grid>

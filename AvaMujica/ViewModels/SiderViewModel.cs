@@ -25,11 +25,7 @@ public partial class SiderViewModel : ViewModelBase
     public ObservableCollection<ChatSessionGroup> ChatSessionGroups =>
         _mainViewModel.ChatSessionGroups;
 
-    /// <summary>
-    /// 当前选中的会话类型
-    /// </summary>
-    [ObservableProperty]
-    private string selectedSessionType = SessionType.Chat;
+    // 会话类型筛选移除，侧边栏仅展示聊天会话历史
 
     /// <summary>
     /// 错误信息
@@ -62,48 +58,7 @@ public partial class SiderViewModel : ViewModelBase
         };
 
         // 初始加载会话
-    _ = RefreshHistoryAsync();
-    }
-
-    /// <summary>
-    /// 当会话类型选择改变时触发
-    /// </summary>
-    partial void OnSelectedSessionTypeChanged(string value)
-    {
-        _ = FilterHistoryByTypeAsync(value);
-    }
-
-    /// <summary>
-    /// 根据类型筛选历史记录
-    /// </summary>
-    private async Task FilterHistoryByTypeAsync(string sessionType)
-    {
-        List<ChatSessionGroup> historyGroups = sessionType switch
-        {
-            SessionType.Chat =>
-                await _historyService.GetChatSessionHistorysByTypeAsync(
-                    SessionType.Chat
-                ),
-            SessionType.Assessment =>
-                await _historyService.GetChatSessionHistorysByTypeAsync(
-                    SessionType.Assessment
-                ),
-            SessionType.Plan =>
-                await _historyService.GetChatSessionHistorysByTypeAsync(
-                    SessionType.Plan
-                ),
-            _ => await _historyService.GetChatSessionHistorysByTypeAsync(
-                SessionType.Chat
-            ),
-        };
-
-        _mainViewModel.ChatSessionGroups.Clear();
-        foreach (var group in historyGroups)
-        {
-            _mainViewModel.ChatSessionGroups.Add(group);
-        }
-
-        HasChats = _mainViewModel.ChatSessionGroups.Any(g => g.Items.Count > 0);
+        _ = RefreshHistoryAsync();
     }
 
     /// <summary>
@@ -112,7 +67,13 @@ public partial class SiderViewModel : ViewModelBase
     [RelayCommand]
     private async Task RefreshHistoryAsync()
     {
-        await FilterHistoryByTypeAsync(SelectedSessionType);
+        var historyGroups = await _historyService.GetChatSessionHistorysByTypeAsync(SessionType.Chat);
+        _mainViewModel.ChatSessionGroups.Clear();
+        foreach (var group in historyGroups)
+        {
+            _mainViewModel.ChatSessionGroups.Add(group);
+        }
+        HasChats = _mainViewModel.ChatSessionGroups.Any(g => g.Items.Count > 0);
     }
 
     /// <summary>
@@ -139,7 +100,31 @@ public partial class SiderViewModel : ViewModelBase
     [RelayCommand]
     private void SelectChatSession(ChatSession chatSession)
     {
+        // 切换到“心理咨询”标签页以显示对话
+        _mainViewModel.SelectedTabIndex = 0;
         _mainViewModel.SwitchToChat(chatSession.Id);
         _mainViewModel.IsSiderOpen = false;
+    }
+
+    /// <summary>
+    /// 删除会话命令
+    /// </summary>
+    [RelayCommand]
+    private async Task DeleteChatSessionAsync(ChatSession chatSession)
+    {
+        await _historyService.DeleteSessionAsync(chatSession.Id);
+
+        // 如果删除的是当前会话，切换到剩余第一个
+        if (_mainViewModel.CurrentChat?.ChatId == chatSession.Id)
+        {
+            var remaining = await _historyService.GetChatSessionByTypeAsync(SessionType.Chat);
+            if (remaining.Count > 0)
+            {
+                _mainViewModel.SwitchToChat(remaining[0].Id);
+            }
+        }
+
+        // 刷新列表
+        await RefreshHistoryAsync();
     }
 }

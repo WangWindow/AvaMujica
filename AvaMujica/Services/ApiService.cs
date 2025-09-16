@@ -172,7 +172,7 @@ public class ApiService(IConfigService configService) : IApiService
                                         if (remain < 8 && raw[i] == '<')
                                         {
                                             // 可能是被截断标签开头
-                                            carry = raw.Substring(i);
+                                            carry = raw[i..];
                                             break;
                                         }
 

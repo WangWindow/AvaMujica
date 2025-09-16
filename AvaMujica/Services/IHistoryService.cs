@@ -17,6 +17,7 @@ public interface IHistoryService
     Task UpdateMessageAsync(ChatMessage message);
     Task<List<ChatSession>> GetChatSessionByTypeAsync(string type);
     Task<List<ChatSessionGroup>> GetChatSessionHistorysByTypeAsync(string type);
+    Task DeleteSessionAsync(string sessionId);
     /// <summary>
     /// 发送一条用户消息并流式接收助手回复（含推理），返回本轮的用户与助手消息对象。
     /// history 由服务内部构造（排除本轮 user 与空 assistant）。

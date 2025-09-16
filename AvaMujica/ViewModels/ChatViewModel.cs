@@ -38,7 +38,11 @@ public partial class ChatViewModel : ViewModelBase
     private async Task UpdateChatTitleAsync(string sessionId, string newTitle)
     {
         var session = await _historyService.GetSessionAsync(sessionId);
-        if (session != null)
+        if (session == null)
+            return;
+
+        // 仅当标题实际发生变化时，才更新数据库并刷新会话时间
+        if (!string.Equals(session.Title, newTitle, StringComparison.Ordinal))
         {
             session.Title = newTitle;
             await _historyService.UpdateSessionTitleAsync(sessionId, newTitle);

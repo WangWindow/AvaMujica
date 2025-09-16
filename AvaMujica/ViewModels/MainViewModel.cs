@@ -50,12 +50,18 @@ public partial class MainViewModel : ViewModelBase
     private bool isSettingsViewVisible = false;
 
     /// <summary>
-    /// 当前选中的模块
+    /// 当前选中的模块(路由键)，与选中标签页同步
     /// </summary>
     [ObservableProperty]
     private string currentModule = SessionType.Chat;
 
-    // 新增：心理评估与干预方案的 VM
+    /// <summary>
+    /// 选中的标签页索引：0-咨询，1-评估，2-方案
+    /// </summary>
+    [ObservableProperty]
+    private int selectedTabIndex = 0;
+
+    // 模块 ViewModels
     [ObservableProperty]
     private AssessmentViewModel? assessmentViewModel;
 
@@ -63,17 +69,83 @@ public partial class MainViewModel : ViewModelBase
     private PlanViewModel? planViewModel;
 
     /// <summary>
-    /// 便捷布尔属性，供 XAML 直接绑定
+    /// 便捷布尔属性：当前是否是“心理咨询”标签
     /// </summary>
-    public bool IsConsultationSelected => CurrentModule == SessionType.Chat;
-    public bool IsAssessmentSelected => CurrentModule == SessionType.Assessment;
-    public bool IsInterventionSelected => CurrentModule == SessionType.Plan;
+    public bool IsChatTabSelected => SelectedTabIndex == 0;
+
+    /// <summary>
+    /// 非聊天模块的选中会话标识（占位以支持数据结构扩展）
+    /// </summary>
+    [ObservableProperty]
+    private string? selectedAssessmentSessionId;
+
+    [ObservableProperty]
+    private string? selectedPlanSessionId;
 
     partial void OnCurrentModuleChanged(string value)
     {
-        OnPropertyChanged(nameof(IsConsultationSelected));
-        OnPropertyChanged(nameof(IsAssessmentSelected));
-        OnPropertyChanged(nameof(IsInterventionSelected));
+        // 根据模块路由键同步选中索引
+        SelectedTabIndex = value switch
+        {
+            var v when v == SessionType.Chat => 0,
+            var v when v == SessionType.Assessment => 1,
+            var v when v == SessionType.Plan => 2,
+            _ => 0
+        };
+    }
+
+    partial void OnSelectedTabIndexChanged(int value)
+    {
+        // 根据索引同步模块路由键
+        CurrentModule = value switch
+        {
+            0 => SessionType.Chat,
+            1 => SessionType.Assessment,
+            2 => SessionType.Plan,
+            _ => SessionType.Chat
+        };
+        OnPropertyChanged(nameof(IsChatTabSelected));
+    }
+
+    // 供顶部栏 Tab 按钮调用
+    [RelayCommand]
+    private void SelectChatTab() => SelectedTabIndex = 0;
+
+    [RelayCommand]
+    private void SelectAssessmentTab() => SelectedTabIndex = 1;
+
+    [RelayCommand]
+    private void SelectPlanTab() => SelectedTabIndex = 2;
+
+    [RelayCommand]
+    private void PreviousTab()
+    {
+        if (SelectedTabIndex > 0) SelectedTabIndex--;
+    }
+
+    [RelayCommand]
+    private void NextTab()
+    {
+        if (SelectedTabIndex < 2) SelectedTabIndex++;
+    }
+
+    [RelayCommand]
+    private void Back()
+    {
+        if (IsSettingsViewVisible)
+        {
+            IsSettingsViewVisible = false;
+            return;
+        }
+        if (IsSiderOpen)
+        {
+            IsSiderOpen = false;
+            return;
+        }
+        if (SelectedTabIndex > 0)
+        {
+            SelectedTabIndex--;
+        }
     }
 
     /// <summary>
@@ -174,32 +246,7 @@ public partial class MainViewModel : ViewModelBase
         }
     }
 
-    /// <summary>
-    /// 切换到心理咨询模块
-    /// </summary>
-    [RelayCommand]
-    public void SwitchToConsultationModule()
-    {
-        CurrentModule = SessionType.Chat;
-    }
-
-    /// <summary>
-    /// 切换到心理评估模块
-    /// </summary>
-    [RelayCommand]
-    public void SwitchToAssessmentModule()
-    {
-        CurrentModule = SessionType.Assessment;
-    }
-
-    /// <summary>
-    /// 切换到干预方案模块
-    /// </summary>
-    [RelayCommand]
-    public void SwitchToInterventionModule()
-    {
-        CurrentModule = SessionType.Plan;
-    }
+    // 通过 TabControl 控制模块切换，故移除显式切换命令
 
     /// <summary>
     /// 切换侧边栏
@@ -216,9 +263,8 @@ public partial class MainViewModel : ViewModelBase
     [RelayCommand]
     public async Task CreateNewChatAsync()
     {
-        // 确定会话类型
-        // 根据当前选中的模块确定会话类型
-        string sessionType = CurrentModule;
+        // 仅创建聊天类型会话
+        string sessionType = SessionType.Chat;
 
         // 创建会话
         var session = await _historyService.CreateSessionAsync(
@@ -226,12 +272,22 @@ public partial class MainViewModel : ViewModelBase
             sessionType
         );
 
-        // 创建视图模型
-        var newChat = new ChatViewModel() { ChatId = session.Id, ChatTitle = session.Title };
-
-        Chats.Add(newChat);
-        _chatViewModelMap[session.Id] = newChat;
-        CurrentChat = newChat;
+        if (sessionType == SessionType.Chat)
+        {
+            // 创建视图模型
+            var newChat = new ChatViewModel() { ChatId = session.Id, ChatTitle = session.Title };
+            Chats.Add(newChat);
+            _chatViewModelMap[session.Id] = newChat;
+            CurrentChat = newChat;
+        }
+        else if (sessionType == SessionType.Assessment)
+        {
+            SelectedAssessmentSessionId = session.Id;
+        }
+        else if (sessionType == SessionType.Plan)
+        {
+            SelectedPlanSessionId = session.Id;
+        }
 
         // 刷新历史记录
         await LoadHistoryGroupsAsync();
@@ -239,6 +295,9 @@ public partial class MainViewModel : ViewModelBase
         // 关闭侧边栏
         IsSiderOpen = false;
     }
+
+    // 顶栏标签切换命令
+
 
     /// <summary>
     /// 显示设置视图

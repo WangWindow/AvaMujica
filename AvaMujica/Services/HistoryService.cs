@@ -30,8 +30,9 @@ public class HistoryService(IDatabaseService databaseService, IApiService apiSer
                     Id = reader.GetString(0),
                     Title = reader.GetString(1),
                     Type = reader.GetString(2),
-                    CreatedTime = reader.GetDateTime(3),
-                    UpdatedTime = reader.GetDateTime(4),
+                    // 字段以 TEXT 形式按 ISO8601 存储，统一使用 DateTime.Parse 解析
+                    CreatedTime = DateTime.Parse(reader.GetString(3)),
+                    UpdatedTime = DateTime.Parse(reader.GetString(4)),
                 }
             );
 
@@ -41,6 +42,24 @@ public class HistoryService(IDatabaseService databaseService, IApiService apiSer
             }
 
             return sessions;
+        });
+    }
+
+    /// <summary>
+    /// 删除会话及其消息
+    /// </summary>
+    public async Task DeleteSessionAsync(string sessionId)
+    {
+        await Task.Run(() =>
+        {
+            _databaseService.ExecuteNonQuery(
+                "DELETE FROM ChatMessages WHERE SessionId = $sessionId",
+                new Dictionary<string, object> { { "$sessionId", sessionId } }
+            );
+            _databaseService.ExecuteNonQuery(
+                "DELETE FROM ChatSessions WHERE Id = $sessionId",
+                new Dictionary<string, object> { { "$sessionId", sessionId } }
+            );
         });
     }
 
@@ -58,8 +77,8 @@ public class HistoryService(IDatabaseService databaseService, IApiService apiSer
                     Id = reader.GetString(0),
                     Title = reader.GetString(1),
                     Type = reader.GetString(2),
-                    CreatedTime = reader.GetDateTime(3),
-                    UpdatedTime = reader.GetDateTime(4),
+                    CreatedTime = DateTime.Parse(reader.GetString(3)),
+                    UpdatedTime = DateTime.Parse(reader.GetString(4)),
                 },
                 new Dictionary<string, object> { { "$sessionId", sessionId } }
             );
@@ -97,8 +116,8 @@ public class HistoryService(IDatabaseService databaseService, IApiService apiSer
                     Id = reader.GetString(0),
                     Title = reader.GetString(1),
                     Type = reader.GetString(2),
-                    CreatedTime = reader.GetDateTime(3),
-                    UpdatedTime = reader.GetDateTime(4),
+                    CreatedTime = DateTime.Parse(reader.GetString(3)),
+                    UpdatedTime = DateTime.Parse(reader.GetString(4)),
                 },
                 new Dictionary<string, object> { { "$type", type } }
             );
@@ -125,8 +144,8 @@ public class HistoryService(IDatabaseService databaseService, IApiService apiSer
                     { "$id", session.Id },
                     { "$title", session.Title },
                     { "$type", session.Type },
-                    { "$createdTime", session.CreatedTime },
-                    { "$updatedTime", session.UpdatedTime },
+                    { "$createdTime", session.CreatedTime.ToString("o") },
+                    { "$updatedTime", session.UpdatedTime.ToString("o") },
                 }
             );
 
@@ -351,7 +370,7 @@ public class HistoryService(IDatabaseService databaseService, IApiService apiSer
             {
                 int innerStart = start + 7;
                 var reasoning = content.Substring(innerStart, end - innerStart);
-                var after = content.Substring(end + 8);
+                var after = content[(end + 8)..];
                 assistantMessage.ReasoningContent = reasoning;
                 assistantMessage.Content = after;
                 await UpdateMessageAsync(assistantMessage);
@@ -376,10 +395,10 @@ public class HistoryService(IDatabaseService databaseService, IApiService apiSer
     {
         var result = new List<ChatSessionGroup>();
 
-        // 按日期分组
+        // 按“最后更新时间”分组与排序，这样分组标题与显示的 UpdatedDateDisplay 一致
         var groupedHistory = historyItems
-            .OrderByDescending(h => h.CreatedTime)
-            .GroupBy(h => h.CreatedTime.Date)
+            .OrderByDescending(h => h.UpdatedTime)
+            .GroupBy(h => h.UpdatedTime.Date)
             .Select(g => new { Date = g.Key, Items = g.ToList() });
 
         // 转换为ChatSessionGroup对象
@@ -407,7 +426,9 @@ public class HistoryService(IDatabaseService databaseService, IApiService apiSer
                 groupKey = group.Date.ToString("yyyy年M月");
             }
 
-            result.Add(new ChatSessionGroup(groupKey, group.Items));
+            // 组内也按 UpdatedTime 倒序排列
+            var sortedItems = group.Items.OrderByDescending(i => i.UpdatedTime).ToList();
+            result.Add(new ChatSessionGroup(groupKey, sortedItems));
         }
 
         return result;
