@@ -369,7 +369,7 @@ public class HistoryService(IDatabaseService databaseService, IApiService apiSer
             if (start >= 0 && end > start)
             {
                 int innerStart = start + 7;
-                var reasoning = content.Substring(innerStart, end - innerStart);
+                var reasoning = content[innerStart..end];
                 var after = content[(end + 8)..];
                 assistantMessage.ReasoningContent = reasoning;
                 assistantMessage.Content = after;

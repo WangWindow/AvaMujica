@@ -8,8 +8,11 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <PublishAot>true</PublishAot>
+    <PublishSingleFile>true</PublishSingleFile>
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
+    <TrimmerSingleWarn>false</TrimmerSingleWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,7 +22,6 @@
   <ItemGroup>
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
-    <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Include="Material.Icons.Avalonia" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->

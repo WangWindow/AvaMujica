@@ -1,1 +1,1 @@
-dotnet publish ./AvaMujica.Desktop/AvaMujica.Desktop.csproj -c Release -r win-x64 -o ./AvaMujica.Desktop/bin/Publish
+dotnet publish ./AvaMujica.Desktop/AvaMujica.Desktop.csproj -c Release -r win-x64 -o ./bin/desktop-win

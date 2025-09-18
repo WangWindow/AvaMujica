@@ -4,15 +4,12 @@
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <!-- Debug 配置：仅启用 WasmBuildNative，构建更快 -->
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <WasmBuildNative>true</WasmBuildNative>
   </PropertyGroup>
 
-  <!-- Release 配置：启用 WasmBuildNative 和 RunAOTCompilation，获得更好性能 -->
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+      <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
     <WasmBuildNative>true</WasmBuildNative>
     <RunAOTCompilation>true</RunAOTCompilation>
   </PropertyGroup>
