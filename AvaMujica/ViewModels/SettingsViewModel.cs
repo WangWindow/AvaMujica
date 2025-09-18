@@ -5,6 +5,7 @@ using AvaMujica.Models;
 using AvaMujica.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Reflection;
 
 namespace AvaMujica.ViewModels;
 
@@ -92,6 +93,12 @@ public partial class SettingsViewModel(MainViewModel mainViewModel, IConfigServi
     private bool _isShowReasoning = true;
 
     /// <summary>
+    /// 应用版本（显示在关于-版本信息）
+    /// </summary>
+    [ObservableProperty]
+    private string _version = string.Empty;
+
+    /// <summary>
     /// 掩码后的 API Key（显示用）
     /// </summary>
     public string MaskedApiKey => MaskApiKey(ApiKey);
@@ -165,6 +172,8 @@ public partial class SettingsViewModel(MainViewModel mainViewModel, IConfigServi
         Temperature = config.Temperature;
         MaxTokens = config.MaxTokens;
         IsShowReasoning = config.IsShowReasoning;
+        // 版本信息来自程序集的 InformationalVersion / FileVersion
+        Version = GetAppVersion();
         OnPropertyChanged(nameof(MaskedApiKey));
     }
 
@@ -340,5 +349,20 @@ public partial class SettingsViewModel(MainViewModel mainViewModel, IConfigServi
     private void ToggleShowReasoning()
     {
         IsShowReasoning = !IsShowReasoning;
+    }
+
+    private static string GetAppVersion()
+    {
+        // 优先获取 AssemblyInformationalVersion (通常包含语义化版本 + 预发行标签)
+        var asm = typeof(App).Assembly;
+        var informational = asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+        if (!string.IsNullOrWhiteSpace(informational)) return informational!;
+
+        // 其次尝试 FileVersion
+        var fileVer = asm.GetCustomAttribute<AssemblyFileVersionAttribute>()?.Version;
+        if (!string.IsNullOrWhiteSpace(fileVer)) return fileVer!;
+
+        // 最后退回到程序集版本
+        return asm.GetName().Version?.ToString() ?? "Unknown";
     }
 }

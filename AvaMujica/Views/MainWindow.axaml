@@ -1,32 +1,30 @@
-<Window
-    x:Class="AvaMujica.Views.MainWindow"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:AvaMujica"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="using:AvaMujica.Models"
-    xmlns:views="using:AvaMujica.Views"
-    xmlns:vm="using:AvaMujica.ViewModels"
-    Title="AvaMujica"
-    d:DesignHeight="900"
-    d:DesignWidth="400"
-    x:DataType="vm:MainWindowViewModel"
-    Background="Transparent"
-    ExtendClientAreaToDecorationsHint="False"
-    Icon="/Assets/icon.ico"
-    TransparencyLevelHint="AcrylicBlur"
-    WindowStartupLocation="CenterScreen"
-    mc:Ignorable="d">
+<Window x:Class="AvaMujica.Views.MainWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:local="using:AvaMujica"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:models="using:AvaMujica.Models"
+        xmlns:views="using:AvaMujica.Views"
+        xmlns:vm="using:AvaMujica.ViewModels"
+        Title="AvaMujica"
+        d:DesignHeight="900"
+        d:DesignWidth="400"
+        x:DataType="vm:MainWindowViewModel"
+        Background="Transparent"
+        ExtendClientAreaToDecorationsHint="False"
+        Icon="/Assets/icon.ico"
+        TransparencyLevelHint="AcrylicBlur"
+        WindowStartupLocation="CenterScreen"
+        mc:Ignorable="d">
     <Panel>
         <!--  桌面毛玻璃效果  -->
         <ExperimentalAcrylicBorder IsHitTestVisible="False">
             <ExperimentalAcrylicBorder.Material>
-                <ExperimentalAcrylicMaterial
-                    BackgroundSource="Digger"
-                    MaterialOpacity="0.6"
-                    TintColor="{DynamicResource SystemAltHighColor}"
-                    TintOpacity="1" />
+                <ExperimentalAcrylicMaterial BackgroundSource="Digger"
+                                             MaterialOpacity="0.6"
+                                             TintColor="{DynamicResource SystemAltHighColor}"
+                                             TintOpacity="1" />
             </ExperimentalAcrylicBorder.Material>
         </ExperimentalAcrylicBorder>
 

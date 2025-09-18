@@ -1,88 +1,74 @@
-<UserControl
-    x:Class="AvaMujica.Views.PlanView"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:vm="using:AvaMujica.ViewModels"
-    d:DesignHeight="600"
-    d:DesignWidth="900"
-    x:DataType="vm:PlanViewModel">
+<UserControl x:Class="AvaMujica.Views.PlanView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:vm="using:AvaMujica.ViewModels"
+             d:DesignHeight="600"
+             d:DesignWidth="900"
+             x:DataType="vm:PlanViewModel">
     <Design.DataContext>
         <vm:PlanViewModel />
     </Design.DataContext>
 
-    <Grid
-        Margin="20"
-        HorizontalAlignment="Stretch"
-        RowDefinitions="Auto,*,Auto">
+    <Grid Margin="20"
+          HorizontalAlignment="Stretch"
+          RowDefinitions="Auto,*,Auto">
         <!--  顶部输入与生成  -->
-        <WrapPanel
-            Margin="0,0,8,8"
-            HorizontalAlignment="Center"
-            Orientation="Horizontal">
-            <TextBox
-                MinWidth="240"
-                Margin="0,0,8,0"
-                Text="{Binding NewItemTitle, Mode=TwoWay}"
-                Watermark="添加一条待办..." />
-            <StackPanel
-                Margin="0,8,0,8"
-                Orientation="Horizontal"
-                Spacing="16">
-                <Button
-                    Command="{Binding AddItemCommand}"
-                    Content="添加"
-                    IsEnabled="{Binding NewItemTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                <Button
-                    Command="{Binding GenerateByAiCommand}"
-                    Content="AI 生成方案"
-                    IsEnabled="{Binding !IsGenerating}" />
-                <Button
-                    Command="{Binding CancelGenerateCommand}"
-                    Content="取消"
-                    IsEnabled="{Binding IsGenerating}" />
+        <WrapPanel Margin="0,0,8,8"
+                   HorizontalAlignment="Center"
+                   Orientation="Horizontal">
+            <TextBox MinWidth="240"
+                     Margin="0,0,8,0"
+                     Text="{Binding NewItemTitle, Mode=TwoWay}"
+                     Watermark="添加一条待办..." />
+            <StackPanel Margin="0,8,0,8"
+                        Orientation="Horizontal"
+                        Spacing="16">
+                <Button Command="{Binding AddItemCommand}"
+                        Content="添加"
+                        IsEnabled="{Binding NewItemTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                <Button Command="{Binding GenerateByAiCommand}"
+                        Content="AI 生成方案"
+                        IsEnabled="{Binding !IsGenerating}" />
+                <Button Command="{Binding CancelGenerateCommand}"
+                        Content="取消"
+                        IsEnabled="{Binding IsGenerating}" />
             </StackPanel>
-            <ProgressBar
-                Width="120"
-                IsIndeterminate="True"
-                IsVisible="{Binding IsGenerating}" />
+            <ProgressBar Width="120"
+                         IsIndeterminate="True"
+                         IsVisible="{Binding IsGenerating}" />
         </WrapPanel>
         <!--  列表  -->
-        <Border
-            Grid.Row="1"
-            Padding="8"
-            BorderBrush="{DynamicResource SystemBaseLowColor}"
-            BorderThickness="1"
-            CornerRadius="8">
+        <Border Grid.Row="1"
+                Padding="8"
+                BorderBrush="{DynamicResource SystemBaseLowColor}"
+                BorderThickness="1"
+                CornerRadius="8">
             <ItemsControl ItemsSource="{Binding Items}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <Grid Margin="0,4" ColumnDefinitions="Auto,*,Auto">
-                            <CheckBox
-                                Grid.Column="0"
-                                Margin="0,0,8,0"
-                                IsChecked="{Binding IsDone}" />
-                            <TextBlock
-                                Grid.Column="1"
-                                Margin="0,8,8,8"
-                                VerticalAlignment="Center"
-                                Text="{Binding Title}"
-                                TextWrapping="Wrap" />
-                            <Button
-                                Grid.Column="2"
-                                Command="{Binding $parent[UserControl].((vm:PlanViewModel)DataContext).RemoveItemCommand}"
-                                CommandParameter="{Binding}"
-                                Content="删除" />
+                            <CheckBox Grid.Column="0"
+                                      Margin="0,0,8,0"
+                                      IsChecked="{Binding IsDone}" />
+                            <TextBlock Grid.Column="1"
+                                       Margin="0,8,8,8"
+                                       VerticalAlignment="Center"
+                                       Text="{Binding Title}"
+                                       TextWrapping="Wrap" />
+                            <Button Grid.Column="2"
+                                    Command="{Binding $parent[UserControl].((vm:PlanViewModel)DataContext).RemoveItemCommand}"
+                                    CommandParameter="{Binding}"
+                                    Content="删除" />
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </Border>
 
-        <TextBlock
-            Grid.Row="2"
-            Margin="0,8,0,8"
-            Foreground="{DynamicResource SystemBaseMediumColor}"
-            Text="提示：点击 AI 生成可快速获得一套建议" />
+        <TextBlock Grid.Row="2"
+                   Margin="0,8,0,8"
+                   Foreground="{DynamicResource SystemBaseMediumColor}"
+                   Text="提示：点击 AI 生成可快速获得一套建议" />
     </Grid>
 </UserControl>

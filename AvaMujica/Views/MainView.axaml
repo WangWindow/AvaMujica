@@ -1,18 +1,17 @@
-<UserControl
-    x:Class="AvaMujica.Views.MainView"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:AvaMujica"
-    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="using:AvaMujica.Models"
-    xmlns:views="using:AvaMujica.Views"
-    xmlns:vm="using:AvaMujica.ViewModels"
-    d:DesignHeight="900"
-    d:DesignWidth="400"
-    x:DataType="vm:MainViewModel"
-    mc:Ignorable="d">
+<UserControl x:Class="AvaMujica.Views.MainView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:AvaMujica"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="using:AvaMujica.Models"
+             xmlns:views="using:AvaMujica.Views"
+             xmlns:vm="using:AvaMujica.ViewModels"
+             d:DesignHeight="900"
+             d:DesignWidth="400"
+             x:DataType="vm:MainViewModel"
+             mc:Ignorable="d">
     <Design.DataContext>
         <vm:MainViewModel />
     </Design.DataContext>
@@ -25,14 +24,13 @@
 
         <!--  主视图  -->
         <Grid IsVisible="{Binding !IsSettingsViewVisible}">
-            <SplitView
-                Name="Sider"
-                BorderBrush="White"
-                BorderThickness="1.5"
-                CompactPaneLength="0"
-                DisplayMode="Overlay"
-                IsPaneOpen="{Binding IsSiderOpen}"
-                OpenPaneLength="270">
+            <SplitView Name="Sider"
+                       BorderBrush="White"
+                       BorderThickness="1.5"
+                       CompactPaneLength="0"
+                       DisplayMode="Overlay"
+                       IsPaneOpen="{Binding IsSiderOpen}"
+                       OpenPaneLength="270">
                 <!--  侧边栏  -->
                 <SplitView.Pane>
                     <views:SiderView DataContext="{Binding SiderViewModel}" />
@@ -41,66 +39,59 @@
                 <!--  顶栏 + 内容区域  -->
                 <Grid RowDefinitions="Auto,*">
                     <!--  顶栏  -->
-                    <Border
-                        Grid.Row="0"
-                        Padding="5"
-                        Background="{DynamicResource SystemChromeLowColor}"
-                        BorderBrush="{DynamicResource SystemBaseLowColor}"
-                        BorderThickness="0,0,0,1">
+                    <Border Grid.Row="0"
+                            Padding="5"
+                            Background="{DynamicResource SystemChromeLowColor}"
+                            BorderBrush="{DynamicResource SystemBaseLowColor}"
+                            BorderThickness="0,0,0,1">
                         <Grid VerticalAlignment="Center" ColumnDefinitions="Auto,*,Auto">
                             <!--  左：侧边栏按钮  -->
-                            <Button
-                                Grid.Column="0"
-                                Width="40"
-                                Height="40"
-                                Background="Transparent"
-                                Command="{Binding ToggleSiderCommand}">
+                            <Button Grid.Column="0"
+                                    Width="40"
+                                    Height="40"
+                                    Background="Transparent"
+                                    Command="{Binding ToggleSiderCommand}">
                                 <materialIcons:MaterialIcon Kind="FormatAlignLeft" />
                             </Button>
 
                             <!--  中：标签切换（按钮样式模拟 TabStrip）  -->
-                            <StackPanel
-                                Grid.Column="1"
-                                HorizontalAlignment="Center"
-                                Orientation="Horizontal"
-                                Spacing="16">
+                            <StackPanel Grid.Column="1"
+                                        HorizontalAlignment="Center"
+                                        Orientation="Horizontal"
+                                        Spacing="16">
                                 <Button Background="Transparent" Command="{Binding SelectChatTabCommand}">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <materialIcons:MaterialIcon Kind="AccountTieOutline" />
-                                        <TextBlock
-                                            FontSize="15"
-                                            FontWeight="SemiBold"
-                                            Text="{x:Static models:SessionType.Chat}" />
+                                        <TextBlock FontSize="15"
+                                                   FontWeight="SemiBold"
+                                                   Text="{x:Static models:SessionType.Chat}" />
                                     </StackPanel>
                                 </Button>
                                 <Button Background="Transparent" Command="{Binding SelectAssessmentTabCommand}">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <materialIcons:MaterialIcon Kind="ClipboardTextOutline" />
-                                        <TextBlock
-                                            FontSize="15"
-                                            FontWeight="SemiBold"
-                                            Text="{x:Static models:SessionType.Assessment}" />
+                                        <TextBlock FontSize="15"
+                                                   FontWeight="SemiBold"
+                                                   Text="{x:Static models:SessionType.Assessment}" />
                                     </StackPanel>
                                 </Button>
                                 <Button Background="Transparent" Command="{Binding SelectPlanTabCommand}">
                                     <StackPanel Orientation="Horizontal" Spacing="6">
                                         <materialIcons:MaterialIcon Kind="LightbulbOnOutline" />
-                                        <TextBlock
-                                            FontSize="15"
-                                            FontWeight="SemiBold"
-                                            Text="{x:Static models:SessionType.Plan}" />
+                                        <TextBlock FontSize="15"
+                                                   FontWeight="SemiBold"
+                                                   Text="{x:Static models:SessionType.Plan}" />
                                     </StackPanel>
                                 </Button>
                             </StackPanel>
 
                             <!--  右：新建会话  -->
-                            <Button
-                                Grid.Column="2"
-                                Width="40"
-                                Height="40"
-                                HorizontalAlignment="Right"
-                                Background="Transparent"
-                                Command="{Binding CreateNewChatCommand}">
+                            <Button Grid.Column="2"
+                                    Width="40"
+                                    Height="40"
+                                    HorizontalAlignment="Right"
+                                    Background="Transparent"
+                                    Command="{Binding CreateNewChatCommand}">
                                 <materialIcons:MaterialIcon Kind="PlusBoxOutline" />
                             </Button>
                         </Grid>

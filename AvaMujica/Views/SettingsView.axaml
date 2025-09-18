@@ -1,17 +1,16 @@
-<UserControl
-    x:Class="AvaMujica.Views.SettingsView"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:AvaMujica"
-    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:models="using:AvaMujica.Models"
-    xmlns:vm="using:AvaMujica.ViewModels"
-    d:DesignHeight="900"
-    d:DesignWidth="400"
-    x:DataType="vm:SettingsViewModel"
-    mc:Ignorable="d">
+<UserControl x:Class="AvaMujica.Views.SettingsView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:AvaMujica"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:models="using:AvaMujica.Models"
+             xmlns:vm="using:AvaMujica.ViewModels"
+             d:DesignHeight="900"
+             d:DesignWidth="400"
+             x:DataType="vm:SettingsViewModel"
+             mc:Ignorable="d">
     <Design.DataContext>
         <vm:SettingsViewModel />
     </Design.DataContext>
@@ -22,25 +21,23 @@
         <Grid Grid.Row="0" Margin="12,8">
             <StackPanel>
                 <!--  顶部.左侧  -->
-                <Button
-                    Width="40"
-                    Height="40"
-                    HorizontalAlignment="Left"
-                    VerticalAlignment="Center"
-                    Background="Transparent"
-                    Command="{Binding GoBackCommand}">
+                <Button Width="40"
+                        Height="40"
+                        HorizontalAlignment="Left"
+                        VerticalAlignment="Center"
+                        Background="Transparent"
+                        Command="{Binding GoBackCommand}">
                     <materialIcons:MaterialIcon Kind="ArrowLeft" />
                 </Button>
             </StackPanel>
 
             <Panel>
                 <!--  顶部.中间  -->
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    FontSize="18"
-                    FontWeight="SemiBold"
-                    Text="设置" />
+                <TextBlock HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontSize="18"
+                           FontWeight="SemiBold"
+                           Text="设置" />
             </Panel>
         </Grid>
 
@@ -49,51 +46,44 @@
             <ScrollViewer>
                 <StackPanel Margin="12,0,12,12" Spacing="8">
                     <!--  通用设置  -->
-                    <TextBlock
-                        Margin="0,16,0,4"
-                        FontSize="14"
-                        Foreground="{DynamicResource SystemBaseMediumColor}"
-                        Text="通用" />
+                    <TextBlock Margin="0,16,0,4"
+                               FontSize="14"
+                               Foreground="{DynamicResource SystemBaseMediumColor}"
+                               Text="通用" />
 
-                    <Button
-                        Padding="12"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Background="Transparent"
-                        BorderBrush="{DynamicResource SystemBaseLowColor}"
-                        BorderThickness="1"
-                        CornerRadius="4">
+                    <Button Padding="12"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            BorderBrush="{DynamicResource SystemBaseLowColor}"
+                            BorderThickness="1"
+                            CornerRadius="4">
                         <Grid>
-                            <TextBlock
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Text="语言设置" />
-                            <TextBlock
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                Foreground="{DynamicResource SystemBaseMediumColor}"
-                                Text="中文" />
+                            <TextBlock HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       Text="语言设置" />
+                            <TextBlock HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource SystemBaseMediumColor}"
+                                       Text="中文" />
                         </Grid>
                     </Button>
 
-                    <Button
-                        Padding="12"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Background="Transparent"
-                        BorderBrush="{DynamicResource SystemBaseLowColor}"
-                        BorderThickness="1"
-                        CornerRadius="4">
+                    <Button Padding="12"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            BorderBrush="{DynamicResource SystemBaseLowColor}"
+                            BorderThickness="1"
+                            CornerRadius="4">
                         <Grid>
-                            <TextBlock
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Text="主题设置" />
-                            <ComboBox
-                                Width="120"
-                                HorizontalAlignment="Right"
-                                ItemsSource="{Binding AvailableThemes}"
-                                SelectedItem="{Binding Theme, Mode=TwoWay}">
+                            <TextBlock HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       Text="主题设置" />
+                            <ComboBox Width="120"
+                                      HorizontalAlignment="Right"
+                                      ItemsSource="{Binding AvailableThemes}"
+                                      SelectedItem="{Binding Theme, Mode=TwoWay}">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding}" />
@@ -103,151 +93,131 @@
                         </Grid>
                     </Button>
 
-                    <Button
-                        Padding="12"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Background="Transparent"
-                        BorderBrush="{DynamicResource SystemBaseLowColor}"
-                        BorderThickness="1"
-                        Command="{Binding ToggleShowReasoningCommand}"
-                        CornerRadius="4">
+                    <Button Padding="12"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            BorderBrush="{DynamicResource SystemBaseLowColor}"
+                            BorderThickness="1"
+                            Command="{Binding ToggleShowReasoningCommand}"
+                            CornerRadius="4">
                         <Grid>
-                            <TextBlock
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Text="思考过程" />
-                            <ToggleSwitch
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                IsChecked="{Binding IsShowReasoning, Mode=TwoWay}"
-                                OffContent=""
-                                OnContent="" />
+                            <TextBlock HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       Text="思考过程" />
+                            <ToggleSwitch HorizontalAlignment="Right"
+                                          VerticalAlignment="Center"
+                                          IsChecked="{Binding IsShowReasoning, Mode=TwoWay}"
+                                          OffContent=""
+                                          OnContent="" />
                         </Grid>
                     </Button>
 
                     <!--  AI模型设置  -->
-                    <TextBlock
-                        Margin="0,16,0,4"
-                        FontSize="14"
-                        Foreground="{DynamicResource SystemBaseMediumColor}"
-                        Text="AI模型" />
+                    <TextBlock Margin="0,16,0,4"
+                               FontSize="14"
+                               Foreground="{DynamicResource SystemBaseMediumColor}"
+                               Text="AI模型" />
 
-                    <Button
-                        Padding="12"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Background="Transparent"
-                        BorderBrush="{DynamicResource SystemBaseLowColor}"
-                        BorderThickness="1"
-                        CornerRadius="4">
+                    <Button Padding="12"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            BorderBrush="{DynamicResource SystemBaseLowColor}"
+                            BorderThickness="1"
+                            CornerRadius="4">
                         <Grid>
-                            <TextBlock
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Text="模型名称" />
-                            <TextBox
-                                Width="200"
-                                HorizontalAlignment="Right"
-                                Text="{Binding SelectedModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                Watermark="model-name" />
+                            <TextBlock HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       Text="模型名称" />
+                            <TextBox Width="200"
+                                     HorizontalAlignment="Right"
+                                     Text="{Binding SelectedModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                     Watermark="model-name" />
                         </Grid>
                     </Button>
 
-                    <Button
-                        Padding="12"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Background="Transparent"
-                        BorderBrush="{DynamicResource SystemBaseLowColor}"
-                        BorderThickness="1"
-                        Command="{Binding SetApiKeyCommand}"
-                        CornerRadius="4"
-                        IsVisible="{Binding !IsApiKeyEditing}">
+                    <Button Padding="12"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            BorderBrush="{DynamicResource SystemBaseLowColor}"
+                            BorderThickness="1"
+                            Command="{Binding SetApiKeyCommand}"
+                            CornerRadius="4"
+                            IsVisible="{Binding !IsApiKeyEditing}">
                         <Grid>
-                            <TextBlock
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Text="API Key设置" />
-                            <TextBlock
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                Foreground="{DynamicResource SystemBaseMediumColor}"
-                                Text="{Binding MaskedApiKey}" />
+                            <TextBlock HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       Text="API Key设置" />
+                            <TextBlock HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource SystemBaseMediumColor}"
+                                       Text="{Binding MaskedApiKey}" />
                         </Grid>
                     </Button>
 
                     <!--  API Key内联编辑面板  -->
-                    <Border
-                        Padding="12"
-                        BorderBrush="{DynamicResource SystemBaseLowColor}"
-                        BorderThickness="1"
-                        CornerRadius="4"
-                        IsVisible="{Binding IsApiKeyEditing}">
+                    <Border Padding="12"
+                            BorderBrush="{DynamicResource SystemBaseLowColor}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            IsVisible="{Binding IsApiKeyEditing}">
                         <StackPanel Spacing="8">
                             <TextBlock FontWeight="SemiBold" Text="API Key设置" />
-                            <TextBox
-                                PasswordChar="*"
-                                Text="{Binding TempApiKey}"
-                                Watermark="请输入API Key" />
-                            <StackPanel
-                                HorizontalAlignment="Right"
-                                Orientation="Horizontal"
-                                Spacing="8">
-                                <Button
-                                    Background="Transparent"
-                                    BorderBrush="{DynamicResource SystemBaseLowColor}"
-                                    BorderThickness="1"
-                                    Command="{Binding CancelApiKeyEditCommand}"
-                                    Content="取消" />
-                                <Button
-                                    Background="{DynamicResource SystemAccentColor}"
-                                    Command="{Binding SaveApiKeyCommand}"
-                                    Content="保存"
-                                    Foreground="White" />
+                            <TextBox PasswordChar="*"
+                                     Text="{Binding TempApiKey}"
+                                     Watermark="请输入API Key" />
+                            <StackPanel HorizontalAlignment="Right"
+                                        Orientation="Horizontal"
+                                        Spacing="8">
+                                <Button Background="Transparent"
+                                        BorderBrush="{DynamicResource SystemBaseLowColor}"
+                                        BorderThickness="1"
+                                        Command="{Binding CancelApiKeyEditCommand}"
+                                        Content="取消" />
+                                <Button Background="{DynamicResource SystemAccentColor}"
+                                        Command="{Binding SaveApiKeyCommand}"
+                                        Content="保存"
+                                        Foreground="White" />
                             </StackPanel>
                         </StackPanel>
                     </Border>
 
-                    <Button
-                        Padding="12"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Background="Transparent"
-                        BorderBrush="{DynamicResource SystemBaseLowColor}"
-                        BorderThickness="1"
-                        Command="{Binding SetApiSettingsCommand}"
-                        CornerRadius="4"
-                        IsVisible="{Binding !IsApiSettingsEditing}">
+                    <Button Padding="12"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            BorderBrush="{DynamicResource SystemBaseLowColor}"
+                            BorderThickness="1"
+                            Command="{Binding SetApiSettingsCommand}"
+                            CornerRadius="4"
+                            IsVisible="{Binding !IsApiSettingsEditing}">
                         <Grid>
-                            <TextBlock
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Text="API设置" />
-                            <TextBlock
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                Text="→" />
+                            <TextBlock HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       Text="API设置" />
+                            <TextBlock HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       Text="→" />
                         </Grid>
                     </Button>
 
                     <!--  API设置内联编辑面板  -->
-                    <Border
-                        Padding="12"
-                        BorderBrush="{DynamicResource SystemBaseLowColor}"
-                        BorderThickness="1"
-                        CornerRadius="4"
-                        IsVisible="{Binding IsApiSettingsEditing}">
+                    <Border Padding="12"
+                            BorderBrush="{DynamicResource SystemBaseLowColor}"
+                            BorderThickness="1"
+                            CornerRadius="4"
+                            IsVisible="{Binding IsApiSettingsEditing}">
                         <StackPanel Spacing="8">
                             <TextBlock FontWeight="SemiBold" Text="API设置" />
 
                             <TextBlock Text="系统提示词:" />
-                            <TextBox
-                                MinHeight="80"
-                                AcceptsReturn="True"
-                                Text="{Binding TempSystemPrompt}"
-                                TextWrapping="Wrap"
-                                Watermark="请输入系统提示词" />
+                            <TextBox MinHeight="80"
+                                     AcceptsReturn="True"
+                                     Text="{Binding TempSystemPrompt}"
+                                     TextWrapping="Wrap"
+                                     Watermark="请输入系统提示词" />
 
                             <TextBlock Text="API基础URL:" />
                             <TextBox Text="{Binding TempApiBase}" Watermark="请输入API基础URL" />
@@ -258,117 +228,100 @@
                             <TextBlock Text="最大Token数:" />
                             <TextBox Text="{Binding TempMaxTokens}" Watermark="请输入最大生成token数" />
 
-                            <StackPanel
-                                HorizontalAlignment="Right"
-                                Orientation="Horizontal"
-                                Spacing="8">
-                                <Button
-                                    Background="Transparent"
-                                    BorderBrush="{DynamicResource SystemBaseLowColor}"
-                                    BorderThickness="1"
-                                    Command="{Binding CancelApiSettingsEditCommand}"
-                                    Content="取消" />
-                                <Button
-                                    Background="{DynamicResource SystemAccentColor}"
-                                    Command="{Binding SaveApiSettingsCommand}"
-                                    Content="保存"
-                                    Foreground="White" />
+                            <StackPanel HorizontalAlignment="Right"
+                                        Orientation="Horizontal"
+                                        Spacing="8">
+                                <Button Background="Transparent"
+                                        BorderBrush="{DynamicResource SystemBaseLowColor}"
+                                        BorderThickness="1"
+                                        Command="{Binding CancelApiSettingsEditCommand}"
+                                        Content="取消" />
+                                <Button Background="{DynamicResource SystemAccentColor}"
+                                        Command="{Binding SaveApiSettingsCommand}"
+                                        Content="保存"
+                                        Foreground="White" />
                             </StackPanel>
                         </StackPanel>
                     </Border>
 
                     <!--  隐私与安全  -->
-                    <TextBlock
-                        Margin="0,16,0,4"
-                        FontSize="14"
-                        Foreground="{DynamicResource SystemBaseMediumColor}"
-                        Text="隐私与安全" />
+                    <TextBlock Margin="0,16,0,4"
+                               FontSize="14"
+                               Foreground="{DynamicResource SystemBaseMediumColor}"
+                               Text="隐私与安全" />
 
-                    <Button
-                        Padding="12"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Background="Transparent"
-                        BorderBrush="{DynamicResource SystemBaseLowColor}"
-                        BorderThickness="1"
-                        CornerRadius="4">
+                    <Button Padding="12"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            BorderBrush="{DynamicResource SystemBaseLowColor}"
+                            BorderThickness="1"
+                            CornerRadius="4">
                         <Grid>
-                            <TextBlock
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Text="数据隐私" />
-                            <TextBlock
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                Text="→" />
+                            <TextBlock HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       Text="数据隐私" />
+                            <TextBlock HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       Text="→" />
                         </Grid>
                     </Button>
 
-                    <Button
-                        Padding="12"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Background="Transparent"
-                        BorderBrush="{DynamicResource SystemBaseLowColor}"
-                        BorderThickness="1"
-                        CornerRadius="4">
+                    <Button Padding="12"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            BorderBrush="{DynamicResource SystemBaseLowColor}"
+                            BorderThickness="1"
+                            CornerRadius="4">
                         <Grid>
-                            <TextBlock
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Text="内容过滤" />
-                            <TextBlock
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                Text="已启用" />
+                            <TextBlock HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       Text="内容过滤" />
+                            <TextBlock HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       Text="已启用" />
                         </Grid>
                     </Button>
 
                     <!--  关于  -->
-                    <TextBlock
-                        Margin="0,16,0,4"
-                        FontSize="14"
-                        Foreground="{DynamicResource SystemBaseMediumColor}"
-                        Text="关于" />
+                    <TextBlock Margin="0,16,0,4"
+                               FontSize="14"
+                               Foreground="{DynamicResource SystemBaseMediumColor}"
+                               Text="关于" />
 
-                    <Button
-                        Padding="12"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Background="Transparent"
-                        BorderBrush="{DynamicResource SystemBaseLowColor}"
-                        BorderThickness="1"
-                        CornerRadius="4">
+                    <Button Padding="12"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            BorderBrush="{DynamicResource SystemBaseLowColor}"
+                            BorderThickness="1"
+                            CornerRadius="4">
                         <Grid>
-                            <TextBlock
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Text="版本信息" />
-                            <TextBlock
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                Foreground="{DynamicResource SystemBaseMediumColor}"
-                                Text="v0.4.0" />
+                            <TextBlock HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       Text="版本信息" />
+                            <TextBlock HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource SystemBaseMediumColor}"
+                                       Text="{Binding Version}" />
                         </Grid>
                     </Button>
 
-                    <Button
-                        Padding="12"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Center"
-                        Background="Transparent"
-                        BorderBrush="{DynamicResource SystemBaseLowColor}"
-                        BorderThickness="1"
-                        CornerRadius="4">
+                    <Button Padding="12"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            BorderBrush="{DynamicResource SystemBaseLowColor}"
+                            BorderThickness="1"
+                            CornerRadius="4">
                         <Grid>
-                            <TextBlock
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Center"
-                                Text="用户协议" />
-                            <TextBlock
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Center"
-                                Text="→" />
+                            <TextBlock HorizontalAlignment="Left"
+                                       VerticalAlignment="Center"
+                                       Text="用户协议" />
+                            <TextBlock HorizontalAlignment="Right"
+                                       VerticalAlignment="Center"
+                                       Text="→" />
                         </Grid>
                     </Button>
                 </StackPanel>

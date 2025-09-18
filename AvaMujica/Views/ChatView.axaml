@@ -1,18 +1,17 @@
-<UserControl
-    x:Class="AvaMujica.Views.ChatView"
-    xmlns="https://github.com/avaloniaui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:local="using:AvaMujica"
-    xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:md="https://github.com/whistyun/Markdown.Avalonia"
-    xmlns:models="using:AvaMujica.Models"
-    xmlns:vm="using:AvaMujica.ViewModels"
-    d:DesignHeight="900"
-    d:DesignWidth="400"
-    x:DataType="vm:ChatViewModel"
-    mc:Ignorable="d">
+<UserControl x:Class="AvaMujica.Views.ChatView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="using:AvaMujica"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:md="https://github.com/whistyun/Markdown.Avalonia"
+             xmlns:models="using:AvaMujica.Models"
+             xmlns:vm="using:AvaMujica.ViewModels"
+             d:DesignHeight="900"
+             d:DesignWidth="400"
+             x:DataType="vm:ChatViewModel"
+             mc:Ignorable="d">
     <Design.DataContext>
         <vm:ChatViewModel />
     </Design.DataContext>
@@ -20,19 +19,17 @@
     <Grid RowDefinitions="Auto,*,Auto">
 
         <!--  TODO: 对话名称/标题区域  -->
-        <Border
-            Grid.Row="0"
-            Padding="10,5"
-            Background="{DynamicResource SystemChromeMediumLowColor}"
-            BorderBrush="{DynamicResource SystemBaseLowColor}"
-            BorderThickness="0,0,0,1">
+        <Border Grid.Row="0"
+                Padding="10,5"
+                Background="{DynamicResource SystemChromeMediumLowColor}"
+                BorderBrush="{DynamicResource SystemBaseLowColor}"
+                BorderThickness="0,0,0,1">
             <Grid>
-                <TextBlock
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    FontSize="14"
-                    FontWeight="Medium"
-                    Text="{Binding ChatTitle}" />
+                <TextBlock HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           FontSize="14"
+                           FontWeight="Medium"
+                           Text="{Binding ChatTitle}" />
             </Grid>
         </Border>
 
@@ -45,65 +42,59 @@
                             <DataTemplate>
                                 <Grid Margin="10,5">
                                     <!--  用户消息  -->
-                                    <Border
-                                        Margin="10,0,5,0"
-                                        Padding="10"
-                                        HorizontalAlignment="Right"
-                                        Background="{DynamicResource SystemControlBackgroundAltMediumLowBrush}"
-                                        BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                                        BorderThickness="1"
-                                        CornerRadius="10 10 2 10"
-                                        IsVisible="{Binding IsUser}">
+                                    <Border Margin="10,0,5,0"
+                                            Padding="10"
+                                            HorizontalAlignment="Right"
+                                            Background="{DynamicResource SystemControlBackgroundAltMediumLowBrush}"
+                                            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="10 10 2 10"
+                                            IsVisible="{Binding IsUser}">
                                         <StackPanel>
                                             <md:MarkdownScrollViewer Markdown="{Binding Content}" />
 
-                                            <TextBlock
-                                                Margin="0,5,0,0"
-                                                FontSize="10"
-                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                                                Text="{Binding SendTime, StringFormat={}{0:HH:mm}}" />
+                                            <TextBlock Margin="0,5,0,0"
+                                                       FontSize="10"
+                                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                                       Text="{Binding SendTime, StringFormat={}{0:HH:mm}}" />
                                         </StackPanel>
                                     </Border>
 
                                     <!--  机器人消息  -->
-                                    <Border
-                                        Margin="5,0,10,0"
-                                        Padding="10"
-                                        HorizontalAlignment="Left"
-                                        Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-                                        BorderBrush="{DynamicResource SystemControlHighlightAccentBrush}"
-                                        BorderThickness="1"
-                                        CornerRadius="10 10 10 2"
-                                        IsVisible="{Binding IsAssistant}">
+                                    <Border Margin="5,0,10,0"
+                                            Padding="10"
+                                            HorizontalAlignment="Left"
+                                            Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                                            BorderBrush="{DynamicResource SystemControlHighlightAccentBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="10 10 10 2"
+                                            IsVisible="{Binding IsAssistant}">
                                         <StackPanel>
                                             <!--  推理过程（可折叠，默认展开）  -->
-                                            <Expander
-                                                Margin="0,0,0,10"
-                                                Background="{DynamicResource SystemControlBackgroundAltMediumLowBrush}"
-                                                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
-                                                BorderThickness="1"
-                                                CornerRadius="4"
-                                                IsExpanded="True">
+                                            <Expander Margin="0,0,0,10"
+                                                      Background="{DynamicResource SystemControlBackgroundAltMediumLowBrush}"
+                                                      BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}"
+                                                      BorderThickness="1"
+                                                      CornerRadius="4"
+                                                      IsExpanded="True">
                                                 <Expander.IsVisible>
                                                     <Binding Path="ShowReasoning" />
                                                 </Expander.IsVisible>
                                                 <Expander.Header>
-                                                    <TextBlock
-                                                        Margin="5,2"
-                                                        FontSize="12"
-                                                        Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                                                        Text="查看思考过程" />
+                                                    <TextBlock Margin="5,2"
+                                                               FontSize="12"
+                                                               Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                                               Text="查看思考过程" />
                                                 </Expander.Header>
                                                 <md:MarkdownScrollViewer Margin="5" Markdown="{Binding ReasoningContent}" />
                                             </Expander>
 
                                             <!--  最终答案  -->
                                             <md:MarkdownScrollViewer Markdown="{Binding Content}" />
-                                            <TextBlock
-                                                Margin="0,5,0,0"
-                                                FontSize="10"
-                                                Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                                                Text="{Binding SendTime, StringFormat={}{0:HH:mm}}" />
+                                            <TextBlock Margin="0,5,0,0"
+                                                       FontSize="10"
+                                                       Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                                                       Text="{Binding SendTime, StringFormat={}{0:HH:mm}}" />
                                         </StackPanel>
                                     </Border>
                                 </Grid>
@@ -118,60 +109,53 @@
         <Grid Grid.Row="2" RowDefinitions="Auto,Auto">
 
             <!--  快捷操作栏  -->
-            <StackPanel
-                Grid.Row="0"
-                Margin="5,0,5,0"
-                HorizontalAlignment="Center"
-                Orientation="Horizontal"
-                Spacing="10">
-                <Button
-                    Padding="8,3"
-                    Background="Transparent"
-                    BorderBrush="{DynamicResource SystemAccentColorLight3}"
-                    BorderThickness="1"
-                    Command="{Binding QuickMessageCommand}"
-                    CommandParameter="感到焦虑"
-                    CornerRadius="15"
-                    FontSize="11">
+            <StackPanel Grid.Row="0"
+                        Margin="5,0,5,0"
+                        HorizontalAlignment="Center"
+                        Orientation="Horizontal"
+                        Spacing="10">
+                <Button Padding="8,3"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource SystemAccentColorLight3}"
+                        BorderThickness="1"
+                        Command="{Binding QuickMessageCommand}"
+                        CommandParameter="感到焦虑"
+                        CornerRadius="15"
+                        FontSize="11">
                     <StackPanel Orientation="Horizontal" Spacing="4">
-                        <materialIcons:MaterialIcon
-                            Width="12"
-                            Height="12"
-                            Kind="EmoticonSadOutline" />
+                        <materialIcons:MaterialIcon Width="12"
+                                                    Height="12"
+                                                    Kind="EmoticonSadOutline" />
                         <TextBlock Text="感到焦虑" />
                     </StackPanel>
                 </Button>
-                <Button
-                    Padding="8,3"
-                    Background="Transparent"
-                    BorderBrush="{DynamicResource SystemAccentColorLight3}"
-                    BorderThickness="1"
-                    Command="{Binding QuickMessageCommand}"
-                    CommandParameter="需要放松"
-                    CornerRadius="15"
-                    FontSize="11">
+                <Button Padding="8,3"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource SystemAccentColorLight3}"
+                        BorderThickness="1"
+                        Command="{Binding QuickMessageCommand}"
+                        CommandParameter="需要放松"
+                        CornerRadius="15"
+                        FontSize="11">
                     <StackPanel Orientation="Horizontal" Spacing="4">
-                        <materialIcons:MaterialIcon
-                            Width="12"
-                            Height="12"
-                            Kind="HeartPulse" />
+                        <materialIcons:MaterialIcon Width="12"
+                                                    Height="12"
+                                                    Kind="HeartPulse" />
                         <TextBlock Text="需要放松" />
                     </StackPanel>
                 </Button>
-                <Button
-                    Padding="8,3"
-                    Background="Transparent"
-                    BorderBrush="{DynamicResource SystemAccentColorLight3}"
-                    BorderThickness="1"
-                    Command="{Binding QuickMessageCommand}"
-                    CommandParameter="睡眠问题"
-                    CornerRadius="15"
-                    FontSize="11">
+                <Button Padding="8,3"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource SystemAccentColorLight3}"
+                        BorderThickness="1"
+                        Command="{Binding QuickMessageCommand}"
+                        CommandParameter="睡眠问题"
+                        CornerRadius="15"
+                        FontSize="11">
                     <StackPanel Orientation="Horizontal" Spacing="4">
-                        <materialIcons:MaterialIcon
-                            Width="12"
-                            Height="12"
-                            Kind="Bed" />
+                        <materialIcons:MaterialIcon Width="12"
+                                                    Height="12"
+                                                    Kind="Bed" />
                         <TextBlock Text="睡眠问题" />
                     </StackPanel>
                 </Button>
@@ -180,53 +164,48 @@
             <!--  TODO: 输入框与发送按钮  -->
             <DockPanel Grid.Row="1" Margin="5">
                 <!--  语音输入按钮  -->
-                <Button
-                    Width="30"
-                    Height="30"
-                    Margin="5"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Background="Transparent"
-                    BorderBrush="{DynamicResource SystemAccentColorLight3}"
-                    BorderThickness="1.5"
-                    CornerRadius="20"
-                    DockPanel.Dock="Left">
-                    <materialIcons:MaterialIcon
-                        Width="15"
-                        Height="15"
-                        Kind="Microphone" />
+                <Button Width="30"
+                        Height="30"
+                        Margin="5"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Background="Transparent"
+                        BorderBrush="{DynamicResource SystemAccentColorLight3}"
+                        BorderThickness="1.5"
+                        CornerRadius="20"
+                        DockPanel.Dock="Left">
+                    <materialIcons:MaterialIcon Width="15"
+                                                Height="15"
+                                                Kind="Microphone" />
                 </Button>
 
                 <!--  发送按钮  -->
-                <Button
-                    Width="30"
-                    Height="30"
-                    Margin="5"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Background="{DynamicResource SystemAccentColor}"
-                    BorderBrush="{DynamicResource SystemControlBackgroundAltHighBrush}"
-                    BorderThickness="1.5"
-                    Command="{Binding SendCommand}"
-                    CornerRadius="20"
-                    DockPanel.Dock="Right">
-                    <materialIcons:MaterialIcon
-                        Width="15"
-                        Height="15"
-                        Kind="Send" />
+                <Button Width="30"
+                        Height="30"
+                        Margin="5"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Background="{DynamicResource SystemAccentColor}"
+                        BorderBrush="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                        BorderThickness="1.5"
+                        Command="{Binding SendCommand}"
+                        CornerRadius="20"
+                        DockPanel.Dock="Right">
+                    <materialIcons:MaterialIcon Width="15"
+                                                Height="15"
+                                                Kind="Send" />
                 </Button>
 
                 <!--  输入框  -->
-                <TextBox
-                    Margin="5"
-                    HorizontalAlignment="Stretch"
-                    VerticalAlignment="Center"
-                    Background="Transparent"
-                    BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
-                    CornerRadius="10"
-                    DockPanel.Dock="Left"
-                    Text="{Binding InputText}"
-                    Watermark="输入您的心理困扰..." />
+                <TextBox Margin="5"
+                         HorizontalAlignment="Stretch"
+                         VerticalAlignment="Center"
+                         Background="Transparent"
+                         BorderBrush="{DynamicResource SystemControlForegroundBaseMediumBrush}"
+                         CornerRadius="10"
+                         DockPanel.Dock="Left"
+                         Text="{Binding InputText}"
+                         Watermark="输入您的心理困扰..." />
             </DockPanel>
         </Grid>
     </Grid>
