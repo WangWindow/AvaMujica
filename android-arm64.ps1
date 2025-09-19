@@ -1,0 +1,1 @@
+dotnet publish ./AvaMujica.Android/AvaMujica.Android.csproj -c Release -r android-arm64 -p:AndroidPackageFormat=apk -o ./bin/apk

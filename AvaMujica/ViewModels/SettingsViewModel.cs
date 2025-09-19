@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Reflection;
 using AvaMujica.Models;
 using AvaMujica.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -106,6 +107,47 @@ public partial class SettingsViewModel(MainViewModel mainViewModel, IConfigServi
     /// 可选主题列表
     /// </summary>
     public ObservableCollection<string> AvailableThemes { get; } = ["Auto", "Light", "Dark"];
+
+    /// <summary>
+    /// 应用版本（例如：v0.5.0）。会从 AssemblyInformationalVersion 读取，并移除 '+' 之后的构建元数据。
+    /// </summary>
+    public string VersionString
+    {
+        get
+        {
+            var v = GetAppVersion();
+            return $"v{v}";
+        }
+    }
+
+    private static string GetAppVersion()
+    {
+        try
+        {
+            var asm = typeof(App).Assembly;
+            var info = asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+            if (string.IsNullOrWhiteSpace(info))
+            {
+                info = asm.GetName().Version?.ToString();
+            }
+
+            if (string.IsNullOrWhiteSpace(info)) return "0.0.0";
+
+            // 去掉 '+' 及其后的构建元数据（例如 git hash）
+            var plusIdx = info.IndexOf('+');
+            if (plusIdx > 0)
+            {
+                info = info[..plusIdx];
+            }
+
+            return info;
+        }
+        catch
+        {
+            return "0.0.0";
+        }
+    }
 
     /// <summary>
     /// IsShowReasoning属性变化时触发

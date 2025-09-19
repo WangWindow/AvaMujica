@@ -348,7 +348,7 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Center"
                                 Foreground="{DynamicResource SystemBaseMediumColor}"
-                                Text="v0.4.0" />
+                                Text="{Binding VersionString}" />
                         </Grid>
                     </Button>
 
