@@ -8,7 +8,7 @@
     d:DesignHeight="600"
     d:DesignWidth="900"
     x:DataType="vm:AssessmentViewModel"
-    mc:Ignorable="d">
+    mc:Ignorable="d"   >
     <Design.DataContext>
         <vm:AssessmentViewModel />
     </Design.DataContext>
