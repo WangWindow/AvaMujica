@@ -45,13 +45,18 @@ public partial class ChatViewModel : ViewModelBase
         }
     }
 
-    public ChatViewModel() : this(
-        App.Services.GetRequiredService<IHistoryService>(),
-        App.Services.GetRequiredService<IApiService>(),
-        App.Services.GetRequiredService<IConfigService>())
-    { }
+    public ChatViewModel()
+        : this(
+            App.Services.GetRequiredService<IHistoryService>(),
+            App.Services.GetRequiredService<IApiService>(),
+            App.Services.GetRequiredService<IConfigService>()
+        ) { }
 
-    public ChatViewModel(IHistoryService historyService, IApiService apiService, IConfigService configService)
+    public ChatViewModel(
+        IHistoryService historyService,
+        IApiService apiService,
+        IConfigService configService
+    )
     {
         _historyService = historyService;
         _apiService = apiService;
@@ -94,7 +99,7 @@ public partial class ChatViewModel : ViewModelBase
             "感到焦虑" => "我最近感到非常焦虑，总是担心各种事情，请给我一些建议。",
             "需要放松" => "我最近压力很大，需要一些放松的方法，能介绍几种简单有效的放松技巧吗？",
             "睡眠问题" => "我最近睡眠质量很差，难以入睡，请问有什么改善睡眠的方法？",
-            _ => message
+            _ => message,
         };
         InputText = enhancedMessage;
         await SendAsync();
@@ -103,7 +108,8 @@ public partial class ChatViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanSend))]
     private async Task SendAsync()
     {
-        if (string.IsNullOrEmpty(InputText)) return;
+        if (string.IsNullOrEmpty(InputText))
+            return;
 
         string userInput = InputText;
         InputText = string.Empty;
@@ -113,7 +119,11 @@ public partial class ChatViewModel : ViewModelBase
         ChatMessageList.Add(userMessage);
         await _historyService.AddMessageAsync(ChatId, userMessage);
 
-        var assistantMessage = ChatMessage.CreateAssistantMessage(ChatId, string.Empty, string.Empty);
+        var assistantMessage = ChatMessage.CreateAssistantMessage(
+            ChatId,
+            string.Empty,
+            string.Empty
+        );
         assistantMessage.ShowReasoning = ShouldShowReasoning(assistantMessage);
         ChatMessageList.Add(assistantMessage);
         await _historyService.AddMessageAsync(ChatId, assistantMessage);
@@ -122,7 +132,8 @@ public partial class ChatViewModel : ViewModelBase
         var history = new List<(string role, string content, string? reasoningContent)>();
         foreach (var msg in ChatMessageList)
         {
-            if (msg == userMessage || msg == assistantMessage) continue;
+            if (msg == userMessage || msg == assistantMessage)
+                continue;
             history.Add((msg.Role, msg.Content, msg.ReasoningContent));
         }
 

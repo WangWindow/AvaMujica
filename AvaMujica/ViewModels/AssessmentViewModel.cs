@@ -7,11 +7,22 @@ using AvaMujica.Models;
 using AvaMujica.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AvaMujica.ViewModels;
 
 public partial class AssessmentViewModel : ViewModelBase
 {
+    public AssessmentViewModel(IApiService apiService)
+    {
+        _apiService = apiService;
+        LoadBuiltInScales();
+    }
+
+    // 默认构造函数：自动解析单例服务
+    public AssessmentViewModel()
+        : this(App.Services.GetRequiredService<IApiService>()) { }
+
     private readonly IApiService _apiService;
 
     public ObservableCollection<Scale> Scales { get; } = [];
@@ -46,12 +57,6 @@ public partial class AssessmentViewModel : ViewModelBase
     // 保存每道题选择的选项下标
     private readonly Dictionary<string, int> _answers = [];
 
-    public AssessmentViewModel(IApiService apiService)
-    {
-        _apiService = apiService;
-        LoadBuiltInScales();
-    }
-
     private void LoadBuiltInScales()
     {
         // 示例：PHQ-9 抑郁量表
@@ -60,7 +65,7 @@ public partial class AssessmentViewModel : ViewModelBase
             Id = "phq9",
             Name = "PHQ-9 抑郁量表",
             Description = "过去两周内，以下问题困扰你的频率？",
-            Questions = []
+            Questions = [],
         };
 
         string[] qs =
@@ -73,32 +78,34 @@ public partial class AssessmentViewModel : ViewModelBase
             "觉得自己很差，或让自己或家人失望",
             "注意力不集中，如看电视或读书时",
             "动作或说话变慢，或坐立不安",
-            "有不如死掉或用某种方式伤害自己的念头"
+            "有不如死掉或用某种方式伤害自己的念头",
         ];
 
         foreach (var (q, i) in qs.Select((q, i) => (q, i)))
         {
-            phq9.Questions.Add(new ScaleQuestion
-            {
-                Id = (i + 1).ToString(),
-                Text = q,
-                Options =
-                [
-                    new() { Text = "完全没有", Score = 0 },
-                    new() { Text = "好几天", Score = 1 },
-                    new() { Text = "一半以上天数", Score = 2 },
-                    new() { Text = "几乎每天", Score = 3 }
-                ]
-            });
+            phq9.Questions.Add(
+                new ScaleQuestion
+                {
+                    Id = (i + 1).ToString(),
+                    Text = q,
+                    Options =
+                    [
+                        new() { Text = "完全没有", Score = 0 },
+                        new() { Text = "好几天", Score = 1 },
+                        new() { Text = "一半以上天数", Score = 2 },
+                        new() { Text = "几乎每天", Score = 3 },
+                    ],
+                }
+            );
         }
 
         phq9.Interpretations =
         [
-            (0,4,"最轻度或无抑郁","保持良好作息和社交活动"),
-            (5,9,"轻度","建议适度运动、睡眠 hygiene"),
-            (10,14,"中度","可考虑寻求专业咨询"),
-            (15,19,"中重度","建议尽快联系专业人士"),
-            (20,27,"重度","强烈建议尽快就医")
+            (0, 4, "最轻度或无抑郁", "保持良好作息和社交活动"),
+            (5, 9, "轻度", "建议适度运动、睡眠 hygiene"),
+            (10, 14, "中度", "可考虑寻求专业咨询"),
+            (15, 19, "中重度", "建议尽快联系专业人士"),
+            (20, 27, "重度", "强烈建议尽快就医"),
         ];
 
         Scales.Add(phq9);
@@ -109,7 +116,7 @@ public partial class AssessmentViewModel : ViewModelBase
             Id = "gad7",
             Name = "GAD-7 焦虑量表",
             Description = "过去两周内，以下问题困扰你的频率？",
-            Questions = []
+            Questions = [],
         };
 
         string[] gadQs =
@@ -120,31 +127,33 @@ public partial class AssessmentViewModel : ViewModelBase
             "很难放松下来",
             "坐立不安，以至于难以静坐",
             "容易烦躁或易怒",
-            "担心将会发生可怕的事情"
+            "担心将会发生可怕的事情",
         ];
 
         foreach (var (q, i) in gadQs.Select((q, i) => (q, i)))
         {
-            gad7.Questions.Add(new ScaleQuestion
-            {
-                Id = (i + 1).ToString(),
-                Text = q,
-                Options =
-                [
-                    new() { Text = "完全没有", Score = 0 },
-                    new() { Text = "几天", Score = 1 },
-                    new() { Text = "一半以上天数", Score = 2 },
-                    new() { Text = "几乎每天", Score = 3 }
-                ]
-            });
+            gad7.Questions.Add(
+                new ScaleQuestion
+                {
+                    Id = (i + 1).ToString(),
+                    Text = q,
+                    Options =
+                    [
+                        new() { Text = "完全没有", Score = 0 },
+                        new() { Text = "几天", Score = 1 },
+                        new() { Text = "一半以上天数", Score = 2 },
+                        new() { Text = "几乎每天", Score = 3 },
+                    ],
+                }
+            );
         }
 
         gad7.Interpretations =
         [
-            (0,4,"最轻度或无焦虑","保持良好作息和社交活动"),
-            (5,9,"轻度","建议进行放松训练与规律运动"),
-            (10,14,"中度","可考虑寻求专业咨询"),
-            (15,21,"重度","建议尽快联系专业人士")
+            (0, 4, "最轻度或无焦虑", "保持良好作息和社交活动"),
+            (5, 9, "轻度", "建议进行放松训练与规律运动"),
+            (10, 14, "中度", "可考虑寻求专业咨询"),
+            (15, 21, "重度", "建议尽快联系专业人士"),
         ];
 
         Scales.Add(gad7);
@@ -153,7 +162,8 @@ public partial class AssessmentViewModel : ViewModelBase
         CurrentIndex = 0;
     }
 
-    public ScaleQuestion? CurrentQuestion => SelectedScale?.Questions.ElementAtOrDefault(CurrentIndex);
+    public ScaleQuestion? CurrentQuestion =>
+        SelectedScale?.Questions.ElementAtOrDefault(CurrentIndex);
 
     // 1 基页码，便于 UI 显示 n / total 能到达最后一页
     public int CurrentPage => Math.Min(CurrentIndex + 1, TotalQuestions);
@@ -201,7 +211,8 @@ public partial class AssessmentViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanPrev))]
     private void Prev()
     {
-        if (CurrentIndex > 0) CurrentIndex--;
+        if (CurrentIndex > 0)
+            CurrentIndex--;
     }
 
     private bool CanPrev() => CurrentIndex > 0;
@@ -209,12 +220,14 @@ public partial class AssessmentViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanNext))]
     private void Next()
     {
-        if (CurrentQuestion is null) return;
+        if (CurrentQuestion is null)
+            return;
         if (SelectedOptionIndex >= 0)
         {
             _answers[CurrentQuestion.Id] = SelectedOptionIndex;
         }
-        if (CurrentIndex < TotalQuestions - 1) CurrentIndex++;
+        if (CurrentIndex < TotalQuestions - 1)
+            CurrentIndex++;
     }
 
     private bool CanNext() => SelectedOptionIndex >= 0 && !IsLastQuestion;
@@ -222,7 +235,8 @@ public partial class AssessmentViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanSubmit))]
     private void Submit()
     {
-        if (SelectedScale is null) return;
+        if (SelectedScale is null)
+            return;
         // 保存最后一题
         if (CurrentQuestion is not null && SelectedOptionIndex >= 0)
         {
@@ -238,10 +252,14 @@ public partial class AssessmentViewModel : ViewModelBase
             }
         }
 
-        var match = SelectedScale.Interpretations.FirstOrDefault(it => total >= it.Min && total <= it.Max);
+        var match = SelectedScale.Interpretations.FirstOrDefault(it =>
+            total >= it.Min && total <= it.Max
+        );
         // 兜底：若未匹配到任何区间，则按接近规则给出提示
         var level = string.IsNullOrWhiteSpace(match.Level) ? "未分级" : match.Level;
-        var advice = string.IsNullOrWhiteSpace(match.Advice) ? "建议：请核对各题作答是否完整，或联系开发者补全解释区间。" : match.Advice;
+        var advice = string.IsNullOrWhiteSpace(match.Advice)
+            ? "建议：请核对各题作答是否完整，或联系开发者补全解释区间。"
+            : match.Advice;
 
         Result = new AssessmentResult
         {
@@ -249,12 +267,13 @@ public partial class AssessmentViewModel : ViewModelBase
             ScaleName = SelectedScale.Name,
             TotalScore = total,
             Level = level,
-            Advice = advice
+            Advice = advice,
         };
         IsCompleted = true;
     }
 
-    private bool CanSubmit() => SelectedScale is not null && _answers.Count == SelectedScale.Questions.Count;
+    private bool CanSubmit() =>
+        SelectedScale is not null && _answers.Count == SelectedScale.Questions.Count;
 
     partial void OnSelectedScaleChanged(Scale? value)
     {
@@ -289,9 +308,12 @@ public partial class AssessmentViewModel : ViewModelBase
     private async Task ExplainByAiAsync()
     {
         // 额外防护，避免极端并发触发
-        if (!CanExplain()) return;
-        var scale = SelectedScale; var result = Result;
-        if (scale is null || result is null) return;
+        if (!CanExplain())
+            return;
+        var scale = SelectedScale;
+        var result = Result;
+        if (scale is null || result is null)
+            return;
 
         IsExplaining = true;
         AiExplanation = string.Empty;
@@ -299,10 +321,10 @@ public partial class AssessmentViewModel : ViewModelBase
         // 根据答案拼装简要描述
         var answerSummary = BuildAnswerSummary(scale);
         var prompt =
-            $"你是一名心理咨询师。基于以下量表结果提供温和、务实、非医疗诊断的解释与建议（300字内，中文）：{Environment.NewLine}" +
-            $"量表：{result.ScaleName}{Environment.NewLine}" +
-            $"总分：{result.TotalScore}（{result.Level}）{Environment.NewLine}" +
-            $"答案概览：{Environment.NewLine}{answerSummary}";
+            $"你是一名心理咨询师。基于以下量表结果提供温和、务实、非医疗诊断的解释与建议（300字内，中文）：{Environment.NewLine}"
+            + $"量表：{result.ScaleName}{Environment.NewLine}"
+            + $"总分：{result.TotalScore}（{result.Level}）{Environment.NewLine}"
+            + $"答案概览：{Environment.NewLine}{answerSummary}";
 
         try
         {
@@ -331,14 +353,20 @@ public partial class AssessmentViewModel : ViewModelBase
 
     private string BuildAnswerSummary(Scale scale)
     {
-        return string.Join(Environment.NewLine, scale.Questions.Select(q =>
-        {
-            var picked = _answers.TryGetValue(q.Id, out var idx) ? q.Options[idx].Text : "未作答";
-            return $"- {q.Text}：{picked}";
-        }));
+        return string.Join(
+            Environment.NewLine,
+            scale.Questions.Select(q =>
+            {
+                var picked = _answers.TryGetValue(q.Id, out var idx)
+                    ? q.Options[idx].Text
+                    : "未作答";
+                return $"- {q.Text}：{picked}";
+            })
+        );
     }
 
-    private bool CanExplain() => IsCompleted && !IsExplaining && SelectedScale is not null && Result is not null;
+    private bool CanExplain() =>
+        IsCompleted && !IsExplaining && SelectedScale is not null && Result is not null;
 
     partial void OnAiExplanationChanged(string value)
     {

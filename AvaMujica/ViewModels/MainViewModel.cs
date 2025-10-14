@@ -12,6 +12,29 @@ namespace AvaMujica.ViewModels;
 
 public partial class MainViewModel : ViewModelBase
 {
+    public MainViewModel(IHistoryService historyService)
+    {
+        _historyService = historyService;
+        // 初始化视图模型
+        SiderViewModel = new SiderViewModel(this, historyService);
+        SettingsViewModel = new SettingsViewModel(
+            this,
+            App.Services.GetRequiredService<IConfigService>(),
+            App.Services.GetRequiredService<IApiService>()
+        );
+
+        // 其他模块 VM
+        AssessmentViewModel = new AssessmentViewModel();
+        PlanViewModel = new PlanViewModel();
+
+        // 异步初始化数据
+        _ = InitializeAsync();
+    }
+
+    // 默认构造函数：从全局单例容器解析依赖
+    public MainViewModel()
+        : this(App.Services.GetRequiredService<IHistoryService>()) { }
+
     private readonly IHistoryService _historyService;
 
     /// <summary>
@@ -86,25 +109,6 @@ public partial class MainViewModel : ViewModelBase
     /// </summary>
     public ObservableCollection<ChatSessionGroup> ChatSessionGroups { get; } = [];
 
-    public MainViewModel(IHistoryService historyService)
-    {
-        _historyService = historyService;
-        // 初始化视图模型
-        SiderViewModel = new SiderViewModel(this, historyService);
-        SettingsViewModel = new SettingsViewModel(
-            this,
-            App.Services.GetRequiredService<IConfigService>(),
-            App.Services.GetRequiredService<IApiService>()
-        );
-
-        // 其他模块 VM
-        AssessmentViewModel = new AssessmentViewModel(App.Services.GetRequiredService<IApiService>());
-        PlanViewModel = new PlanViewModel(App.Services.GetRequiredService<IApiService>());
-
-        // 异步初始化数据
-        _ = InitializeAsync();
-    }
-
     /// <summary>
     /// 初始化ViewModel
     /// </summary>
@@ -126,7 +130,11 @@ public partial class MainViewModel : ViewModelBase
 
         foreach (var session in sessions)
         {
-            var chatViewModel = new ChatViewModel(_historyService, App.Services.GetRequiredService<IApiService>(), App.Services.GetRequiredService<IConfigService>())
+            var chatViewModel = new ChatViewModel(
+                _historyService,
+                App.Services.GetRequiredService<IApiService>(),
+                App.Services.GetRequiredService<IConfigService>()
+            )
             {
                 ChatId = session.Id,
                 ChatTitle = session.Title,

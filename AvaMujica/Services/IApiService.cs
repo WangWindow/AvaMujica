@@ -8,7 +8,7 @@ namespace AvaMujica.Services;
 public enum ResponseType
 {
     Content,
-    ReasoningContent
+    ReasoningContent,
 }
 
 public interface IApiService
@@ -24,7 +24,9 @@ public interface IApiService
     Task ChatAsync(
         string userPrompt,
         Func<ResponseType, string, Task> onReceiveContent,
-        IReadOnlyList<(string role, string content, string? reasoningContent)>? historyMessages = null,
+        IReadOnlyList<(string role, string content, string? reasoningContent)>? historyMessages =
+            null,
         CancellationToken cancellationToken = default,
-        Action<Exception>? onError = null);
+        Action<Exception>? onError = null
+    );
 }

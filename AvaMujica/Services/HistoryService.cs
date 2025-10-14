@@ -10,7 +10,8 @@ namespace AvaMujica.Services;
 /// <summary>
 /// 聊天历史记录服务，负责会话和消息管理
 /// </summary>
-public class HistoryService(IDatabaseService databaseService, IApiService apiService) : IHistoryService
+public class HistoryService(IDatabaseService databaseService, IApiService apiService)
+    : IHistoryService
 {
     private readonly IDatabaseService _databaseService = databaseService;
     private readonly IApiService _apiService = apiService;
@@ -287,9 +288,10 @@ public class HistoryService(IDatabaseService databaseService, IApiService apiSer
         string sessionId,
         string userContent,
         Func<ResponseType, string, Task> onDelta,
-    Action<ChatMessage, ChatMessage>? onMessagesCreated = null,
+        Action<ChatMessage, ChatMessage>? onMessagesCreated = null,
         CancellationToken cancellationToken = default,
-        Action<Exception>? onError = null)
+        Action<Exception>? onError = null
+    )
     {
         if (string.IsNullOrWhiteSpace(userContent))
             throw new ArgumentException("消息内容不能为空", nameof(userContent));
@@ -299,7 +301,11 @@ public class HistoryService(IDatabaseService databaseService, IApiService apiSer
         await AddMessageAsync(sessionId, userMessage);
 
         // 2. 创建并保存空助手消息（reasoning/content 为空，UI 可立即显示）
-        var assistantMessage = ChatMessage.CreateAssistantMessage(sessionId, string.Empty, string.Empty);
+        var assistantMessage = ChatMessage.CreateAssistantMessage(
+            sessionId,
+            string.Empty,
+            string.Empty
+        );
         await AddMessageAsync(sessionId, assistantMessage);
 
         // UI 先获引用，便于立即插入列表显示占位
@@ -310,14 +316,14 @@ public class HistoryService(IDatabaseService databaseService, IApiService apiSer
         var historyList = new List<(string role, string content, string? reasoningContent)>();
         foreach (var m in existing)
         {
-            if (m.Id == userMessage.Id || m.Id == assistantMessage.Id) continue;
+            if (m.Id == userMessage.Id || m.Id == assistantMessage.Id)
+                continue;
             historyList.Add((m.Role, m.Content, m.ReasoningContent));
         }
 
         // 4. 处理要发送给模型的本轮 prompt：除第一轮外追加 <think> 规范提示；不写入历史，仅对模型可见
-        string promptToSend = historyList.Count > 0
-            ? BuildThinkEnforcedPrompt(userContent)
-            : userContent;
+        string promptToSend =
+            historyList.Count > 0 ? BuildThinkEnforcedPrompt(userContent) : userContent;
 
         // 5. 调用底层 API（支持 cancellation / error）
         await _apiService.ChatAsync(
@@ -342,7 +348,10 @@ public class HistoryService(IDatabaseService databaseService, IApiService apiSer
         );
 
         // Fallback：若 ReasoningContent 仍为空但 Content 中包含 <think>...</think>，尝试一次性拆分
-        if (string.IsNullOrEmpty(assistantMessage.ReasoningContent) && assistantMessage.Content.Contains("<think>", StringComparison.OrdinalIgnoreCase))
+        if (
+            string.IsNullOrEmpty(assistantMessage.ReasoningContent)
+            && assistantMessage.Content.Contains("<think>", StringComparison.OrdinalIgnoreCase)
+        )
         {
             var content = assistantMessage.Content;
             int start = content.IndexOf("<think>", StringComparison.OrdinalIgnoreCase);
@@ -366,7 +375,8 @@ public class HistoryService(IDatabaseService databaseService, IApiService apiSer
     /// </summary>
     private static string BuildThinkEnforcedPrompt(string original)
     {
-        return "你必须在<think>和</think>标签内给出你的推理过程，然后，在</think>标签后给出最终的答案。\n\n以下是我的问题：\n" + original;
+        return "你必须在<think>和</think>标签内给出你的推理过程，然后，在</think>标签后给出最终的答案。\n\n以下是我的问题：\n"
+            + original;
     }
 
     /// <summary>

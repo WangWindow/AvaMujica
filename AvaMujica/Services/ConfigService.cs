@@ -97,7 +97,11 @@ public class ConfigService(IDatabaseService databaseService) : IConfigService
     /// <summary>
     /// 尝试将配置值转换为指定类型
     /// </summary>
-    private static bool TryConvertAndSetValue<T>(ConfigAdapter dbConfig, PropertyInfo property, Config config)
+    private static bool TryConvertAndSetValue<T>(
+        ConfigAdapter dbConfig,
+        PropertyInfo property,
+        Config config
+    )
     {
         if (typeof(T) == typeof(string))
         {

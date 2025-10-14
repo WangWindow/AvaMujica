@@ -204,7 +204,11 @@ public class DatabaseService : IDatabaseService, IDisposable
     /// <summary>
     /// 使用委托处理查询结果
     /// </summary>
-    public void ExecuteReader(string sql, Action<DbDataReader> handleReader, Dictionary<string, object>? parameters = null)
+    public void ExecuteReader(
+        string sql,
+        Action<DbDataReader> handleReader,
+        Dictionary<string, object>? parameters = null
+    )
     {
         lock (_dbLock)
         {
@@ -230,7 +234,11 @@ public class DatabaseService : IDatabaseService, IDisposable
     /// <summary>
     /// 通用的查询方法
     /// </summary>
-    public List<T> Query<T>(string sql, Func<DbDataReader, T> mapper, Dictionary<string, object>? parameters = null)
+    public List<T> Query<T>(
+        string sql,
+        Func<DbDataReader, T> mapper,
+        Dictionary<string, object>? parameters = null
+    )
     {
         var result = new List<T>();
 

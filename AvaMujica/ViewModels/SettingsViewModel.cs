@@ -6,11 +6,23 @@ using AvaMujica.Models;
 using AvaMujica.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AvaMujica.ViewModels;
 
-public partial class SettingsViewModel(MainViewModel mainViewModel, IConfigService configService, IApiService apiService) : ViewModelBase
+public partial class SettingsViewModel(
+    MainViewModel mainViewModel,
+    IConfigService configService,
+    IApiService apiService
+) : ViewModelBase
 {
+    public SettingsViewModel()
+        : this(
+            App.Services.GetRequiredService<MainViewModel>(),
+            App.Services.GetRequiredService<IConfigService>(),
+            App.Services.GetRequiredService<IApiService>()
+        ) { }
+
     /// <summary>
     /// 主视图模型
     /// </summary>
@@ -125,14 +137,16 @@ public partial class SettingsViewModel(MainViewModel mainViewModel, IConfigServi
         try
         {
             var asm = typeof(App).Assembly;
-            var info = asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+            var info =
+                asm.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 
             if (string.IsNullOrWhiteSpace(info))
             {
                 info = asm.GetName().Version?.ToString();
             }
 
-            if (string.IsNullOrWhiteSpace(info)) return "0.0.0";
+            if (string.IsNullOrWhiteSpace(info))
+                return "0.0.0";
 
             // 去掉 '+' 及其后的构建元数据（例如 git hash）
             var plusIdx = info.IndexOf('+');
@@ -177,7 +191,8 @@ public partial class SettingsViewModel(MainViewModel mainViewModel, IConfigServi
 
     partial void OnThemeChanged(string value)
     {
-        if (string.IsNullOrWhiteSpace(value)) return;
+        if (string.IsNullOrWhiteSpace(value))
+            return;
         _configService.SetConfig("Theme", value);
         App.ApplyTheme(value);
     }
@@ -187,7 +202,8 @@ public partial class SettingsViewModel(MainViewModel mainViewModel, IConfigServi
     /// </summary>
     partial void OnSelectedModelChanged(string value)
     {
-        if (string.IsNullOrWhiteSpace(value)) return;
+        if (string.IsNullOrWhiteSpace(value))
+            return;
         _configService.SetConfig("Model", value);
     }
 
@@ -277,9 +293,7 @@ public partial class SettingsViewModel(MainViewModel mainViewModel, IConfigServi
         }
 
         // 保存API基础URL
-        var newApiBase = string.IsNullOrEmpty(TempApiBase)
-            ? "https://api.openai.com"
-            : TempApiBase;
+        var newApiBase = string.IsNullOrEmpty(TempApiBase) ? "https://api.openai.com" : TempApiBase;
         _configService.SetConfig("ApiBase", newApiBase);
         ApiBase = newApiBase;
 
@@ -310,7 +324,8 @@ public partial class SettingsViewModel(MainViewModel mainViewModel, IConfigServi
     [RelayCommand]
     private void SelectTheme(string theme)
     {
-        if (string.IsNullOrWhiteSpace(theme)) return;
+        if (string.IsNullOrWhiteSpace(theme))
+            return;
         Theme = theme;
         _configService.SetConfig("Theme", theme);
         App.ApplyTheme(theme);
@@ -318,8 +333,10 @@ public partial class SettingsViewModel(MainViewModel mainViewModel, IConfigServi
 
     private static string MaskApiKey(string apiKey)
     {
-        if (string.IsNullOrEmpty(apiKey)) return "未设置";
-        if (apiKey.Length <= 8) return new string('*', apiKey.Length);
+        if (string.IsNullOrEmpty(apiKey))
+            return "未设置";
+        if (apiKey.Length <= 8)
+            return new string('*', apiKey.Length);
         return $"{apiKey[..4]}****{apiKey[^4..]}";
     }
 

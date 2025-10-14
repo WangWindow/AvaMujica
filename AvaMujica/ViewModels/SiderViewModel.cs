@@ -7,11 +7,41 @@ using AvaMujica.Models;
 using AvaMujica.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AvaMujica.ViewModels;
 
 public partial class SiderViewModel : ViewModelBase
 {
+    /// <summary>
+    /// 构造函数
+    /// </summary>
+    /// <param name="mainViewModel">主视图模型</param>
+    public SiderViewModel(MainViewModel mainViewModel, IHistoryService historyService)
+    {
+        _mainViewModel = mainViewModel;
+        _historyService = historyService;
+
+        // 设置属性更改通知
+        PropertyChanged += (sender, args) =>
+        {
+            if (args.PropertyName == nameof(ChatSessionGroups))
+            {
+                HasChats = ChatSessionGroups.Any(g => g.Items.Count > 0);
+            }
+        };
+
+        // 初始加载会话
+        _ = RefreshHistoryAsync();
+    }
+
+    // 默认构造：从单例服务解析依赖
+    public SiderViewModel()
+        : this(
+            App.Services.GetRequiredService<MainViewModel>(),
+            App.Services.GetRequiredService<IHistoryService>()
+        ) { }
+
     private readonly IHistoryService _historyService;
 
     /// <summary>
@@ -44,28 +74,6 @@ public partial class SiderViewModel : ViewModelBase
     private bool hasChats = false;
 
     /// <summary>
-    /// 构造函数
-    /// </summary>
-    /// <param name="mainViewModel">主视图模型</param>
-    public SiderViewModel(MainViewModel mainViewModel, IHistoryService historyService)
-    {
-        _mainViewModel = mainViewModel;
-        _historyService = historyService;
-
-        // 设置属性更改通知
-        PropertyChanged += (sender, args) =>
-        {
-            if (args.PropertyName == nameof(ChatSessionGroups))
-            {
-                HasChats = ChatSessionGroups.Any(g => g.Items.Count > 0);
-            }
-        };
-
-        // 初始加载会话
-    _ = RefreshHistoryAsync();
-    }
-
-    /// <summary>
     /// 当会话类型选择改变时触发
     /// </summary>
     partial void OnSelectedSessionTypeChanged(string value)
@@ -80,21 +88,16 @@ public partial class SiderViewModel : ViewModelBase
     {
         List<ChatSessionGroup> historyGroups = sessionType switch
         {
-            SessionType.Chat =>
-                await _historyService.GetChatSessionHistorysByTypeAsync(
-                    SessionType.Chat
-                ),
-            SessionType.Assessment =>
-                await _historyService.GetChatSessionHistorysByTypeAsync(
-                    SessionType.Assessment
-                ),
-            SessionType.Plan =>
-                await _historyService.GetChatSessionHistorysByTypeAsync(
-                    SessionType.Plan
-                ),
-            _ => await _historyService.GetChatSessionHistorysByTypeAsync(
+            SessionType.Chat => await _historyService.GetChatSessionHistorysByTypeAsync(
                 SessionType.Chat
             ),
+            SessionType.Assessment => await _historyService.GetChatSessionHistorysByTypeAsync(
+                SessionType.Assessment
+            ),
+            SessionType.Plan => await _historyService.GetChatSessionHistorysByTypeAsync(
+                SessionType.Plan
+            ),
+            _ => await _historyService.GetChatSessionHistorysByTypeAsync(SessionType.Chat),
         };
 
         _mainViewModel.ChatSessionGroups.Clear();

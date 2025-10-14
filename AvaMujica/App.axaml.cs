@@ -37,14 +37,14 @@ public partial class App : Application
 
             desktop.MainWindow = new MainWindow
             {
-                DataContext = Services.GetRequiredService<MainWindowViewModel>()
+                DataContext = Services.GetRequiredService<MainWindowViewModel>(),
             };
         }
         else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
         {
             singleViewPlatform.MainView = new MainView
             {
-                DataContext = Services.GetRequiredService<MainViewModel>()
+                DataContext = Services.GetRequiredService<MainViewModel>(),
             };
         }
 
@@ -89,7 +89,8 @@ public partial class App : Application
 
     public static void ApplyTheme(string theme)
     {
-        if (Current is null) return;
+        if (Current is null)
+            return;
 
         var t = theme?.Trim()?.ToLowerInvariant();
         Current.RequestedThemeVariant = t switch
@@ -97,7 +98,7 @@ public partial class App : Application
             "light" => ThemeVariant.Light,
             "dark" => ThemeVariant.Dark,
             "system" => ThemeVariant.Default,
-            _ => ThemeVariant.Default
+            _ => ThemeVariant.Default,
         };
     }
 }

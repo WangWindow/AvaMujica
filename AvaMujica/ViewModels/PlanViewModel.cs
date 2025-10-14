@@ -7,11 +7,15 @@ using AvaMujica.Models;
 using AvaMujica.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AvaMujica.ViewModels;
 
 public partial class PlanViewModel(IApiService apiService) : ViewModelBase
 {
+    public PlanViewModel()
+    : this(App.Services.GetRequiredService<IApiService>()) { }
+
     private readonly IApiService _apiService = apiService;
 
     public ObservableCollection<PlanItem> Items { get; } = [];
@@ -30,7 +34,8 @@ public partial class PlanViewModel(IApiService apiService) : ViewModelBase
     [RelayCommand]
     private void AddItem()
     {
-        if (string.IsNullOrWhiteSpace(NewItemTitle)) return;
+        if (string.IsNullOrWhiteSpace(NewItemTitle))
+            return;
         Items.Add(new PlanItem { Title = NewItemTitle });
         NewItemTitle = string.Empty;
     }
@@ -38,14 +43,16 @@ public partial class PlanViewModel(IApiService apiService) : ViewModelBase
     [RelayCommand]
     private void RemoveItem(PlanItem? item)
     {
-        if (item is null) return;
+        if (item is null)
+            return;
         Items.Remove(item);
     }
 
     [RelayCommand]
     private void ToggleDone(PlanItem? item)
     {
-        if (item is null) return;
+        if (item is null)
+            return;
         item.IsDone = !item.IsDone;
         OnPropertyChanged(nameof(Items));
     }
@@ -53,7 +60,8 @@ public partial class PlanViewModel(IApiService apiService) : ViewModelBase
     [RelayCommand(CanExecute = nameof(CanGenerate))]
     private async Task GenerateByAi()
     {
-        if (IsGenerating) return;
+        if (IsGenerating)
+            return;
         _cts?.Dispose();
         _cts = new CancellationTokenSource();
         IsGenerating = true;
@@ -61,7 +69,8 @@ public partial class PlanViewModel(IApiService apiService) : ViewModelBase
         try
         {
             // 基于当前项生成完善建议，或生成一个初始方案
-            string prompt = "请根据用户的心理健康改善目标，给出一个包含5-7条可执行、可度量且温和的日常干预建议（中文、短句、编号省略）。";
+            string prompt =
+                "请根据用户的心理健康改善目标，给出一个包含5-7条可执行、可度量且温和的日常干预建议（中文、短句、编号省略）。";
             var buffer = string.Empty;
             await _apiService.ChatAsync(
                 prompt,
@@ -94,7 +103,7 @@ public partial class PlanViewModel(IApiService apiService) : ViewModelBase
                     "安排 10 分钟呼吸放松或正念练习",
                     "减少睡前 1 小时电子设备使用",
                     "与家人朋友保持沟通，分享感受",
-                    "记录每天一件小确幸，培养积极情绪"
+                    "记录每天一件小确幸，培养积极情绪",
                 ];
             }
 
@@ -128,3 +137,4 @@ public partial class PlanViewModel(IApiService apiService) : ViewModelBase
 
     private bool CanCancel() => IsGenerating;
 }
+

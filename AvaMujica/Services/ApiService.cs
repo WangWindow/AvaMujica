@@ -24,223 +24,307 @@ public class ApiService(IConfigService configService) : IApiService
     public async Task ChatAsync(
         string userPrompt,
         Func<ResponseType, string, Task> onReceiveContent,
-        System.Collections.Generic.IReadOnlyList<(string role, string content, string? reasoningContent)>? historyMessages = null,
+        System.Collections.Generic.IReadOnlyList<(
+            string role,
+            string content,
+            string? reasoningContent
+        )>? historyMessages = null,
         CancellationToken cancellationToken = default,
-        Action<Exception>? onError = null)
+        Action<Exception>? onError = null
+    )
     {
         // 将耗时的网络流式请求放到后台线程，避免 Android 抛出 NetworkOnMainThreadException
         try
         {
-            await Task.Run(async () =>
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-
-                // 加载配置（本地 DB 读取，快速）
-                var settings = _configService.LoadFullConfig();
-
-                // 构建 OpenAI 兼容的 endpoint
-                var baseUrl = (settings.ApiBase ?? string.Empty).TrimEnd('/');
-                string endpoint;
-                if (baseUrl.Contains("/chat/completions", StringComparison.OrdinalIgnoreCase))
-                {
-                    // 用户已提供完整 path
-                    endpoint = baseUrl;
-                }
-                else
-                {
-                    // 默认 OpenAI v1
-                    if (baseUrl.EndsWith("/v1", StringComparison.OrdinalIgnoreCase))
-                        endpoint = baseUrl + "/chat/completions";
-                    else if (baseUrl.EndsWith("/v1/", StringComparison.OrdinalIgnoreCase))
-                        endpoint = baseUrl + "chat/completions";
-                    else
-                        endpoint = baseUrl + "/v1/chat/completions";
-                }
-
-                using var httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(300) };
-                using var req = new HttpRequestMessage(HttpMethod.Post, endpoint);
-                req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", settings.ApiKey);
-                req.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
-
-                // 组装请求体
-                var json = BuildOpenAIChatRequest(
-                    settings.Model,
-                    settings.SystemPrompt,
-                    userPrompt,
-                    settings.Temperature,
-                    settings.MaxTokens,
-                    historyMessages
-                );
-                req.Content = new StringContent(json, Encoding.UTF8, "application/json");
-
-                // 发送并以流式读取
-                using var response = await httpClient.SendAsync(req, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
-                if (!response.IsSuccessStatusCode)
-                {
-                    var err = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-                    throw new HttpRequestException($"OpenAI API error {(int)response.StatusCode}: {err}");
-                }
-
-                await using var stream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
-                using var reader = new StreamReader(stream, Encoding.UTF8);
-
-                bool isReasoningComplete = false;
-                bool isContentComplete = false;
-                // 针对含 <think> ... </think> 的模型，手动解析：如果出现 <think> 标签，则其间内容视作 reasoning_content，闭合后才输出到 content
-                bool inThinkTag = false;
-                // 保存跨分片未完成的标签/内容 (<think 或 </think 部分)
-                string carry = string.Empty;
-
-                string? line;
-                while ((line = await reader.ReadLineAsync(cancellationToken).ConfigureAwait(false)) != null)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    if (string.IsNullOrWhiteSpace(line))
+            await Task.Run(
+                    async () =>
                     {
-                        continue; // SSE 事件间的空行
-                    }
+                        cancellationToken.ThrowIfCancellationRequested();
 
-                    // 忽略注释/keep-alive
-                    if (line.StartsWith(':'))
-                        continue;
+                        // 加载配置（本地 DB 读取，快速）
+                        var settings = _configService.LoadFullConfig();
 
-                    if (!line.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
-                        continue;
-
-                    var payload = line[5..].Trim(); // after 'data:'
-                    if (payload == "[DONE]")
-                        break;
-
-                    try
-                    {
-                        using var doc = JsonDocument.Parse(payload);
-                        if (!doc.RootElement.TryGetProperty("choices", out var choicesEl) || choicesEl.ValueKind != JsonValueKind.Array)
-                            continue;
-
-                        foreach (var choiceEl in choicesEl.EnumerateArray())
+                        // 构建 OpenAI 兼容的 endpoint
+                        var baseUrl = (settings.ApiBase ?? string.Empty).TrimEnd('/');
+                        string endpoint;
+                        if (
+                            baseUrl.Contains(
+                                "/chat/completions",
+                                StringComparison.OrdinalIgnoreCase
+                            )
+                        )
                         {
-                            // finish_reason
-                            string? finishReason = null;
-                            if (choiceEl.TryGetProperty("finish_reason", out var frEl) && frEl.ValueKind != JsonValueKind.Null)
+                            // 用户已提供完整 path
+                            endpoint = baseUrl;
+                        }
+                        else
+                        {
+                            // 默认 OpenAI v1
+                            if (baseUrl.EndsWith("/v1", StringComparison.OrdinalIgnoreCase))
+                                endpoint = baseUrl + "/chat/completions";
+                            else if (baseUrl.EndsWith("/v1/", StringComparison.OrdinalIgnoreCase))
+                                endpoint = baseUrl + "chat/completions";
+                            else
+                                endpoint = baseUrl + "/v1/chat/completions";
+                        }
+
+                        using var httpClient = new HttpClient
+                        {
+                            Timeout = TimeSpan.FromSeconds(300),
+                        };
+                        using var req = new HttpRequestMessage(HttpMethod.Post, endpoint);
+                        req.Headers.Authorization = new AuthenticationHeaderValue(
+                            "Bearer",
+                            settings.ApiKey
+                        );
+                        req.Headers.Accept.Add(
+                            new MediaTypeWithQualityHeaderValue("text/event-stream")
+                        );
+
+                        // 组装请求体
+                        var json = BuildOpenAIChatRequest(
+                            settings.Model,
+                            settings.SystemPrompt,
+                            userPrompt,
+                            settings.Temperature,
+                            settings.MaxTokens,
+                            historyMessages
+                        );
+                        req.Content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                        // 发送并以流式读取
+                        using var response = await httpClient
+                            .SendAsync(
+                                req,
+                                HttpCompletionOption.ResponseHeadersRead,
+                                cancellationToken
+                            )
+                            .ConfigureAwait(false);
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            var err = await response
+                                .Content.ReadAsStringAsync(cancellationToken)
+                                .ConfigureAwait(false);
+                            throw new HttpRequestException(
+                                $"OpenAI API error {(int)response.StatusCode}: {err}"
+                            );
+                        }
+
+                        await using var stream = await response
+                            .Content.ReadAsStreamAsync(cancellationToken)
+                            .ConfigureAwait(false);
+                        using var reader = new StreamReader(stream, Encoding.UTF8);
+
+                        bool isReasoningComplete = false;
+                        bool isContentComplete = false;
+                        // 针对含 <think> ... </think> 的模型，手动解析：如果出现 <think> 标签，则其间内容视作 reasoning_content，闭合后才输出到 content
+                        bool inThinkTag = false;
+                        // 保存跨分片未完成的标签/内容 (<think 或 </think 部分)
+                        string carry = string.Empty;
+
+                        string? line;
+                        while (
+                            (
+                                line = await reader
+                                    .ReadLineAsync(cancellationToken)
+                                    .ConfigureAwait(false)
+                            ) != null
+                        )
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+                            if (string.IsNullOrWhiteSpace(line))
                             {
-                                finishReason = frEl.GetString();
+                                continue; // SSE 事件间的空行
                             }
 
-                            // delta
-                            if (choiceEl.TryGetProperty("delta", out var deltaEl) && deltaEl.ValueKind == JsonValueKind.Object)
+                            // 忽略注释/keep-alive
+                            if (line.StartsWith(':'))
+                                continue;
+
+                            if (!line.StartsWith("data:", StringComparison.OrdinalIgnoreCase))
+                                continue;
+
+                            var payload = line[5..].Trim(); // after 'data:'
+                            if (payload == "[DONE]")
+                                break;
+
+                            try
                             {
-                                // reasoning_content (部分提供商/模型支持)
-                                if (deltaEl.TryGetProperty("reasoning_content", out var rcEl) && rcEl.ValueKind == JsonValueKind.String)
+                                using var doc = JsonDocument.Parse(payload);
+                                if (
+                                    !doc.RootElement.TryGetProperty("choices", out var choicesEl)
+                                    || choicesEl.ValueKind != JsonValueKind.Array
+                                )
+                                    continue;
+
+                                foreach (var choiceEl in choicesEl.EnumerateArray())
                                 {
-                                    var reasoning = rcEl.GetString() ?? string.Empty;
-                                    await Dispatcher.UIThread.InvokeAsync(async () =>
+                                    // finish_reason
+                                    string? finishReason = null;
+                                    if (
+                                        choiceEl.TryGetProperty("finish_reason", out var frEl)
+                                        && frEl.ValueKind != JsonValueKind.Null
+                                    )
                                     {
-                                        await onReceiveContent(ResponseType.ReasoningContent, reasoning).ConfigureAwait(false);
-                                    });
-                                    Debug.Write(reasoning);
-                                    isReasoningComplete = false;
-                                }
-
-                                if (deltaEl.TryGetProperty("content", out var cEl) && cEl.ValueKind == JsonValueKind.String)
-                                {
-                                    var incoming = cEl.GetString() ?? string.Empty;
-                                    var raw = carry + incoming;
-                                    carry = string.Empty;
-
-                                    var reasoningBuilder = new StringBuilder();
-                                    var contentBuilder = new StringBuilder();
-
-                                    int i = 0;
-                                    while (i < raw.Length)
-                                    {
-                                        // 尝试匹配标签（完整）
-                                        if (!inThinkTag && raw.AsSpan(i).StartsWith("<think>", StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            inThinkTag = true;
-                                            i += 7;
-                                            continue;
-                                        }
-                                        if (inThinkTag && raw.AsSpan(i).StartsWith("</think>", StringComparison.OrdinalIgnoreCase))
-                                        {
-                                            inThinkTag = false;
-                                            i += 8;
-                                            continue;
-                                        }
-
-                                        // 不足以判断是否为被截断标签，保存剩余并退出（最多 7 个字符 <think> / 8 个 </think>）
-                                        int remain = raw.Length - i;
-                                        if (remain < 8 && raw[i] == '<')
-                                        {
-                                            // 可能是被截断标签开头
-                                            carry = raw.Substring(i);
-                                            break;
-                                        }
-
-                                        if (inThinkTag)
-                                            reasoningBuilder.Append(raw[i]);
-                                        else
-                                            contentBuilder.Append(raw[i]);
-                                        i++;
+                                        finishReason = frEl.GetString();
                                     }
 
-                                    var reasoningDelta = reasoningBuilder.ToString();
-                                    var contentDelta = contentBuilder.ToString();
-
-                                    if (!string.IsNullOrEmpty(reasoningDelta))
+                                    // delta
+                                    if (
+                                        choiceEl.TryGetProperty("delta", out var deltaEl)
+                                        && deltaEl.ValueKind == JsonValueKind.Object
+                                    )
                                     {
-                                        await Dispatcher.UIThread.InvokeAsync(async () =>
+                                        // reasoning_content (部分提供商/模型支持)
+                                        if (
+                                            deltaEl.TryGetProperty(
+                                                "reasoning_content",
+                                                out var rcEl
+                                            )
+                                            && rcEl.ValueKind == JsonValueKind.String
+                                        )
                                         {
-                                            await onReceiveContent(ResponseType.ReasoningContent, reasoningDelta).ConfigureAwait(false);
-                                        });
-                                        Debug.Write(reasoningDelta);
-                                        isReasoningComplete = false;
+                                            var reasoning = rcEl.GetString() ?? string.Empty;
+                                            await Dispatcher.UIThread.InvokeAsync(async () =>
+                                            {
+                                                await onReceiveContent(
+                                                        ResponseType.ReasoningContent,
+                                                        reasoning
+                                                    )
+                                                    .ConfigureAwait(false);
+                                            });
+                                            Debug.Write(reasoning);
+                                            isReasoningComplete = false;
+                                        }
+
+                                        if (
+                                            deltaEl.TryGetProperty("content", out var cEl)
+                                            && cEl.ValueKind == JsonValueKind.String
+                                        )
+                                        {
+                                            var incoming = cEl.GetString() ?? string.Empty;
+                                            var raw = carry + incoming;
+                                            carry = string.Empty;
+
+                                            var reasoningBuilder = new StringBuilder();
+                                            var contentBuilder = new StringBuilder();
+
+                                            int i = 0;
+                                            while (i < raw.Length)
+                                            {
+                                                // 尝试匹配标签（完整）
+                                                if (
+                                                    !inThinkTag
+                                                    && raw.AsSpan(i)
+                                                        .StartsWith(
+                                                            "<think>",
+                                                            StringComparison.OrdinalIgnoreCase
+                                                        )
+                                                )
+                                                {
+                                                    inThinkTag = true;
+                                                    i += 7;
+                                                    continue;
+                                                }
+                                                if (
+                                                    inThinkTag
+                                                    && raw.AsSpan(i)
+                                                        .StartsWith(
+                                                            "</think>",
+                                                            StringComparison.OrdinalIgnoreCase
+                                                        )
+                                                )
+                                                {
+                                                    inThinkTag = false;
+                                                    i += 8;
+                                                    continue;
+                                                }
+
+                                                // 不足以判断是否为被截断标签，保存剩余并退出（最多 7 个字符 <think> / 8 个 </think>）
+                                                int remain = raw.Length - i;
+                                                if (remain < 8 && raw[i] == '<')
+                                                {
+                                                    // 可能是被截断标签开头
+                                                    carry = raw.Substring(i);
+                                                    break;
+                                                }
+
+                                                if (inThinkTag)
+                                                    reasoningBuilder.Append(raw[i]);
+                                                else
+                                                    contentBuilder.Append(raw[i]);
+                                                i++;
+                                            }
+
+                                            var reasoningDelta = reasoningBuilder.ToString();
+                                            var contentDelta = contentBuilder.ToString();
+
+                                            if (!string.IsNullOrEmpty(reasoningDelta))
+                                            {
+                                                await Dispatcher.UIThread.InvokeAsync(async () =>
+                                                {
+                                                    await onReceiveContent(
+                                                            ResponseType.ReasoningContent,
+                                                            reasoningDelta
+                                                        )
+                                                        .ConfigureAwait(false);
+                                                });
+                                                Debug.Write(reasoningDelta);
+                                                isReasoningComplete = false;
+                                            }
+
+                                            if (!string.IsNullOrEmpty(contentDelta))
+                                            {
+                                                if (!isReasoningComplete && !inThinkTag)
+                                                {
+                                                    isReasoningComplete = true;
+                                                    Debug.WriteLine("\n==== ↑ Reasoning ====");
+                                                }
+                                                await Dispatcher.UIThread.InvokeAsync(async () =>
+                                                {
+                                                    await onReceiveContent(
+                                                            ResponseType.Content,
+                                                            contentDelta
+                                                        )
+                                                        .ConfigureAwait(false);
+                                                });
+                                                Debug.Write(contentDelta);
+                                                isContentComplete = false;
+                                            }
+                                        }
                                     }
 
-                                    if (!string.IsNullOrEmpty(contentDelta))
+                                    // 处理结束
+                                    if (!string.IsNullOrEmpty(finishReason))
                                     {
-                                        if (!isReasoningComplete && !inThinkTag)
+                                        if (!isContentComplete)
                                         {
-                                            isReasoningComplete = true;
-                                            Debug.WriteLine("\n==== ↑ Reasoning ====");
+                                            Debug.WriteLine("\n==== ↑ Content ====");
+                                            isContentComplete = true;
                                         }
-                                        await Dispatcher.UIThread.InvokeAsync(async () =>
-                                        {
-                                            await onReceiveContent(ResponseType.Content, contentDelta).ConfigureAwait(false);
-                                        });
-                                        Debug.Write(contentDelta);
-                                        isContentComplete = false;
                                     }
                                 }
                             }
-
-                            // 处理结束
-                            if (!string.IsNullOrEmpty(finishReason))
+                            catch (JsonException)
                             {
-                                if (!isContentComplete)
-                                {
-                                    Debug.WriteLine("\n==== ↑ Content ====");
-                                    isContentComplete = true;
-                                }
+                                // 非 JSON 行或提供商扩展格式，忽略该行
                             }
                         }
-                    }
-                    catch (JsonException)
-                    {
-                        // 非 JSON 行或提供商扩展格式，忽略该行
-                    }
-                }
 
-                // 结束标记确保输出完整
-                if (!isReasoningComplete)
-                {
-                    Debug.WriteLine("\n==== ↑ Reasoning ====");
-                }
+                        // 结束标记确保输出完整
+                        if (!isReasoningComplete)
+                        {
+                            Debug.WriteLine("\n==== ↑ Reasoning ====");
+                        }
 
-                if (!isContentComplete)
-                {
-                    Debug.WriteLine("\n==== ↑ Content ====");
-                }
-            }, cancellationToken).ConfigureAwait(false);
+                        if (!isContentComplete)
+                        {
+                            Debug.WriteLine("\n==== ↑ Content ====");
+                        }
+                    },
+                    cancellationToken
+                )
+                .ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -258,7 +342,11 @@ public class ApiService(IConfigService configService) : IApiService
         string userPrompt,
         double temperature,
         int maxTokens,
-        System.Collections.Generic.IReadOnlyList<(string role, string content, string? reasoningContent)>? history
+        System.Collections.Generic.IReadOnlyList<(
+            string role,
+            string content,
+            string? reasoningContent
+        )>? history
     )
     {
         using var ms = new MemoryStream();
@@ -278,7 +366,8 @@ public class ApiService(IConfigService configService) : IApiService
         {
             foreach (var (role, content, _) in history)
             {
-                if (string.IsNullOrWhiteSpace(role) || string.IsNullOrWhiteSpace(content)) continue;
+                if (string.IsNullOrWhiteSpace(role) || string.IsNullOrWhiteSpace(content))
+                    continue;
                 writer.WriteStartObject();
                 writer.WriteString("role", role);
                 writer.WriteString("content", content);
@@ -305,5 +394,4 @@ public class ApiService(IConfigService configService) : IApiService
         writer.Flush();
         return Encoding.UTF8.GetString(ms.ToArray());
     }
-
 }
