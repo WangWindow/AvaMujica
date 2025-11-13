@@ -123,7 +123,7 @@ public partial class SettingsViewModel(
     /// <summary>
     /// 应用版本（例如：v0.5.0）。会从 AssemblyInformationalVersion 读取，并移除 '+' 之后的构建元数据。
     /// </summary>
-    public string VersionString
+    public static string VersionString
     {
         get
         {

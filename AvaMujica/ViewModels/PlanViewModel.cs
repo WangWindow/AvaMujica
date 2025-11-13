@@ -88,7 +88,7 @@ public partial class PlanViewModel(IApiService apiService) : ViewModelBase
 
             // 简单解析为多行待办
             var lines = buffer
-                .Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                .Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
                 .Select(l => l.TrimStart('-', '*', ' ', '\t'))
                 .Where(l => l.Length > 0)
                 .Take(10)
@@ -137,4 +137,3 @@ public partial class PlanViewModel(IApiService apiService) : ViewModelBase
 
     private bool CanCancel() => IsGenerating;
 }
-

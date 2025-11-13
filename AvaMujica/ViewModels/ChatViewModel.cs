@@ -164,10 +164,7 @@ public partial class ChatViewModel : ViewModelBase
         {
             ChatTitle = userInput.Length > 10 ? userInput[..10] + "..." : userInput;
             var session = await _historyService.GetSessionAsync(ChatId);
-            if (session != null)
-            {
-                session.Title = ChatTitle;
-            }
+            session?.Title = ChatTitle;
         }
     }
 
