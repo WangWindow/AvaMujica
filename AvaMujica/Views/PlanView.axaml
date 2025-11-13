@@ -12,41 +12,84 @@
     </Design.DataContext>
 
     <Grid
+        x:Name="Root"
         Margin="20"
         HorizontalAlignment="Stretch"
         RowDefinitions="Auto,*,Auto">
-        <!--  顶部输入与生成  -->
-        <WrapPanel
-            Margin="0,0,8,8"
-            HorizontalAlignment="Center"
-            Orientation="Horizontal">
-            <TextBox
-                MinWidth="240"
-                Margin="0,0,8,0"
-                Text="{Binding NewItemTitle, Mode=TwoWay}"
-                Watermark="添加一条待办..." />
-            <StackPanel
-                Margin="0,8,0,8"
-                Orientation="Horizontal"
-                Spacing="16">
-                <Button
-                    Command="{Binding AddItemCommand}"
-                    Content="添加"
-                    IsEnabled="{Binding NewItemTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
-                <Button
-                    Command="{Binding GenerateByAiCommand}"
-                    Content="AI 生成方案"
-                    IsEnabled="{Binding !IsGenerating}" />
-                <Button
-                    Command="{Binding CancelGenerateCommand}"
-                    Content="取消"
-                    IsEnabled="{Binding IsGenerating}" />
-            </StackPanel>
-            <ProgressBar
-                Width="120"
-                IsIndeterminate="True"
-                IsVisible="{Binding IsGenerating}" />
-        </WrapPanel>
+        <!--
+            顶部输入与生成（响应式）：
+            - 宽屏：同一行（WrapPanel），整体居中
+            - 窄屏：两行布局（输入在上、按钮在下且水平居中），整体居中
+        -->
+        <Grid Margin="0,0,8,8">
+            <!--  宽屏：同一行（Grid * + Auto，输入框自适应拉伸）  -->
+            <Grid
+                x:Name="WideBar"
+                HorizontalAlignment="Stretch"
+                ColumnDefinitions="*,Auto">
+                <TextBox
+                    x:Name="WideInputBox"
+                    Grid.Column="0"
+                    MinWidth="240"
+                    Margin="0,0,8,8"
+                    HorizontalAlignment="Stretch"
+                    Text="{Binding NewItemTitle, Mode=TwoWay}"
+                    Watermark="添加一条待办..." />
+                <StackPanel
+                    x:Name="WideButtons"
+                    Grid.Column="1"
+                    Margin="8,0,0,8"
+                    VerticalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="12">
+                    <Button
+                        Command="{Binding AddItemCommand}"
+                        Content="添加"
+                        IsEnabled="{Binding NewItemTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    <Button
+                        Command="{Binding GenerateByAiCommand}"
+                        Content="AI 生成方案"
+                        IsEnabled="{Binding !IsGenerating}" />
+                    <Button
+                        Command="{Binding CancelGenerateCommand}"
+                        Content="取消"
+                        IsEnabled="{Binding IsGenerating}" />
+                </StackPanel>
+            </Grid>
+
+            <!--  窄屏：两行布局  -->
+            <Grid
+                x:Name="NarrowBar"
+                HorizontalAlignment="Stretch"
+                RowDefinitions="Auto,Auto">
+                <TextBox
+                    Grid.Row="0"
+                    MinWidth="240"
+                    MaxWidth="600"
+                    Margin="0,0,0,8"
+                    HorizontalAlignment="Stretch"
+                    Text="{Binding NewItemTitle, Mode=TwoWay}"
+                    Watermark="添加一条待办..." />
+                <StackPanel
+                    Grid.Row="1"
+                    HorizontalAlignment="Center"
+                    Orientation="Horizontal"
+                    Spacing="12">
+                    <Button
+                        Command="{Binding AddItemCommand}"
+                        Content="添加"
+                        IsEnabled="{Binding NewItemTitle, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+                    <Button
+                        Command="{Binding GenerateByAiCommand}"
+                        Content="AI 生成方案"
+                        IsEnabled="{Binding !IsGenerating}" />
+                    <Button
+                        Command="{Binding CancelGenerateCommand}"
+                        Content="取消"
+                        IsEnabled="{Binding IsGenerating}" />
+                </StackPanel>
+            </Grid>
+        </Grid>
         <!--  列表  -->
         <Border
             Grid.Row="1"
@@ -79,10 +122,18 @@
             </ItemsControl>
         </Border>
 
-        <TextBlock
-            Grid.Row="2"
-            Margin="0,8,0,8"
-            Foreground="{DynamicResource SystemBaseMediumColor}"
-            Text="提示：点击 AI 生成可快速获得一套建议" />
+        <Grid Grid.Row="2" Margin="0,8,0,8">
+            <!--  加载时显示进度条  -->
+            <ProgressBar
+                Width="140"
+                IsIndeterminate="True"
+                IsVisible="{Binding IsGenerating}" />
+
+            <!--  未加载时显示提示文字，与进度条处于同一位置，互斥显示  -->
+            <TextBlock
+                Foreground="{DynamicResource SystemBaseMediumColor}"
+                IsVisible="{Binding !IsGenerating}"
+                Text="提示：点击 AI 生成可快速获得一套建议" />
+        </Grid>
     </Grid>
 </UserControl>

@@ -8,7 +8,7 @@
     d:DesignHeight="900"
     d:DesignWidth="400"
     x:DataType="vm:AssessmentViewModel"
-    mc:Ignorable="d"   >
+    mc:Ignorable="d">
     <Design.DataContext>
         <vm:AssessmentViewModel />
     </Design.DataContext>
@@ -91,10 +91,38 @@
                             ItemsSource="{Binding CurrentQuestion.Options}"
                             ScrollViewer.VerticalScrollBarVisibility="Auto"
                             SelectedIndex="{Binding SelectedOptionIndex, Mode=TwoWay}">
+                            <ListBox.Styles>
+                                <Style Selector="ListBoxItem">
+                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="Margin" Value="0,6" />
+                                    <Setter Property="CornerRadius" Value="6" />
+                                </Style>
+                                <!--  可选：如需去掉容器自带的悬浮底色，取消注释下面两条  -->
+                                <Style Selector="ListBoxItem:pointerover">
+                                    <Setter Property="Background" Value="Transparent" />
+                                </Style>
+                                <Style Selector="ListBoxItem:selected">
+                                    <Setter Property="Background" Value="Transparent" />
+                                </Style>
+
+                                <!--  提升选中/悬停的可见度：直接作用于模板内容里的 Border/TextBlock  -->
+                                <Style Selector="ListBoxItem:pointerover Border">
+                                    <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColorLight2}" />
+                                </Style>
+                                <Style Selector="ListBoxItem:selected Border">
+                                    <Setter Property="Background" Value="{DynamicResource SystemAccentColorLight3}" />
+                                    <Setter Property="BorderBrush" Value="{DynamicResource SystemAccentColor}" />
+                                    <Setter Property="BorderThickness" Value="2" />
+                                </Style>
+                                <Style Selector="ListBoxItem:selected TextBlock">
+                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                    <Setter Property="Foreground" Value="{DynamicResource SystemAccentColor}" />
+                                </Style>
+                            </ListBox.Styles>
                             <ListBox.ItemTemplate>
                                 <DataTemplate>
                                     <Border
-                                        Margin="0,6"
+                                        Margin="0"
                                         Padding="10"
                                         Background="{DynamicResource SystemChromeLowColor}"
                                         BorderBrush="{DynamicResource SystemBaseLowColor}"
