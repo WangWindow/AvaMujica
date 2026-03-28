@@ -97,38 +97,34 @@ public class ConfigService(IDatabaseService databaseService) : IConfigService
     /// <summary>
     /// 尝试将配置值转换为指定类型
     /// </summary>
-    private static bool TryConvertAndSetValue<T>(
-        ConfigAdapter dbConfig,
-        PropertyInfo property,
-        Config config
-    )
+    private static bool TryConvertAndSetValue(ConfigAdapter dbConfig, PropertyInfo property, Config config)
     {
-        if (typeof(T) == typeof(string))
+        var targetType = property.PropertyType;
+
+        if (targetType == typeof(string))
         {
             property.SetValue(config, dbConfig.Value);
             return true;
         }
-        else
+
+        if (targetType == typeof(bool) && bool.TryParse(dbConfig.Value, out bool boolValue))
         {
-            if (typeof(T) == typeof(bool) && bool.TryParse(dbConfig.Value, out bool boolValue))
-            {
-                property.SetValue(config, boolValue);
-                return true;
-            }
-            else if (
-                typeof(T) == typeof(float)
-                && float.TryParse(dbConfig.Value, out float floatValue)
-            )
-            {
-                property.SetValue(config, floatValue);
-                return true;
-            }
-            else if (typeof(T) == typeof(int) && int.TryParse(dbConfig.Value, out int intValue))
-            {
-                property.SetValue(config, intValue);
-                return true;
-            }
+            property.SetValue(config, boolValue);
+            return true;
         }
+
+        if (targetType == typeof(float) && float.TryParse(dbConfig.Value, out float floatValue))
+        {
+            property.SetValue(config, floatValue);
+            return true;
+        }
+
+        if (targetType == typeof(int) && int.TryParse(dbConfig.Value, out int intValue))
+        {
+            property.SetValue(config, intValue);
+            return true;
+        }
+
         return false;
     }
 
@@ -150,13 +146,7 @@ public class ConfigService(IDatabaseService databaseService) : IConfigService
             // 检查属性是否存在于数据库配置中
             if (configDict.TryGetValue(property.Name, out var dbConfig))
             {
-                // 修复：TryConvertAndSetValue 是 static 方法，应使用 Static 标志并以 null 作为实例调用
-                var method = typeof(ConfigService).GetMethod(
-                    nameof(TryConvertAndSetValue),
-                    BindingFlags.NonPublic | BindingFlags.Static
-                );
-                var genericMethod = method?.MakeGenericMethod(property.PropertyType);
-                genericMethod?.Invoke(null, [dbConfig, property, config]);
+                TryConvertAndSetValue(dbConfig, property, config);
             }
             else
             {

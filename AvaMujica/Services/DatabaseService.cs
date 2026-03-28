@@ -268,5 +268,9 @@ public class DatabaseService : IDatabaseService, IDisposable
         return result;
     }
 
-    public void Dispose() => _connection.Dispose();
+    public void Dispose()
+    {
+        _connection.Dispose();
+        GC.SuppressFinalize(this);
+    }
 }

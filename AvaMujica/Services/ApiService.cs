@@ -29,8 +29,8 @@ public class ApiService(IConfigService configService) : IApiService
             string content,
             string? reasoningContent
         )>? historyMessages = null,
-        CancellationToken cancellationToken = default,
-        Action<Exception>? onError = null
+        Action<Exception>? onError = null,
+        CancellationToken cancellationToken = default
     )
     {
         // 将耗时的网络流式请求放到后台线程，避免 Android 抛出 NetworkOnMainThreadException
@@ -245,7 +245,7 @@ public class ApiService(IConfigService configService) : IApiService
                                                 if (remain < 8 && raw[i] == '<')
                                                 {
                                                     // 可能是被截断标签开头
-                                                    carry = raw.Substring(i);
+                                                    carry = raw[i..];
                                                     break;
                                                 }
 

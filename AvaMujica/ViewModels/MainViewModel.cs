@@ -172,7 +172,7 @@ public partial class MainViewModel : ViewModelBase
             foreach (var item in group.Items)
             {
                 // 使用映射字典快速查找ChatViewModel
-                if (_chatViewModelMap.TryGetValue(item.Id, out var chatViewModel))
+                if (_chatViewModelMap.TryGetValue(item.Id, out _))
                 {
                     // item.ChatViewModel = chatViewModel;
                 }

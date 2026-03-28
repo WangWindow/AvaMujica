@@ -289,8 +289,8 @@ public class HistoryService(IDatabaseService databaseService, IApiService apiSer
         string userContent,
         Func<ResponseType, string, Task> onDelta,
         Action<ChatMessage, ChatMessage>? onMessagesCreated = null,
-        CancellationToken cancellationToken = default,
-        Action<Exception>? onError = null
+        Action<Exception>? onError = null,
+        CancellationToken cancellationToken = default
     )
     {
         if (string.IsNullOrWhiteSpace(userContent))
@@ -343,8 +343,8 @@ public class HistoryService(IDatabaseService databaseService, IApiService apiSer
                 await onDelta(type, delta);
             },
             historyList,
-            cancellationToken,
-            ex => onError?.Invoke(ex)
+            ex => onError?.Invoke(ex),
+            cancellationToken
         );
 
         // Fallback：若 ReasoningContent 仍为空但 Content 中包含 <think>...</think>，尝试一次性拆分
@@ -359,8 +359,8 @@ public class HistoryService(IDatabaseService databaseService, IApiService apiSer
             if (start >= 0 && end > start)
             {
                 int innerStart = start + 7;
-                var reasoning = content.Substring(innerStart, end - innerStart);
-                var after = content.Substring(end + 8);
+                var reasoning = content[innerStart..end];
+                var after = content[(end + 8)..];
                 assistantMessage.ReasoningContent = reasoning;
                 assistantMessage.Content = after;
                 await UpdateMessageAsync(assistantMessage);
@@ -382,7 +382,7 @@ public class HistoryService(IDatabaseService databaseService, IApiService apiSer
     /// <summary>
     /// 将历史记录按日期分组
     /// </summary>
-    private List<ChatSessionGroup> GroupHistoryByDate(List<ChatSession> historyItems)
+    private static List<ChatSessionGroup> GroupHistoryByDate(List<ChatSession> historyItems)
     {
         var result = new List<ChatSessionGroup>();
 

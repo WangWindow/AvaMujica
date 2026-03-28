@@ -50,7 +50,8 @@ public partial class ChatViewModel : ViewModelBase
             App.Services.GetRequiredService<IHistoryService>(),
             App.Services.GetRequiredService<IApiService>(),
             App.Services.GetRequiredService<IConfigService>()
-        ) { }
+        )
+    { }
 
     public ChatViewModel(
         IHistoryService historyService,
@@ -153,11 +154,8 @@ public partial class ChatViewModel : ViewModelBase
                 await _historyService.UpdateMessageAsync(assistantMessage);
             },
             history,
-            _cts?.Token ?? CancellationToken.None,
-            ex =>
-            {
-                assistantMessage.Content += $"\n[错误] {ex.Message}";
-            }
+            ex => assistantMessage.Content += $"\n[错误] {ex.Message}",
+            _cts?.Token ?? CancellationToken.None
         );
 
         if (ChatMessageList.Count <= 2)

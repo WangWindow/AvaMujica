@@ -252,14 +252,14 @@ public partial class AssessmentViewModel : ViewModelBase
             }
         }
 
-        var match = SelectedScale.Interpretations.FirstOrDefault(it =>
+        var (Min, Max, Level, Advice) = SelectedScale.Interpretations.FirstOrDefault(it =>
             total >= it.Min && total <= it.Max
         );
         // 兜底：若未匹配到任何区间，则按接近规则给出提示
-        var level = string.IsNullOrWhiteSpace(match.Level) ? "未分级" : match.Level;
-        var advice = string.IsNullOrWhiteSpace(match.Advice)
+        var level = string.IsNullOrWhiteSpace(Level) ? "未分级" : Level;
+        var advice = string.IsNullOrWhiteSpace(Advice)
             ? "建议：请核对各题作答是否完整，或联系开发者补全解释区间。"
-            : match.Advice;
+            : Advice;
 
         Result = new AssessmentResult
         {

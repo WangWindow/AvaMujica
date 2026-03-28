@@ -26,13 +26,15 @@ public interface IHistoryService
     /// <param name="userContent">用户输入</param>
     /// <param name="onDelta">流式回调 (ResponseType, 分片内容)</param>
     /// <param name="onMessagesCreated">在真正开始流式前（已写入数据库）立即返回本轮 user/assistant 消息引用，便于 UI 先插入占位进行实时更新</param>
+    /// <param name="onError">错误回调</param>
+    /// <param name="cancellationToken">取消令牌</param>
     /// <returns>(userMessage, assistantMessage)</returns>
     Task<(ChatMessage userMessage, ChatMessage assistantMessage)> SendMessageAsync(
         string sessionId,
         string userContent,
         Func<ResponseType, string, Task> onDelta,
         Action<ChatMessage, ChatMessage>? onMessagesCreated = null,
-        CancellationToken cancellationToken = default,
-        Action<Exception>? onError = null
+        Action<Exception>? onError = null,
+        CancellationToken cancellationToken = default
     );
 }
