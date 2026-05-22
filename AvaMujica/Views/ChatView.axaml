@@ -226,7 +226,7 @@
                     CornerRadius="10"
                     DockPanel.Dock="Left"
                     Text="{Binding InputText}"
-                    Watermark="输入您的心理困扰..." />
+                    PlaceholderText="输入您的心理困扰..." />
             </DockPanel>
         </Grid>
     </Grid>

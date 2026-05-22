@@ -150,7 +150,7 @@
                                 Width="200"
                                 HorizontalAlignment="Right"
                                 Text="{Binding SelectedModel, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                Watermark="model-name" />
+                                PlaceholderText="model-name" />
                         </Grid>
                     </Button>
 
@@ -189,7 +189,7 @@
                             <TextBox
                                 PasswordChar="*"
                                 Text="{Binding TempApiKey}"
-                                Watermark="请输入API Key" />
+                                PlaceholderText="请输入API Key" />
                             <StackPanel
                                 HorizontalAlignment="Right"
                                 Orientation="Horizontal"
@@ -247,16 +247,16 @@
                                 AcceptsReturn="True"
                                 Text="{Binding TempSystemPrompt}"
                                 TextWrapping="Wrap"
-                                Watermark="请输入系统提示词" />
+                                PlaceholderText="请输入系统提示词" />
 
                             <TextBlock Text="API基础URL:" />
-                            <TextBox Text="{Binding TempApiBase}" Watermark="请输入API基础URL" />
+                            <TextBox Text="{Binding TempApiBase}" PlaceholderText="请输入API基础URL" />
 
                             <TextBlock Text="温度参数:" />
-                            <TextBox Text="{Binding TempTemperature}" Watermark="请输入温度参数 (0.0-2.0)" />
+                            <TextBox Text="{Binding TempTemperature}" PlaceholderText="请输入温度参数 (0.0-2.0)" />
 
                             <TextBlock Text="最大Token数:" />
-                            <TextBox Text="{Binding TempMaxTokens}" Watermark="请输入最大生成token数" />
+                            <TextBox Text="{Binding TempMaxTokens}" PlaceholderText="请输入最大生成token数" />
 
                             <StackPanel
                                 HorizontalAlignment="Right"
