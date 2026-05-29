@@ -5,8 +5,8 @@
     <SupportedOSPlatformVersion>30</SupportedOSPlatformVersion>
     <Nullable>enable</Nullable>
     <ApplicationId>com.wangwindow.avamujica</ApplicationId>
-    <ApplicationVersion>1</ApplicationVersion>
-    <ApplicationDisplayVersion>0.5.0</ApplicationDisplayVersion>
+    <ApplicationVersion>$(AndroidVersionCode)</ApplicationVersion>
+    <ApplicationDisplayVersion>$(VersionPrefix)</ApplicationDisplayVersion>
     <AndroidPackageFormat>apk</AndroidPackageFormat>
     <AndroidLinkMode>SdkOnly</AndroidLinkMode>
     <AndroidCreatePackagePerAbi>false</AndroidCreatePackagePerAbi>

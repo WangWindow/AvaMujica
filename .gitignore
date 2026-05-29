@@ -4,6 +4,16 @@
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 apk/
 
+# AI Agents #
+.antigravitycli/
+.claude/
+.codex/
+.copilot/
+.gemini/
+.omo/
+.opencode/
+.sisyphus/
+
 # User-specific files
 *.rsuser
 *.suo

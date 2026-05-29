@@ -1,4 +1,4 @@
-﻿using Android.App;
+using Android.App;
 using Android.Content.PM;
 using Android.Views;
 using Avalonia;
@@ -16,8 +16,4 @@ namespace AvaMujica.Android;
 )]
 public class MainActivity : AvaloniaMainActivity
 {
-    protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
-    {
-        return base.CustomizeAppBuilder(builder).WithInterFont();
-    }
 }
