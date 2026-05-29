@@ -40,6 +40,7 @@ jobs:
           $folder = Join-Path $PWD 'bin/desktop-win'
           if (-not (Test-Path $folder)) { throw "Windows output folder not found: $folder" }
           if (Test-Path $targetName) { Remove-Item $targetName -Force }
+          Get-ChildItem -Path $folder -Filter *.pdb -Recurse | Remove-Item -Force
           Compress-Archive -Path "$folder/*" -DestinationPath $targetName -CompressionLevel Optimal
           "artifact=$targetName" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
 
