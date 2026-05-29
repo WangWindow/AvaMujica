@@ -20,8 +20,8 @@
     <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
     <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
     <AndroidStripNativeLibraries>true</AndroidStripNativeLibraries>
-    <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
-    <RunAOTCompilation>false</RunAOTCompilation>
+    <AndroidEnableProfiledAot>true</AndroidEnableProfiledAot>
+    <RunAOTCompilation>true</RunAOTCompilation>
     <DebugType>none</DebugType>
     <DebugSymbols>false</DebugSymbols>
   </PropertyGroup>
